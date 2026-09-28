@@ -10,7 +10,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { T } from "../../components/admin/constants";
 
-const BASE_URL = 'https://icemt.arabcont.com/';
+// No trailing slash (all requests use `${BASE_URL}/api/...`)
+const BASE_URL = 'https://icemt.arabcont.com';
 
 // ── Auth token ────────────────────────────────────────────────────────────────
 async function getToken() {
@@ -121,6 +122,16 @@ function toSlug(str) {
 }
 
 const FONT_SIZES = [8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 48, 56, 64, 72];
+
+// ── Field ─────────────────────────────────────────────────────────────────────
+// IMPORTANT: defined at module level (NOT inside PlanworkTab). If it were defined
+// inside the component, it would get a new identity on every render, React would
+// remount the inputs, and they would lose focus after every keystroke.
+const Field = ({ label, children, full }) => (
+    <div className="lec-field" style={full ? { gridColumn: '1/-1' } : {}}>
+        <label className="lec-label">{label}</label>{children}
+    </div>
+);
 
 // ── RichTextEditor (unchanged) ────────────────────────────────────────────────
 function RichTextEditor({ icon, label, sub, name, value, onChange, placeholder, minHeight = 120 }) {
@@ -239,7 +250,7 @@ function TreeNode({ node, selectedId, onSelect, depth = 0 }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// FilesSection — UPDATED to match real API
+// FilesSection — matches real API
 // GET  /api/admin/AdminPlanFiles/{planId}
 //   → [{ planId, fileId, fileTitle, fileName (full blob URL), filePeriorty, planworkName }]
 // POST /api/admin/AdminPlanFiles
@@ -566,7 +577,7 @@ function ParentSelector({ parentId, onChange, allTreeNodes }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PlanworkTab (main — unchanged logic, only FilesSection updated above)
+// PlanworkTab (main)
 // ══════════════════════════════════════════════════════════════════════════════
 const PlanworkTab = () => {
     const [tree, setTree] = useState([]);
@@ -584,6 +595,9 @@ const PlanworkTab = () => {
     const [loadingRecord, setLoadingRecord] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+
+    // true once the user has typed a slug by hand → stop auto-generating it from the name
+    const slugManualRef = useRef(false);
 
     const loadTree = async () => {
         setLoadingTree(true); setTreeError(null);
@@ -604,7 +618,15 @@ const PlanworkTab = () => {
     );
 
     const toast = (msg, type = 'success') => { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3500); };
-    const pick = rec => { setSelected(rec); setForm({ ...rec }); setIsNew(false); setDeleteConfirm(false); };
+
+    const pick = rec => {
+        setSelected(rec);
+        setForm({ ...rec });
+        setIsNew(false);
+        setDeleteConfirm(false);
+        // existing records keep their slug when the name is edited
+        slugManualRef.current = !!rec.slug;
+    };
 
     const handleTreeSelect = async (node) => {
         setTreeSelected(node);
@@ -623,22 +645,23 @@ const PlanworkTab = () => {
 
     const handleNew = () => {
         const parentId = treeSelected ? treeSelected.id : null;
+        slugManualRef.current = false;
         setForm({ ...BLANK, parentId }); setSelected(null); setIsNew(true); setDeleteConfirm(false);
     };
 
     const handleChange = e => {
         const { name, value, type, checked } = e.target;
+        if (name === 'slug') slugManualRef.current = value.length > 0;
         setForm(f => {
             const updated = { ...f, [name]: type === 'checkbox' ? checked : value };
-            if (name === 'name' && !f._slugManual) updated.slug = toSlug(value);
-            if (name === 'slug') updated._slugManual = value.length > 0;
+            if (name === 'name' && !slugManualRef.current) updated.slug = toSlug(value);
             return updated;
         });
     };
 
     const handleSave = async () => {
         if (!form.name.trim()) { toast('الأسم مطلوب', 'error'); return; }
-        const clean = { ...form }; delete clean._slugManual;
+        const clean = { ...form };
         setSaving(true);
         try {
             if (isNew) {
@@ -670,7 +693,17 @@ const PlanworkTab = () => {
         finally { setSaving(false); }
     };
 
-    const handleReset = () => { if (isNew) setForm({ ...BLANK }); else setForm({ ...selected }); setDeleteConfirm(false); toast('تم الإلغاء', 'info'); };
+    const handleReset = () => {
+        if (isNew) {
+            slugManualRef.current = false;
+            setForm({ ...BLANK });
+        } else {
+            slugManualRef.current = !!selected?.slug;
+            setForm({ ...selected });
+        }
+        setDeleteConfirm(false);
+        toast('تم الإلغاء', 'info');
+    };
 
     const handleDelete = async () => {
         if (!deleteConfirm) { setDeleteConfirm(true); return; }
@@ -678,7 +711,9 @@ const PlanworkTab = () => {
         try {
             const res = await fetch(`${BASE_URL}/api/admin/AdminPlanwork/${selected.id}`, { method: 'DELETE', headers: await authHeaders() });
             if (res.status !== 200 && res.status !== 204) throw new Error(`HTTP ${res.status}`);
-            setRecords(records.filter(r => r.id !== selected.id));
+            const deletedId = selected.id;
+            setRecords(prev => prev.filter(r => r.id !== deletedId));
+            slugManualRef.current = false;
             setDeleteConfirm(false); setSelected(null); setForm({ ...BLANK }); setIsNew(true); setTreeSelected(null);
             toast('تم الحذف', 'error'); await loadTree();
         } catch (e) { toast('فشل الحذف: ' + e.message, 'error'); setDeleteConfirm(false); }
@@ -686,11 +721,6 @@ const PlanworkTab = () => {
     };
 
     const parentName = form.parentId != null ? (allTreeNodes.find(n => n.id === form.parentId)?.label || `#${form.parentId}`) : null;
-    const Field = ({ label, children, full }) => (
-        <div className="lec-field" style={full ? { gridColumn: '1/-1' } : {}}>
-            <label className="lec-label">{label}</label>{children}
-        </div>
-    );
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
