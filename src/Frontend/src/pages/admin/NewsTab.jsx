@@ -7,14 +7,14 @@
  * 3. showFlag not in detail response — keep from list or default true
  * 4. Delete image uses correct picId from images[]
  * 5. buildFormData updated to match actual API fields
- * 6. BASE no longer has a trailing slash — every path already starts with "/",
- *    so the old BASE produced double-slash URLs (".../com//api/...") which
- *    Azure's WAF was rejecting outright with a 403 before the request ever
- *    reached the API.
- * 7. Details HTML from the rich-text editor is sanitized/slimmed down before
- *    being sent (strips redundant style/rel attributes, flattens <div> line
- *    wrapping to <br>) to reduce the chance of tripping Azure App Gateway's
- *    WAF (OWASP CRS) inbound anomaly score on PUT/POST saves.
+ * 6. BASE has no trailing slash — every path already starts with "/", so a
+ *    trailing slash produced double-slash URLs (".../com//api/...").
+ * 7. Details HTML from the rich-text editor is slimmed down before being sent
+ *    (strips redundant style/rel attributes, flattens <div> line wrapping to
+ *    <br>) to reduce the chance of tripping Azure App Gateway's WAF.
+ * 8. Updates use a real PUT (no X-HTTP-Method-Override). The controller only
+ *    defines [HttpPut("{id}")], so POST /AdminNews/{id} returns 405.
+ * 9. isMain is kept in sync with image order (add / promote / replace).
  *
  * API:
  * GET    /api/admin/AdminNews/getAllNews?PageIndex=1&PageSize=100
@@ -27,14 +27,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 
-// FIXED: previously ended with a trailing slash ("https://.../"), and every
-// path passed to apiFetch/resolveImg already starts with "/", so every
-// request URL came out as ".../com//api/..." — a double slash. Azure's WAF
-// (OWASP CRS) has a built-in rule that flags multiple consecutive slashes in
-// a URL path as a path-normalization/traversal pattern, which is exactly what
-// was silently rejecting PUT/POST requests with a 403 before they ever
-// reached the API. Removing the trailing slash here fixes every URL built
-// from BASE in this file (apiFetch and resolveImg).
+// No trailing slash: every path passed to apiFetch/resolveImg starts with "/".
 const BASE = "https://icemt.arabcont.com";
 
 const T = {
@@ -67,24 +60,19 @@ function previewSnippet(text, len = 55) {
     return text.length > len ? text.slice(0, len) + '…' : text;
 }
 
-// ── WAF-safety: slim down rich-text HTML before it goes over the wire ──────────
-// Azure App Gateway's WAF (OWASP CRS) scores requests cumulatively — no single
-// thing needs to look malicious, several smaller pattern matches just need to
-// add up past a threshold (rule 949110, "Inbound Anomaly Score Exceeded").
-// The contentEditable-produced HTML from RichTextEditor is a classic source of
-// those matches: one <div> per line, <span style="..."> from the color/size
-// pickers, and <a href="..." target="_blank" rel="noopener noreferrer"> from
-// the link tool. None of that changes what's rendered, so we strip/flatten it
-// here to cut down tag/attribute count and remove the parts most likely to
-// resemble XSS/RFI attack patterns to the WAF, without touching the visible
-// output or the RichTextEditor component itself.
+// ── Slim down rich-text HTML before it goes over the wire ─────────────────────
+// contentEditable produces one <div> per line, <span style="..."> from the
+// pickers, and rel="noopener noreferrer" on links. None of that changes the
+// rendered output, so we strip/flatten it to reduce tag/attribute count.
+// NOTE: this changes the stored HTML (<div> → <br>, no rel on links). If the
+// WAF turns out not to care about content, you can remove this function and
+// send form.details as-is.
 function sanitizeHtmlForApi(html) {
     if (!html) return html;
     const container = document.createElement('div');
     container.innerHTML = html;
 
-    // Drop style attributes that only encode the editor's own defaults —
-    // pure noise, adds attribute/value pairs for nothing.
+    // Drop style attributes that only encode the editor's own defaults.
     container.querySelectorAll('[style]').forEach(el => {
         const style = (el.getAttribute('style') || '').trim();
         if (/^(color:\s*#?0a0a0a;?\s*)?(font-size:\s*14px;?\s*)?$/i.test(style)) {
@@ -92,8 +80,7 @@ function sanitizeHtmlForApi(html) {
         }
     });
 
-    // rel="noopener noreferrer" on every link is redundant with target
-    // handling most renderers already do — drop it, keep target.
+    // Drop redundant rel on links, keep target.
     container.querySelectorAll('a[href]').forEach(a => a.removeAttribute('rel'));
 
     let out = container.innerHTML;
@@ -101,8 +88,7 @@ function sanitizeHtmlForApi(html) {
     // Collapse contentEditable's empty placeholder lines.
     out = out.replace(/<div><br><\/div>/gi, '<br>');
 
-    // Flatten one level of <div> line-wrapping into <br> — identical
-    // rendering, roughly half the tag count, fewer nested-tag patterns.
+    // Flatten one level of <div> line-wrapping into <br>.
     out = out.replace(/<div>/gi, '').replace(/<\/div>/gi, '<br>');
 
     return out;
@@ -263,7 +249,16 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
     const addFiles = (files) => {
         const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
         if (!valid.length) return;
-        onChange([...images, ...valid.map(file => ({ file, previewSrc: URL.createObjectURL(file), serverUrl: null, picId: null }))]);
+        onChange([
+            ...images,
+            ...valid.map(file => ({
+                file,
+                previewSrc: URL.createObjectURL(file),
+                serverUrl: null,
+                picId: null,
+                isMain: false,
+            })),
+        ]);
     };
 
     const removeImage = async (idx) => {
@@ -290,13 +285,22 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
         if (idx === 0) return;
         const next = [...images];
         const [picked] = next.splice(idx, 1);
-        next.unshift(picked);
-        onChange(next);
+        onChange([
+            { ...picked, isMain: true },
+            ...next.map(img => ({ ...img, isMain: false })),
+        ]);
     };
+
     const replaceFile = (idx, file) => {
         if (!file || !file.type.startsWith('image/')) return;
         const next = [...images];
-        next[idx] = { file, previewSrc: URL.createObjectURL(file), serverUrl: null, picId: null };
+        next[idx] = {
+            file,
+            previewSrc: URL.createObjectURL(file),
+            serverUrl: null,
+            picId: null,
+            isMain: idx === 0,
+        };
         onChange(next);
     };
 
@@ -703,22 +707,10 @@ async function apiFetch(path, opts = {}) {
     const headers = { ...(opts.headers || {}) };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    // EXPERIMENT: Azure App Gateway's WAF has been returning 403 on every PUT
-    // save regardless of payload content/size (confirmed across 4 different
-    // items of very different shapes), which points away from a content-based
-    // rule and toward something specific to PUT+multipart on this route, or
-    // an IP/session-level rate block. This reroutes PUT through POST with an
-    // override header in case it's the former. If the backend doesn't honor
-    // X-HTTP-Method-Override (check that updates actually apply, not create
-    // duplicates), or if this doesn't clear the 403 either, revert this block
-    // to `const method = opts.method;` and look at rate-limiting instead.
-    let method = opts.method;
-    if (method === 'PUT') {
-        headers['X-HTTP-Method-Override'] = 'PUT';
-        method = 'POST';
-    }
+    // Send the method exactly as requested. Don't set Content-Type manually
+    // for FormData bodies; the browser adds the multipart boundary itself.
+    const res = await fetch(`${BASE}${path}`, { ...opts, headers });
 
-    const res = await fetch(`${BASE}${path}`, { ...opts, method, headers });
     if (!res.ok) {
         let errMsg = `HTTP ${res.status}`;
         try {
@@ -746,7 +738,6 @@ function buildFormData(form, images, isNew) {
     const fd = new FormData();
     fd.append('Id', isNew ? '0' : String(form.id));
     fd.append('Title', form.title || '');
-    // Slimmed down before sending — see sanitizeHtmlForApi for why.
     fd.append('Details', sanitizeHtmlForApi(form.details) || '');
     fd.append('Date', form.date ? `${form.date}T00:00:00.000Z` : '');
     fd.append('ShowFlag', String(form.showFlag));
@@ -758,7 +749,7 @@ function buildFormData(form, images, isNew) {
     // All new file uploads go as Images[]
     newFiles.forEach(img => fd.append('Images', img.file));
 
-    // Main image URL (first server image that is marked main, or first server image)
+    // Main image URL (server image marked main, or the first server image)
     const mainServer = serverImgs.find(img => img.isMain) || serverImgs[0];
     fd.append('ImageUrl', mainServer?.serverUrl || 'pending');
 
@@ -853,7 +844,6 @@ export default function NewsTab() {
         // Optimistic update from list data while detail loads
         if (listItem) {
             setSelected(prev => ({ ...(prev || {}), id: listItem.id, title: listItem.title || '' }));
-            // Prefer value already known from map (set by previous detail load or save)
             const knownFlag = showFlagMapRef.current[listItem.id];
             const resolvedFlag = knownFlag !== undefined ? knownFlag
                 : (listItem.showFlag ?? listItem.isActive ?? true);
@@ -882,9 +872,7 @@ export default function NewsTab() {
                 id: item.id,
                 title: item.title || '',
                 details: item.details || '',
-                // publishedAt is the date field in detail response
                 date: toInputDate(item.publishedAt || item.date),
-                // showFlag not returned by GET detail — use our local map (set on save) or default true
                 showFlag: showFlagMapRef.current[item.id] ?? item.showFlag ?? item.isActive ?? true,
             };
             // Persist so sidebar dot survives page refresh
@@ -892,8 +880,7 @@ export default function NewsTab() {
             setSelected(mapped);
             setForm(mapped);
 
-            // ── Parse images[] array — this is the correct structure ──
-            // images: [ { picId, imageUrl, isMain }, ... ]
+            // ── Parse images[] array ──
             const imagesArr = item.images ?? [];
 
             let slots = [];
@@ -948,26 +935,15 @@ export default function NewsTab() {
         try {
             const fd = buildFormData(form, images, isNew);
 
-            // Debug instrumentation — remove once WAF false positives are confirmed
-            // resolved. If a save still 403s, compare this logged payload against
-            // one that succeeds to help narrow down what the WAF is matching on.
-            console.log('[NewsTab] Saving', isNew ? 'new' : form.id, {
-                titleLength: (form.title || '').length,
-                rawDetailsLength: (form.details || '').length,
-                sanitizedDetailsLength: (fd.get('Details') || '').length,
-                sanitizedDetailsPreview: String(fd.get('Details') || '').slice(0, 300),
-                imageCount: images.length,
-                newFileCount: images.filter(i => i.file).length,
-            });
-
             if (isNew) {
+                // Create → POST /api/admin/AdminNews  ([HttpPost])
                 await apiFetch('/api/admin/AdminNews', { method: 'POST', body: fd });
                 toast('تم إضافة الخبر بنجاح');
                 setIsNew(false);
                 await loadList();
             } else {
-                await apiFetch(`/api/admin/AdminNews/${form.id}`, { method: 'POST', body: fd });
-                // Persist saved showFlag immediately so sidebar dot reflects the change on refresh too
+                // Update → PUT /api/admin/AdminNews/{id}  ([HttpPut("{id}")])
+                await apiFetch(`/api/admin/AdminNews/${form.id}`, { method: 'PUT', body: fd });
                 setFlag(form.id, form.showFlag);
                 toast('تم حفظ التغييرات بنجاح');
                 // Re-fetch detail to get updated images list
@@ -1080,7 +1056,6 @@ export default function NewsTab() {
                         )}
                         {!loading && filtered.map(item => {
                             const imgSrc = resolveImg(item.imageUrl);
-                            // Use our local map if available (updated on save/detail-load), else item field, else true
                             const isVisible = showFlagMapRef.current[item.id] !== undefined
                                 ? showFlagMapRef.current[item.id]
                                 : (item.showFlag ?? item.isActive ?? true);
