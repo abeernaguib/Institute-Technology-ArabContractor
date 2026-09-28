@@ -17,11 +17,9 @@ jobs:
       contents: read
 
     steps:
-      # ------------------ Checkout ------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ------------------ Backend ------------------
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
@@ -35,10 +33,8 @@ jobs:
         run: msbuild src/Backend/Institute.Web/Institute.Web.sln /p:Configuration=Release
 
       - name: Build and publish backend API
-        run: |
-          dotnet publish src/Backend/Institute.Web/Institute.API/Institute.API.csproj -c Release -o published
+        run: dotnet publish src/Backend/Institute.Web/Institute.API/Institute.API.csproj -c Release -o published
 
-      # ------------------ Frontend ------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -50,7 +46,6 @@ jobs:
           cd src/Frontend
           npm ci
 
-      # ------------------ Frontend Environment ------------------
       - name: Create .env file for frontend
         shell: pwsh
         run: |
@@ -60,7 +55,6 @@ jobs:
           $envContent.Trim() | Out-File -FilePath "src/Frontend/.env" -Encoding utf8
           Write-Host "Frontend .env file created"
 
-      # ------------------ Build Frontend ------------------
       - name: Build frontend
         shell: pwsh
         env:
@@ -69,7 +63,6 @@ jobs:
           cd src/Frontend
           npm run build
 
-      # ------------------ Copy React to wwwroot ------------------
       - name: Copy React dist to wwwroot
         shell: pwsh
         run: |
@@ -83,7 +76,6 @@ jobs:
             -Recurse `
             -Force
 
-      # ------------------ Remove React web.config ------------------
       - name: Remove web.config from wwwroot if present
         shell: pwsh
         run: |
@@ -97,7 +89,6 @@ jobs:
             Write-Host "No web.config in wwwroot - nothing to remove"
           }
 
-      # ------------------ Verify wwwroot ------------------
       - name: Verify React index.html
         shell: pwsh
         run: |
@@ -109,7 +100,6 @@ jobs:
             exit 1
           }
 
-      # ------------------ Verify publish folder ------------------
       - name: Show publish folder contents
         shell: pwsh
         run: |
@@ -129,7 +119,6 @@ jobs:
             $files
           }
 
-      # ------------------ Upload artifact ------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -146,14 +135,12 @@ jobs:
       contents: read
 
     steps:
-      # ------------------ Download artifact ------------------
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
           path: artifact
 
-      # ------------------ Verify artifact ------------------
       - name: Verify downloaded artifact
         shell: pwsh
         run: |
@@ -168,19 +155,16 @@ jobs:
             $files
           }
 
-      # ------------------ Login to Azure ------------------
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_737438DAEFB4472485E6BAB17BAF84DE }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CE95D38C24E64B91BD58616839EF32F9 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C911F079DD4F4EA68F5F80B51E7DD99A }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3425383CFDD642EDA82861804329F239 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
 
-      # ------------------ Deploy ------------------
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: icmet
           slot-name: Production
           package: artifact/
-
