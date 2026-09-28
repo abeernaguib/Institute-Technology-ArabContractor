@@ -28,7 +28,7 @@ namespace Institute.API.Controllers
         {
             var clerkUserId = _currentUser.UserId;
            
-            var clerkUser = await _clerk.GetUserAsync(clerkUserId);
+            var clerkUser = await _clerk.GetUserAsync(clerkUserId);//
             if (clerkUser == null)
                 return BadRequest();
 
