@@ -202,7 +202,7 @@ const AdminDashboard = () => {
     // ── Books loader ──
     const loadBooks = useCallback(async () => {
         try {
-            const res = await authFetch(`${API_BASE}/Admin/books`);
+            const res = await authFetch(`${API_BASE}/Admin/AdminBook`);
             if (res.ok) {
                 const data = await res.json();
                 setBooksData(Array.isArray(data) ? data : data.result || []);
