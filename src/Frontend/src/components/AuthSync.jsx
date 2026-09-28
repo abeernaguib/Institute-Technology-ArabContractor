@@ -12,8 +12,14 @@ export default function AuthSync() {
         const fetchAndStore = async () => {
             const token = await getToken({ template: "backend" });
             if (token) {
-                window.__clerkToken = token;   // ← makes token available to all apiFetch calls
-                console.log("CLERK TOKEN:", token);
+                window.__clerkToken = token; // available to all apiFetch calls
+
+                // Dev only: wipe the console and show just the latest token.
+                // Never runs in the production build.
+                if (import.meta.env.DEV) {
+                    console.clear();
+                    console.log("CLERK TOKEN (latest):", token);
+                }
             }
         };
 
@@ -34,8 +40,7 @@ export default function AuthSync() {
 
         sync();
 
-        // Refresh the token every 50 seconds so it never expires mid-session
-        // (Clerk tokens are valid for ~60 seconds)
+        // Refresh every 50 seconds (Clerk tokens are valid for ~60 seconds)
         intervalRef.current = setInterval(fetchAndStore, 50_000);
 
         return () => clearInterval(intervalRef.current);
