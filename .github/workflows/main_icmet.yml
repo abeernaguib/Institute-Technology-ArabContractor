@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - icmet
+name: Build and deploy ASP+React to Azure Web App - icmet
 
 on:
   push:
@@ -9,57 +6,165 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: windows-latest
+
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore src/Backend/Institute.Web/Institute.Web.sln
+
+      - name: Build backend solution
+        run: msbuild src/Backend/Institute.Web/Institute.Web.sln /p:Configuration=Release
+
+      - name: Build and publish backend API
+        run: dotnet publish src/Backend/Institute.Web/Institute.API/Institute.API.csproj -c Release -o published
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          dotnet-version: '10.x'
+          node-version: '22.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Install frontend dependencies
+        shell: pwsh
+        run: |
+          cd src/Frontend
+          npm ci
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Create .env file for frontend
+        shell: pwsh
+        run: |
+          $envContent = @"
+          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          "@
+          $envContent.Trim() | Out-File -FilePath "src/Frontend/.env" -Encoding utf8
+          Write-Host "Frontend .env file created"
 
-      - name: Upload artifact for deployment job
+      - name: Build frontend
+        shell: pwsh
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          cd src/Frontend
+          npm run build
+
+      - name: Copy React dist to wwwroot
+        shell: pwsh
+        run: |
+          if (!(Test-Path "published/wwwroot")) {
+            New-Item -ItemType Directory -Path "published/wwwroot" | Out-Null
+          }
+
+          Copy-Item `
+            -Path src/Frontend/dist/* `
+            -Destination published/wwwroot `
+            -Recurse `
+            -Force
+
+      - name: Remove web.config from wwwroot if present
+        shell: pwsh
+        run: |
+          $dest = "published/wwwroot/web.config"
+
+          if (Test-Path $dest) {
+            Remove-Item -Path $dest -Force
+            Write-Host "Removed web.config from wwwroot"
+          }
+          else {
+            Write-Host "No web.config in wwwroot - nothing to remove"
+          }
+
+      - name: Verify React index.html
+        shell: pwsh
+        run: |
+          if (Test-Path "published/wwwroot/index.html") {
+            Write-Host "SUCCESS: published/wwwroot/index.html exists."
+          }
+          else {
+            Write-Error "ERROR: published/wwwroot/index.html was not found."
+            exit 1
+          }
+
+      - name: Show publish folder contents
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path published -Recurse
+
+      - name: Verify publish folder
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem published -Recurse
+
+          if ($files.Count -eq 0) {
+            Write-Error "ERROR: Publish folder is empty!"
+            exit 1
+          }
+          else {
+            Write-Host "Publish folder contains files:"
+            $files
+          }
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: ASP-app
+          path: published/
+          retention-days: 1
 
   deploy:
     runs-on: windows-latest
     needs: build
+
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: ASP-app
+          path: artifact
+
+      - name: Verify downloaded artifact
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem artifact -Recurse
+
+          if ($files.Count -eq 0) {
+            Write-Error "ERROR: Artifact folder is empty!"
+            exit 1
+          }
+          else {
+            Write-Host "Artifact downloaded successfully."
+            $files
+          }
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3425383CFDD642EDA82861804329F239 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_737438DAEFB4472485E6BAB17BAF84DE }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CE95D38C24E64B91BD58616839EF32F9 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C911F079DD4F4EA68F5F80B51E7DD99A }}
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'icmet'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: icmet
+          slot-name: Production
+          package: artifact/
