@@ -966,7 +966,7 @@ export default function NewsTab() {
                 setIsNew(false);
                 await loadList();
             } else {
-                await apiFetch(`/api/admin/AdminNews/${form.id}`, { method: 'PUT', body: fd });
+                await apiFetch(`/api/admin/AdminNews/${form.id}`, { method: 'POST', body: fd });
                 // Persist saved showFlag immediately so sidebar dot reflects the change on refresh too
                 setFlag(form.id, form.showFlag);
                 toast('تم حفظ التغييرات بنجاح');
