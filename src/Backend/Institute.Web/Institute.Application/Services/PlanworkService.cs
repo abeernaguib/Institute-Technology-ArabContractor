@@ -140,7 +140,8 @@ namespace Institute.Application.Services
         {
             var entity = await _repo.GetByIdAsync(id);
 
-            if (entity == null) return false;
+            if (entity == null)
+                return false;
 
             entity.ParentId = dto.ParentId;
             entity.ServiceTitle = dto.ServiceTitle;
@@ -148,20 +149,22 @@ namespace Institute.Application.Services
             entity.MainFlag = dto.MainFlag;
             entity.DetailsFlag = dto.DetailsFlag;
             entity.SpecialFlag = dto.SpecialFlag;
+
             entity.CourseDesc = dto.CourseDesc;
             entity.CoursePlace = dto.CoursePlace;
             entity.CourseDate = dto.CourseDate;
             entity.CourseDays = dto.CourseDays;
             entity.CourseContent = dto.CourseContent;
+
             entity.PlanCost = dto.PlanCost;
-            // ✅ Online fields
+
             entity.IsOnline = dto.IsOnline;
             entity.OnlineLink = dto.OnlineLink;
             entity.OnlineCost = dto.OnlineCost;
+
             entity.Slug = dto.Slug;
             entity.SKU = dto.SKU;
 
-            _repo.Update(entity);
             await _repo.SaveChangesAsync();
 
             return true;
@@ -180,4 +183,4 @@ namespace Institute.Application.Services
             return true;
         }
     }
-}
+}   

@@ -3,6 +3,7 @@ using Institute.Application.Interfaces.IService;
 using Institute.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Institute.API.Controllers
 {
@@ -73,7 +74,9 @@ namespace Institute.API.Controllers
         // ✏️ UPDATE
         // =========================
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CreatePlanworkDto dto)
+        public async Task<IActionResult> Update(
+    int id,
+    [FromBody] CreatePlanworkDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -83,7 +86,12 @@ namespace Institute.API.Controllers
                 var updated = await _service.UpdateAsync(id, dto);
 
                 if (!updated)
-                    return NotFound(new { message = "Planwork not found" });
+                {
+                    return NotFound(new
+                    {
+                        message = "Planwork not found"
+                    });
+                }
 
                 return Ok(new
                 {
@@ -92,13 +100,15 @@ namespace Institute.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new
+                return StatusCode(500, new
                 {
-                    message = ex.Message
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message,
+                    innerInnerException = ex.InnerException?.InnerException?.Message,
+                    fullException = ex.ToString()
                 });
             }
         }
-
         // =========================
         // ❌ DELETE
         // =========================
