@@ -6,12 +6,13 @@
  * 2. Detail GET uses publishedAt not date
  * 3. showFlag not in detail response — keep from list or default true
  * 4. Delete image uses correct picId from images[]
- * 5. buildFormData updated to match actual API fields
+ * 5. buildFormData sends only Id, Title, Details, Date, ShowFlag, Images (new files).
+ *    ImageUrl / ImageUrls are NOT sent anymore (backend doesn't need them, and the
+ *    "https://..." values may trigger the WAF RFI rule).
  * 6. BASE has no trailing slash — every path already starts with "/", so a
  *    trailing slash produced double-slash URLs (".../com//api/...").
- * 7. Details HTML from the rich-text editor is slimmed down before being sent
- *    (strips redundant style/rel attributes, flattens <div> line wrapping to
- *    <br>) to reduce the chance of tripping Azure App Gateway's WAF.
+ * 7. The rich-text editor now emits PLAIN TEXT (innerText) instead of HTML, and
+ *    Details is sent as-is (no HTML sanitizing needed).
  * 8. Updates use a real PUT (no X-HTTP-Method-Override). The controller only
  *    defines [HttpPut("{id}")], so POST /AdminNews/{id} returns 405.
  * 9. isMain is kept in sync with image order (add / promote / replace).
@@ -58,40 +59,6 @@ function resolveImg(url) {
 function previewSnippet(text, len = 55) {
     if (!text) return '—';
     return text.length > len ? text.slice(0, len) + '…' : text;
-}
-
-// ── Slim down rich-text HTML before it goes over the wire ─────────────────────
-// contentEditable produces one <div> per line, <span style="..."> from the
-// pickers, and rel="noopener noreferrer" on links. None of that changes the
-// rendered output, so we strip/flatten it to reduce tag/attribute count.
-// NOTE: this changes the stored HTML (<div> → <br>, no rel on links). If the
-// WAF turns out not to care about content, you can remove this function and
-// send form.details as-is.
-function sanitizeHtmlForApi(html) {
-    if (!html) return html;
-    const container = document.createElement('div');
-    container.innerHTML = html;
-
-    // Drop style attributes that only encode the editor's own defaults.
-    container.querySelectorAll('[style]').forEach(el => {
-        const style = (el.getAttribute('style') || '').trim();
-        if (/^(color:\s*#?0a0a0a;?\s*)?(font-size:\s*14px;?\s*)?$/i.test(style)) {
-            el.removeAttribute('style');
-        }
-    });
-
-    // Drop redundant rel on links, keep target.
-    container.querySelectorAll('a[href]').forEach(a => a.removeAttribute('rel'));
-
-    let out = container.innerHTML;
-
-    // Collapse contentEditable's empty placeholder lines.
-    out = out.replace(/<div><br><\/div>/gi, '<br>');
-
-    // Flatten one level of <div> line-wrapping into <br>.
-    out = out.replace(/<div>/gi, '').replace(/<\/div>/gi, '<br>');
-
-    return out;
 }
 
 // ── ActiveToggle ──────────────────────────────────────────────────────────────
@@ -171,7 +138,25 @@ function RichTextEditor({ icon, label, sub, name, value, onChange, placeholder, 
 
     const saveSelection = () => { const s = window.getSelection(); if (s?.rangeCount > 0) savedSelRef.current = s.getRangeAt(0).cloneRange(); };
     const restoreSelection = () => { const s = window.getSelection(); if (s && savedSelRef.current) { s.removeAllRanges(); s.addRange(savedSelRef.current); } };
-    const emitChange = () => { if (!editorRef.current) return; const h = editorRef.current.innerHTML; lastValueRef.current = h; onChange({ target: { name, value: h } }); };
+
+    // Emit PLAIN TEXT (not HTML) to the parent form.
+    const emitChange = () => {
+        if (!editorRef.current) return;
+
+        const text = editorRef.current.innerText
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n');
+
+        lastValueRef.current = text;
+
+        onChange({
+            target: {
+                name,
+                value: text
+            }
+        });
+    };
+
     const exec = (cmd, val = null) => { editorRef.current?.focus(); document.execCommand(cmd, false, val); emitChange(); };
     const detectFontSize = () => {
         const fsVal = getComputedAtCursor(editorRef.current, 'fontSize');
@@ -733,29 +718,22 @@ async function apiFetch(path, opts = {}) {
 }
 
 // ── FormData builder ──────────────────────────────────────────────────────────
-// API fields: Id, Title, Details, Date, ShowFlag, Images (files), ImageUrl, ImageUrls
+// Sends only: Id, Title, Details, Date, ShowFlag, Images (new files).
+// ImageUrl / ImageUrls are intentionally NOT sent.
 function buildFormData(form, images, isNew) {
     const fd = new FormData();
+
     fd.append('Id', isNew ? '0' : String(form.id));
     fd.append('Title', form.title || '');
-    fd.append('Details', sanitizeHtmlForApi(form.details) || '');
+    fd.append('Details', form.details || '');
     fd.append('Date', form.date ? `${form.date}T00:00:00.000Z` : '');
     fd.append('ShowFlag', String(form.showFlag));
 
-    // Separate new file uploads from existing server URLs
     const newFiles = images.filter(img => img.file);
-    const serverImgs = images.filter(img => !img.file && img.serverUrl);
 
-    // All new file uploads go as Images[]
-    newFiles.forEach(img => fd.append('Images', img.file));
-
-    // Main image URL (server image marked main, or the first server image)
-    const mainServer = serverImgs.find(img => img.isMain) || serverImgs[0];
-    fd.append('ImageUrl', mainServer?.serverUrl || 'pending');
-
-    // Extra server image URLs
-    const extraServerImgs = serverImgs.filter(img => img !== mainServer);
-    extraServerImgs.forEach(img => fd.append('ImageUrls', img.serverUrl));
+    newFiles.forEach(img => {
+        fd.append('Images', img.file);
+    });
 
     return fd;
 }
@@ -928,8 +906,9 @@ export default function NewsTab() {
         if (!form.title.trim()) { toast('عنوان الخبر مطلوب', 'error'); return; }
         if (!form.date) { toast('التاريخ مطلوب', 'error'); return; }
         if (images.length === 0) { toast('صورة الخبر مطلوبة', 'error'); return; }
-        if (!form.details || !form.details.trim() || form.details === '<div><br></div>') {
-            toast('تفاصيل الخبر مطلوبة', 'error'); return;
+        if (!form.details || !form.details.trim()) {
+            toast('تفاصيل الخبر مطلوبة', 'error');
+            return;
         }
         setSaving(true);
         try {
