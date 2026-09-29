@@ -10,7 +10,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { T } from "../../components/admin/constants";
 
-const BASE_URL = 'https://icemt.arabcont.com';
 // No trailing slash (all requests use `${BASE_URL}/api/...`)
 const BASE_URL = 'https://icemt.arabcont.com';
 
