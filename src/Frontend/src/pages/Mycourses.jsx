@@ -88,8 +88,6 @@ const MyCourses = () => {
             const data = await res.json();
             const mapped = data.map(e => ({
                 id: e.childId,
-                // Store userId so we can use /certificates/{userId}/{planworkId}
-                userId: e.userId ?? e.UserId ?? null,
                 slug: e.slug || '',
                 title: e.serviceTitle || e.title || '',
                 place: e.coursePlace || e.place || '',
@@ -109,57 +107,35 @@ const MyCourses = () => {
         }
     }, [isSignedIn, getToken]);
 
-    // ── UPDATED: fetch cert using /certificates/{userId}/{planworkId} ────────
-    // This is the endpoint that returns a full blob URL in fileUrl (confirmed in screenshot 2).
-    // Falls back to /certificates/{planworkId} if userId is unknown.
-    const fetchCertForCourse = useCallback(async (courseId, userId) => {
-        if (!isSignedIn) return;
-        setCertsLoading(prev => ({ ...prev, [courseId]: true }));
+    // ── Fetch ALL certificates with ONE request, then match by planworkId ────
+    // The per-course routes (/certificates/{courseId} and
+    // /certificates/{userId}/{courseId}) don't work for this backend and were
+    // producing a 404/400 per course. GET /Admin/certificates is the route that
+    // actually resolves, so we call it once and filter client-side.
+    const fetchAllCerts = useCallback(async (courseList) => {
+        if (!isSignedIn || !courseList?.length) return;
+        const loadingMap = {};
+        courseList.forEach(c => { loadingMap[c.id] = true; });
+        setCertsLoading(loadingMap);
         try {
             const token = await getToken();
-
-            let raw = null;
-
-            // Primary: use the per-user endpoint if we have userId
-            if (userId) {
-                const res = await fetch(
-                    `${API_BASE}/Admin/certificates/${userId}/${courseId}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (res.ok) {
-                    const data = await res.json();
-                    raw = Array.isArray(data) ? data[0] : data;
-                }
-            }
-
-            // Fallback: planworkId-only
-            if (!raw) {
-                const res = await fetch(
-                    `${API_BASE}/Admin/certificates/${courseId}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (res.ok) {
-                    const data = await res.json();
-                    // Filter by planworkId to get this specific course's cert
-                    const list = Array.isArray(data) ? data : [data];
-                    raw = list.find(c => String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId)) ?? list[0] ?? null;
-                }
-            }
-
-            const normalised = normaliseCert(raw);
-            setCertificates(prev => ({ ...prev, [courseId]: normalised }));
+            const res = await fetch(`${API_BASE}/Admin/certificates`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = res.ok ? await res.json() : [];
+            const list = Array.isArray(data) ? data : [data];
+            const map = {};
+            courseList.forEach(c => {
+                const raw = list.find(x => String(x?.planworkId ?? x?.PlanworkId ?? '') === String(c.id));
+                map[c.id] = normaliseCert(raw);
+            });
+            setCertificates(map);
         } catch {
-            setCertificates(prev => ({ ...prev, [courseId]: null }));
+            setCertificates({});
         } finally {
-            setCertsLoading(prev => ({ ...prev, [courseId]: false }));
+            setCertsLoading({});
         }
     }, [isSignedIn, getToken]);
-
-    // ── Fetch all certs in parallel after courses load ───────────────────────
-    const fetchAllCerts = useCallback(async (courseList) => {
-        if (!courseList?.length) return;
-        await Promise.allSettled(courseList.map(c => fetchCertForCourse(c.id, c.userId)));
-    }, [fetchCertForCourse]);
 
     // Initial load
     useEffect(() => {
@@ -184,7 +160,7 @@ const MyCourses = () => {
         (c.title || '').toLowerCase().includes(search.toLowerCase())
     );
 
-    const certCount = Object.values(certificates).filter(v => v !== null).length;
+    const certCount = Object.values(certificates).filter(v => v !== null && v !== undefined).length;
 
     const stats = [
         { label: 'إجمالي الدورات', value: courses.length, icon: '📚' },
