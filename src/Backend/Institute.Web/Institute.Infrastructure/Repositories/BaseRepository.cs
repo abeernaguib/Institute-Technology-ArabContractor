@@ -26,8 +26,21 @@ namespace Institute.Infrastructure.Repositories
             => await _dbSet.AsNoTracking().ToListAsync();
 
         public async Task SaveChangesAsync()
-            => await _context.SaveChangesAsync();
+        {
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                var inner = ex.InnerException?.Message;
 
+                throw new Exception(
+                    $"DB UPDATE ERROR: {inner}",
+                    ex
+                );
+            }
+        }
         public async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
 
         public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);

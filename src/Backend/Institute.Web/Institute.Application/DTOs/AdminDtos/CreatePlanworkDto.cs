@@ -8,6 +8,7 @@ namespace Institute.Application.DTOs.AdminDtos
 {
     public class CreatePlanworkDto
     {
+        //public int? ChildId { get; set; }
         public int? ParentId { get; set; }
         public string? ServiceTitle { get; set; }
 
