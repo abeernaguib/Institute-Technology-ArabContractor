@@ -15,6 +15,7 @@
  * 8. Updates use a real PUT (no X-HTTP-Method-Override). The controller only
  *    defines [HttpPut("{id}")], so POST /AdminNews/{id} returns 405.
  * 9. isMain is kept in sync with image order (add / promote / replace).
+ * 10. Clerk token is fetched on demand (no window.__clerkToken).
  *
  * API:
  * GET    /api/admin/AdminNews/getAllNews?PageIndex=1&PageSize=100
@@ -698,12 +699,23 @@ function injectStyles() {
 }
 
 // ── API helpers ───────────────────────────────────────────────────────────────
-function getToken() {
-    return window.__clerkToken || null;
+// Get a fresh Clerk token on demand. Clerk caches and refreshes it itself,
+// so nothing is stored on window and there is no refresh interval.
+async function getToken() {
+    // Wait for Clerk to finish loading (covers requests fired on first render)
+    const start = Date.now();
+    while (!window.Clerk?.loaded && Date.now() - start < 5000) {
+        await new Promise(r => setTimeout(r, 50));
+    }
+    try {
+        return (await window.Clerk?.session?.getToken({ template: 'backend' })) || null;
+    } catch {
+        return null;
+    }
 }
 
 async function apiFetch(path, opts = {}) {
-    const token = getToken();
+    const token = await getToken();
     const headers = { ...(opts.headers || {}) };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
