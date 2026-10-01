@@ -50,22 +50,36 @@
 // }
 import { useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import api from "./api"; // adjust the path to wherever your axios file lives
+
+const API_URL = import.meta.env.VITE_API_URL || "https://icemt.arabcont.com/api";
 
 export default function AuthSync() {
-    const { isSignedIn } = useAuth();
+    const { isSignedIn, getToken } = useAuth();
     const syncedRef = useRef(false);
 
     useEffect(() => {
         if (!isSignedIn || syncedRef.current) return;
         syncedRef.current = true;
 
-        // Only call /Account/sync once per session.
-        // The api interceptor attaches the Clerk token automatically.
-        api.post("/Account/sync").catch(() => {
-            syncedRef.current = false; // allow a retry if the sync failed
-        });
-    }, [isSignedIn]);
+        (async () => {
+            try {
+                const token = await getToken({ template: "backend" });
+                if (!token) {
+                    syncedRef.current = false;
+                    return;
+                }
+
+                const res = await fetch(`${API_URL}/Account/sync`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (!res.ok) syncedRef.current = false; // retry later if the server rejected it
+            } catch {
+                syncedRef.current = false; // retry if the request failed
+            }
+        })();
+    }, [isSignedIn, getToken]);
 
     return null;
 }

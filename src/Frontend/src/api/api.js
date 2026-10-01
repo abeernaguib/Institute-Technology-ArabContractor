@@ -44,9 +44,8 @@ const api = axios.create({
     },
 });
 
-// Request Interceptor: attach a fresh Clerk token to every request.
-// Clerk caches the token and refreshes it automatically, so no manual
-// storage or interval is needed.
+// Attach a fresh Clerk token to every request.
+// Clerk caches and refreshes it automatically.
 api.interceptors.request.use(async (config) => {
     const token = await window.Clerk?.session?.getToken({ template: "backend" });
     if (token) {
