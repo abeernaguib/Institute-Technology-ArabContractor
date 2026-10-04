@@ -162,9 +162,45 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
 
+      # NEW: 1. Get the public IP of this GitHub runner
+      - name: Get GitHub Runner IP
+        shell: pwsh
+        run: |
+          $ip = (Invoke-RestMethod -Uri "https://api.ipify.org").Trim()
+          "RUNNER_IP=$ip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      # NEW: 2. Allow that IP on the App Service SCM (Kudu) site
+      - name: Whitelist Runner IP on SCM Site
+        shell: pwsh
+        run: |
+          az webapp config access-restriction add `
+            --resource-group RG-Website-App `
+            --name icmet `
+            --rule-name "Temp-GH-${{ github.run_id }}" `
+            --action Allow `
+            --ip-address "$env:RUNNER_IP/32" `
+            --priority 100 `
+            --scm-site true
+
+      # NEW: 3. Give the rule time to take effect
+      - name: Wait for rule propagation
+        shell: pwsh
+        run: Start-Sleep -Seconds 30
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: icmet
           slot-name: Production
           package: artifact/
+
+      # NEW: 4. Remove the rule (runs even if the deploy fails)
+      - name: Remove Whitelisted IP
+        if: always()
+        shell: pwsh
+        run: |
+          az webapp config access-restriction remove `
+            --resource-group RG-Website-App `
+            --name icmet `
+            --rule-name "Temp-GH-${{ github.run_id }}" `
+            --scm-site true
