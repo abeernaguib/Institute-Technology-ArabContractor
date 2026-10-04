@@ -191,7 +191,7 @@ jobs:
               -Action Allow `
               -IpAddress "$($env:RUNNER_IP)/32" `
               -TargetScm `
-              -IgnoreMissingEndpoint
+              -IgnoreMissingVnetServiceEndpoint
 
             # Rule on the main web app site
             Add-AzWebAppAccessRestrictionRule `
