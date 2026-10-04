@@ -127,7 +127,8 @@ jobs:
           retention-days: 1
 
   deploy:
-    runs-on: windows-latest
+    # azure/cli@v2 is a Docker-based action and only runs on Linux runners
+    runs-on: ubuntu-latest
     needs: build
 
     permissions:
@@ -167,46 +168,43 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
 
-      # 1. Get the public IP of this GitHub runner
+      # 1. Get GitHub Runner Public IP
       - name: Get GitHub Runner IP
         id: get_ip
-        shell: pwsh
         run: |
-          $ip = (Invoke-RestMethod -Uri "https://api.ipify.org").Trim()
-          "RUNNER_IP=$ip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          Write-Host "Runner IP: $ip"
+          IP=$(curl -s https://api.ipify.org)
+          echo "Runner IP: $IP"
+          echo "RUNNER_IP=$IP" >> $GITHUB_ENV
 
-      # 2. Whitelist the runner IP on the SCM (Kudu) site and the main site
+      # 2. Whitelist Runner IP on SCM & Main Web App
       - name: Whitelist Runner IP on SCM & Main Site
-        uses: azure/powershell@v2
+        uses: azure/cli@v2
         with:
-          azPSVersion: "latest"
           inlineScript: |
-            # Rule on the SCM (Kudu) site - required for deployment
-            Add-AzWebAppAccessRestrictionRule `
-              -ResourceGroupName "$env:RESOURCE_GROUP" `
-              -WebAppName "$env:APP_NAME" `
-              -Name "$env:RULE_NAME" `
-              -Priority 100 `
-              -Action Allow `
-              -IpAddress "$($env:RUNNER_IP)/32" `
-              -TargetScm `
-              -IgnoreMissingVnetServiceEndpoint
+            # Add rule to SCM (Kudu) site
+            az webapp config access-restriction add \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --rule-name "$RULE_NAME" \
+              --action Allow \
+              --ip-address "${RUNNER_IP}/32" \
+              --priority 100 \
+              --scm-site true \
+              --ignore-missing-endpoint true
 
-            # Rule on the main web app site
-            Add-AzWebAppAccessRestrictionRule `
-              -ResourceGroupName "$env:RESOURCE_GROUP" `
-              -WebAppName "$env:APP_NAME" `
-              -Name "$env:RULE_NAME" `
-              -Priority 100 `
-              -Action Allow `
-              -IpAddress "$($env:RUNNER_IP)/32" `
-              -IgnoreMissingEndpoint
+            # Add rule to Main Web App site
+            az webapp config access-restriction add \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --rule-name "$RULE_NAME" \
+              --action Allow \
+              --ip-address "${RUNNER_IP}/32" \
+              --priority 100 \
+              --ignore-missing-endpoint true
 
       # 3. Give the rules time to take effect
       - name: Wait for rule propagation
-        shell: pwsh
-        run: Start-Sleep -Seconds 30
+        run: sleep 30
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -215,22 +213,19 @@ jobs:
           slot-name: Production
           package: artifact/
 
-      # 4. Cleanup: remove the rules (runs even if a previous step failed)
+      # 4. Cleanup: Remove Whitelisted IP (runs even if previous steps fail)
       - name: Remove Whitelisted IP
         if: always()
-        uses: azure/powershell@v2
+        uses: azure/cli@v2
         with:
-          azPSVersion: "latest"
           inlineScript: |
-            Remove-AzWebAppAccessRestrictionRule `
-              -ResourceGroupName "$env:RESOURCE_GROUP" `
-              -WebAppName "$env:APP_NAME" `
-              -Name "$env:RULE_NAME" `
-              -TargetScm `
-              -ErrorAction SilentlyContinue
+            az webapp config access-restriction remove \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --rule-name "$RULE_NAME" \
+              --scm-site true || true
 
-            Remove-AzWebAppAccessRestrictionRule `
-              -ResourceGroupName "$env:RESOURCE_GROUP" `
-              -WebAppName "$env:APP_NAME" `
-              -Name "$env:RULE_NAME" `
-              -ErrorAction SilentlyContinue
+            az webapp config access-restriction remove \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --rule-name "$RULE_NAME" || true
