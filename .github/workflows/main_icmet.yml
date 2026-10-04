@@ -134,6 +134,11 @@ jobs:
       id-token: write
       contents: read
 
+    env:
+      RESOURCE_GROUP: RG-Website-App
+      APP_NAME: icmet
+      RULE_NAME: GitHubRunner-${{ github.run_id }}
+
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -162,27 +167,43 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
 
-      # NEW: 1. Get the public IP of this GitHub runner
+      # 1. Get the public IP of this GitHub runner
       - name: Get GitHub Runner IP
+        id: get_ip
         shell: pwsh
         run: |
           $ip = (Invoke-RestMethod -Uri "https://api.ipify.org").Trim()
           "RUNNER_IP=$ip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Runner IP: $ip"
 
-      # NEW: 2. Allow that IP on the App Service SCM (Kudu) site
-      - name: Whitelist Runner IP on SCM Site
-        shell: pwsh
-        run: |
-          az webapp config access-restriction add `
-            --resource-group RG-Website-App `
-            --name icmet `
-            --rule-name "Temp-GH-${{ github.run_id }}" `
-            --action Allow `
-            --ip-address "$env:RUNNER_IP/32" `
-            --priority 100 `
-            --scm-site true
+      # 2. Whitelist the runner IP on the SCM (Kudu) site and the main site
+      - name: Whitelist Runner IP on SCM & Main Site
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: "latest"
+          inlineScript: |
+            # Rule on the SCM (Kudu) site - required for deployment
+            Add-AzWebAppAccessRestrictionRule `
+              -ResourceGroupName "$env:RESOURCE_GROUP" `
+              -WebAppName "$env:APP_NAME" `
+              -Name "$env:RULE_NAME" `
+              -Priority 100 `
+              -Action Allow `
+              -IpAddress "$($env:RUNNER_IP)/32" `
+              -TargetScm `
+              -IgnoreMissingEndpoint
 
-      # NEW: 3. Give the rule time to take effect
+            # Rule on the main web app site
+            Add-AzWebAppAccessRestrictionRule `
+              -ResourceGroupName "$env:RESOURCE_GROUP" `
+              -WebAppName "$env:APP_NAME" `
+              -Name "$env:RULE_NAME" `
+              -Priority 100 `
+              -Action Allow `
+              -IpAddress "$($env:RUNNER_IP)/32" `
+              -IgnoreMissingEndpoint
+
+      # 3. Give the rules time to take effect
       - name: Wait for rule propagation
         shell: pwsh
         run: Start-Sleep -Seconds 30
@@ -194,13 +215,22 @@ jobs:
           slot-name: Production
           package: artifact/
 
-      # NEW: 4. Remove the rule (runs even if the deploy fails)
+      # 4. Cleanup: remove the rules (runs even if a previous step failed)
       - name: Remove Whitelisted IP
         if: always()
-        shell: pwsh
-        run: |
-          az webapp config access-restriction remove `
-            --resource-group RG-Website-App `
-            --name icmet `
-            --rule-name "Temp-GH-${{ github.run_id }}" `
-            --scm-site true
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: "latest"
+          inlineScript: |
+            Remove-AzWebAppAccessRestrictionRule `
+              -ResourceGroupName "$env:RESOURCE_GROUP" `
+              -WebAppName "$env:APP_NAME" `
+              -Name "$env:RULE_NAME" `
+              -TargetScm `
+              -ErrorAction SilentlyContinue
+
+            Remove-AzWebAppAccessRestrictionRule `
+              -ResourceGroupName "$env:RESOURCE_GROUP" `
+              -WebAppName "$env:APP_NAME" `
+              -Name "$env:RULE_NAME" `
+              -ErrorAction SilentlyContinue
