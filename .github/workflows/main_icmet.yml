@@ -131,6 +131,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
+    # Prevent two deploys from competing for the same rule priority
+    concurrency:
+      group: deploy-icmet
+      cancel-in-progress: false
+
     permissions:
       id-token: write
       contents: read
@@ -168,43 +173,54 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
 
-      # 1. Get GitHub Runner Public IP
+      # 1. Get GitHub Runner public IP
       - name: Get GitHub Runner IP
         id: get_ip
         run: |
           IP=$(curl -s https://api.ipify.org)
+          if [ -z "$IP" ]; then
+            echo "Failed to determine runner IP"
+            exit 1
+          fi
           echo "Runner IP: $IP"
           echo "RUNNER_IP=$IP" >> $GITHUB_ENV
 
-      # 2. Whitelist Runner IP on SCM & Main Web App
-      - name: Whitelist Runner IP on SCM & Main Site
+      # 2. Whitelist runner IP on the SCM (Kudu) site ONLY.
+      #    The main site (behind the WAF) is intentionally NOT opened.
+      #    Priority must be LOWER than the "Deny All" rule (priority 5),
+      #    otherwise the Deny rule matches first. Existing SCM rules:
+      #    0 = Allow Adly, 5 = Deny All  ->  free slots are 1-4.
+      #    NOTE: the deploy service principal needs
+      #    Microsoft.Network/virtualNetworks/subnets/joinViaServiceEndpoint/action
+      #    on the VNet subnet referenced by the main site access restrictions.
+      - name: Whitelist Runner IP on SCM site
         uses: azure/cli@v2
         with:
           inlineScript: |
-            # Add rule to SCM (Kudu) site
             az webapp config access-restriction add \
               --resource-group "$RESOURCE_GROUP" \
               --name "$APP_NAME" \
               --rule-name "$RULE_NAME" \
               --action Allow \
               --ip-address "${RUNNER_IP}/32" \
-              --priority 100 \
-              --scm-site true \
-              --ignore-missing-endpoint true
+              --priority 2 \
+              --scm-site true
 
-            # Add rule to Main Web App site
-            az webapp config access-restriction add \
-              --resource-group "$RESOURCE_GROUP" \
-              --name "$APP_NAME" \
-              --rule-name "$RULE_NAME" \
-              --action Allow \
-              --ip-address "${RUNNER_IP}/32" \
-              --priority 100 \
-              --ignore-missing-endpoint true
-
-      # 3. Give the rules time to take effect
+      # 3. Wait until Kudu is reachable (instead of a fixed sleep)
       - name: Wait for rule propagation
-        run: sleep 30
+        run: |
+          URL="https://${APP_NAME}.scm.azurewebsites.net/"
+          for i in $(seq 1 20); do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+            echo "Attempt $i: HTTP $CODE"
+            if [ "$CODE" != "403" ] && [ "$CODE" != "000" ]; then
+              echo "SCM site is reachable."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "SCM site still not reachable after waiting."
+          exit 1
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -213,19 +229,25 @@ jobs:
           slot-name: Production
           package: artifact/
 
-      # 4. Cleanup: Remove Whitelisted IP (runs even if previous steps fail)
+      # 4. Cleanup: always runs, removes the rule if it exists, fails loudly on error
       - name: Remove Whitelisted IP
         if: always()
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az webapp config access-restriction remove \
+            EXISTS=$(az webapp config access-restriction show \
               --resource-group "$RESOURCE_GROUP" \
               --name "$APP_NAME" \
-              --rule-name "$RULE_NAME" \
-              --scm-site true || true
+              --query "scmIpSecurityRestrictions[?name=='$RULE_NAME'] | length(@)" \
+              -o tsv)
 
-            az webapp config access-restriction remove \
-              --resource-group "$RESOURCE_GROUP" \
-              --name "$APP_NAME" \
-              --rule-name "$RULE_NAME" || true
+            if [ "$EXISTS" != "0" ]; then
+              echo "Removing SCM rule $RULE_NAME"
+              az webapp config access-restriction remove \
+                --resource-group "$RESOURCE_GROUP" \
+                --name "$APP_NAME" \
+                --rule-name "$RULE_NAME" \
+                --scm-site true
+            else
+              echo "Rule $RULE_NAME not present - nothing to remove"
+            fi
