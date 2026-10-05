@@ -127,12 +127,23 @@ jobs:
           retention-days: 1
 
   deploy:
-    runs-on: windows-latest
+    # azure/cli@v2 is a Docker-based action and only runs on Linux runners
+    runs-on: ubuntu-latest
     needs: build
+
+    # Prevent two deploys from competing for the same rule priority
+    concurrency:
+      group: deploy-icmet
+      cancel-in-progress: false
 
     permissions:
       id-token: write
       contents: read
+
+    env:
+      RESOURCE_GROUP: RG-Website-App
+      APP_NAME: icmet
+      RULE_NAME: GitHubRunner-${{ github.run_id }}
 
     steps:
       - name: Download artifact
@@ -162,30 +173,54 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
 
-      # NEW: 1. Get the public IP of this GitHub runner
+      # 1. Get GitHub Runner public IP
       - name: Get GitHub Runner IP
-        shell: pwsh
+        id: get_ip
         run: |
-          $ip = (Invoke-RestMethod -Uri "https://api.ipify.org").Trim()
-          "RUNNER_IP=$ip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          IP=$(curl -s https://api.ipify.org)
+          if [ -z "$IP" ]; then
+            echo "Failed to determine runner IP"
+            exit 1
+          fi
+          echo "Runner IP: $IP"
+          echo "RUNNER_IP=$IP" >> $GITHUB_ENV
 
-      # NEW: 2. Allow that IP on the App Service SCM (Kudu) site
-      - name: Whitelist Runner IP on SCM Site
-        shell: pwsh
-        run: |
-          az webapp config access-restriction add `
-            --resource-group RG-Website-App `
-            --name icmet `
-            --rule-name "Temp-GH-${{ github.run_id }}" `
-            --action Allow `
-            --ip-address "$env:RUNNER_IP/32" `
-            --priority 100 `
-            --scm-site true
+      # 2. Whitelist runner IP on the SCM (Kudu) site ONLY.
+      #    The main site (behind the WAF) is intentionally NOT opened.
+      #    Existing SCM rules: 0 = Allow Adly, then the default Deny all.
+      #    Priority 2 is evaluated before the default Deny all.
+      #    NOTE: the deploy service principal needs
+      #    Microsoft.Network/virtualNetworks/subnets/joinViaServiceEndpoint/action
+      #    on the VNet subnet referenced by the main site access restrictions
+      #    (granted via Network Contributor on Website_WAFVN/subnets/default).
+      - name: Whitelist Runner IP on SCM site
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config access-restriction add \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --rule-name "$RULE_NAME" \
+              --action Allow \
+              --ip-address "${RUNNER_IP}/32" \
+              --priority 2 \
+              --scm-site true
 
-      # NEW: 3. Give the rule time to take effect
+      # 3. Wait until Kudu is reachable (instead of a fixed sleep)
       - name: Wait for rule propagation
-        shell: pwsh
-        run: Start-Sleep -Seconds 30
+        run: |
+          URL="https://icmet-a3bvdmgua9akf7c5.scm.westeurope-01.azurewebsites.net/"
+          for i in $(seq 1 20); do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+            echo "Attempt $i: HTTP $CODE"
+            if [ -n "$CODE" ] && [ "$CODE" != "000" ] && [ "$CODE" != "403" ]; then
+              echo "SCM site is reachable."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "SCM site still not reachable after waiting."
+          exit 1
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -194,13 +229,25 @@ jobs:
           slot-name: Production
           package: artifact/
 
-      # NEW: 4. Remove the rule (runs even if the deploy fails)
+      # 4. Cleanup: always runs, removes the rule if it exists, fails loudly on error
       - name: Remove Whitelisted IP
         if: always()
-        shell: pwsh
-        run: |
-          az webapp config access-restriction remove `
-            --resource-group RG-Website-App `
-            --name icmet `
-            --rule-name "Temp-GH-${{ github.run_id }}" `
-            --scm-site true
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            EXISTS=$(az webapp config access-restriction show \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --query "scmIpSecurityRestrictions[?name=='$RULE_NAME'] | length(@)" \
+              -o tsv)
+
+            if [ "$EXISTS" != "0" ]; then
+              echo "Removing SCM rule $RULE_NAME"
+              az webapp config access-restriction remove \
+                --resource-group "$RESOURCE_GROUP" \
+                --name "$APP_NAME" \
+                --rule-name "$RULE_NAME" \
+                --scm-site true
+            else
+              echo "Rule $RULE_NAME not present - nothing to remove"
+            fi
