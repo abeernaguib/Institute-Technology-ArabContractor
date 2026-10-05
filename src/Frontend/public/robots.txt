@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://icemt.arabcont.com/api/sitemap.xml
+Sitemap: https://icemt.arabcont.com/sitemap.xml
