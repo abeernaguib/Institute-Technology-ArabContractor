@@ -187,12 +187,12 @@ jobs:
 
       # 2. Whitelist runner IP on the SCM (Kudu) site ONLY.
       #    The main site (behind the WAF) is intentionally NOT opened.
-      #    Priority must be LOWER than the "Deny All" rule (priority 5),
-      #    otherwise the Deny rule matches first. Existing SCM rules:
-      #    0 = Allow Adly, 5 = Deny All  ->  free slots are 1-4.
+      #    Existing SCM rules: 0 = Allow Adly, then the default Deny all.
+      #    Priority 2 is evaluated before the default Deny all.
       #    NOTE: the deploy service principal needs
       #    Microsoft.Network/virtualNetworks/subnets/joinViaServiceEndpoint/action
-      #    on the VNet subnet referenced by the main site access restrictions.
+      #    on the VNet subnet referenced by the main site access restrictions
+      #    (granted via Network Contributor on Website_WAFVN/subnets/default).
       - name: Whitelist Runner IP on SCM site
         uses: azure/cli@v2
         with:
@@ -209,11 +209,11 @@ jobs:
       # 3. Wait until Kudu is reachable (instead of a fixed sleep)
       - name: Wait for rule propagation
         run: |
-          URL="https://${APP_NAME}.scm.azurewebsites.net/"
+          URL="https://icmet-a3bvdmgua9akf7c5.scm.westeurope-01.azurewebsites.net/"
           for i in $(seq 1 20); do
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
             echo "Attempt $i: HTTP $CODE"
-            if [ "$CODE" != "403" ] && [ "$CODE" != "000" ]; then
+            if [ -n "$CODE" ] && [ "$CODE" != "000" ] && [ "$CODE" != "403" ]; then
               echo "SCM site is reachable."
               exit 0
             fi
