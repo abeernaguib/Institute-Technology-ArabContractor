@@ -19,33 +19,33 @@
 
     <meta name="description"
           content="الموقع الرسمي للمعهد التكنولوجي لهندسة التشييد والإدارة" />
-
+    <!--3mlna add le google site verification-->
     <meta name="google-site-verification" content="B8P8AXJYtdgMM2uZe-tjb1DjSFo19tja2Kv1GRrW7fU" />
 </head>
-<body style="background-color: #ffffff;">
-    <div id="root"></div>
-    <script>
-                function completeCallback(resultIndicator) {
-                    if (window.completeCallbackReact) {
-                        window.completeCallbackReact(resultIndicator);
+    <body style="background-color: #ffffff;">
+        <div id="root"></div>
+        <script>
+                    function completeCallback(resultIndicator) {
+                        if (window.completeCallbackReact) {
+                            window.completeCallbackReact(resultIndicator);
+                        }
                     }
-                }
-                function errorCallback(error) {
-                    if (window.errorCallbackReact) {
-                        window.errorCallbackReact(error);
+                    function errorCallback(error) {
+                        if (window.errorCallbackReact) {
+                            window.errorCallbackReact(error);
+                        }
                     }
-                }
-                function cancelCallback() {
-                    if (window.cancelCallbackReact) {
-                        window.cancelCallbackReact();
+                    function cancelCallback() {
+                        if (window.cancelCallbackReact) {
+                            window.cancelCallbackReact();
+                        }
                     }
-                }
-    </script>
-    <script src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
-            data-error="errorCallback"
-            data-cancel="cancelCallback"
-            data-complete="completeCallback">
-    </script>
-    <script type="module" src="/src/main.jsx"></script>
-</body>
-</html>
+        </script>
+        <script src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
+                data-error="errorCallback"
+                data-cancel="cancelCallback"
+                data-complete="completeCallback">
+        </script>
+        <script type="module" src="/src/main.jsx"></script>
+    </body>
+    </html>
