@@ -9,7 +9,7 @@
 
     <!-- Global CSS Layout Reset لمنع تضخم اللوجو أثناء الـ Reload -->
     <style>
-        img {
+        img, svg {
             max-width: 100%;
             height: auto;
         }
@@ -70,25 +70,25 @@
 <body style="background-color: #ffffff;">
     <div id="root"></div>
     <script>
-                // @ts-nocheck
-                function completeCallback(resultIndicator) {
-                    const win = window;
-                    if (win.completeCallbackReact) {
-                        win.completeCallbackReact(resultIndicator);
-                    }
-                }
-                function errorCallback(error) {
-                    const win = window;
-                    if (win.errorCallbackReact) {
-                        win.errorCallbackReact(error);
-                    }
-                }
-                function cancelCallback() {
-                    const win = window;
-                    if (win.cancelCallbackReact) {
-                        win.cancelCallbackReact();
-                    }
-                }
+                        // @ts-nocheck
+                        function completeCallback(resultIndicator) {
+                            const win = window;
+                            if (win.completeCallbackReact) {
+                                win.completeCallbackReact(resultIndicator);
+                            }
+                        }
+                        function errorCallback(error) {
+                            const win = window;
+                            if (win.errorCallbackReact) {
+                                win.errorCallbackReact(error);
+                            }
+                        }
+                        function cancelCallback() {
+                            const win = window;
+                            if (win.cancelCallbackReact) {
+                                win.cancelCallbackReact();
+                            }
+                        }
     </script>
     <script src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
             data-error="errorCallback"
