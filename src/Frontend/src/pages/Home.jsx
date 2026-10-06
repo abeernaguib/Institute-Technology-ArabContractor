@@ -262,8 +262,6 @@ export default function Home() {
 
     const statsCounted = useRef(false);
 
-    useEffect(() => { document.title = 'المعهد التكنولوجي — ICEMT'; }, []);
-
     useEffect(() => {
         fetch('https://icemt.arabcont.com/api/News/getAllNews')
             .then(r => r.ok ? r.json() : Promise.reject())
@@ -475,6 +473,11 @@ export default function Home() {
 
     return (
         <div dir="rtl" style={{ fontFamily: F, overflowX: 'hidden', background: C.w, paddingTop: -20, marginTop: -23 }}>
+
+            {/* NEW: the single H1 of the page (visually hidden) */}
+            <h1 style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+                المعهد التكنولوجي لهندسة التشييد والإدارة – دورات تدريبية معتمدة في إدارة المشروعات والتشييد
+            </h1>
 
             {/* ── SCROLL PROGRESS BAR ──────────────────────────────────────────── */}
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 3, zIndex: 9999, background: C.g3 }}>
@@ -745,7 +748,7 @@ export default function Home() {
                                         <div style={{ width: 24, height: 2, background: C.o }} />{sl.tag}<div style={{ width: 24, height: 2, background: C.o }} />
                                     </div>
                                     <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.2vw,.9rem)', color: 'rgba(255,255,255,.55)', marginBottom: 10, fontWeight: 600 }}>{sl.subtitle}</p>
-                                    <h1 className="hero-h1" style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1.5rem,4.5vw,3.8rem)', color: C.w, lineHeight: 1.3, letterSpacing: '-0.02em', marginBottom: 28 }}>{sl.title}</h1>
+                                    <h2 className="hero-h1" style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1.5rem,4.5vw,3.8rem)', color: C.w, lineHeight: 1.3, letterSpacing: '-0.02em', marginBottom: 28 }}>{sl.title}</h2>
                                     <div style={{ width: 56, height: 3, background: C.o, margin: '0 auto 28px', borderRadius: 2 }} />
                                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
                                         <SolidBtn to={sl.link} orange>اقرأ المزيد <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn>
@@ -926,7 +929,7 @@ export default function Home() {
                             <div key={i} className="vis-item" ref={el => visionCards.current[i] = el}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                                     <CheckCircleOutlineIcon sx={{ color: C.o, fontSize: 18 }} />
-                                    <h4 style={{ fontFamily: F, fontSize: 'clamp(.9rem,1.3vw,1.05rem)', fontWeight: 800, color: C.k, lineHeight: 1.5 }}>{v.title}</h4>
+                                    <h3 style={{ fontFamily: F, fontSize: 'clamp(.9rem,1.3vw,1.05rem)', fontWeight: 800, color: C.k, lineHeight: 1.5 }}>{v.title}</h3>
                                 </div>
                                 <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.1vw,.88rem)', color: C.g5, lineHeight: 2 }}>{v.text}</p>
                             </div>
@@ -1097,7 +1100,7 @@ export default function Home() {
                                     </div>
                                     <span style={{ fontFamily: F, fontSize: '.62rem', fontWeight: 700, letterSpacing: 1.2, padding: '3px 10px', borderRadius: 20, background: 'rgba(245,124,0,.1)', border: '1px solid rgba(245,124,0,.2)', color: C.o }}>{p.type}</span>
                                 </div>
-                                <h4 style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.94rem)', fontWeight: 800, color: C.k, lineHeight: 1.5, margin: 0 }}>{p.name}</h4>
+                                <h3 style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.94rem)', fontWeight: 800, color: C.k, lineHeight: 1.5, margin: 0 }}>{p.name}</h3>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                     <LocationOnIcon sx={{ fontSize: 13, color: C.g5 }} />
                                     <span style={{ fontFamily: F, fontSize: '.7rem', color: C.g5, fontWeight: 600 }}>{p.country}</span>

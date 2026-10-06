@@ -72,9 +72,7 @@ const OnsiteTraining = () => {
         }
     };
 
-    useEffect(() => {
-        document.title = '      التدريب في الموقع - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+
 
     return (
         <Box
@@ -86,7 +84,7 @@ const OnsiteTraining = () => {
             dir="rtl"
             lang="ar"
         >
-           
+
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
                 <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
                     <a
@@ -98,7 +96,7 @@ const OnsiteTraining = () => {
                         الصفحة الرئيسية
                     </a>
                     <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                    <span style={{ color: '#374151', marginRight: '8px' }}>التدريب في الموقعة</span>
+                    <span style={{ color: '#374151', marginRight: '8px' }}>التدريب في الموقع</span>
                 </div>
             </div>            <Container
                 maxWidth="lg"
@@ -111,6 +109,7 @@ const OnsiteTraining = () => {
                 <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 4 } }}>
                     <Typography
                         variant="h3"
+                        component="h1"
                         sx={{
                             fontFamily: '"Noto Kufi Arabic", serif',
                             fontWeight: 'bold',
@@ -171,6 +170,7 @@ const OnsiteTraining = () => {
                 <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 4 } }}>
                     <Typography
                         variant="h5"
+                        component="h2"
                         sx={{
                             fontFamily: '"Noto Kufi Arabic", serif',
                             fontWeight: 'bold',
@@ -277,6 +277,7 @@ const OnsiteTraining = () => {
                                     >
                                         <Typography
                                             variant="h6"
+                                            component="p"
                                             sx={{
                                                 fontFamily: '"Noto Kufi Arabic", serif',
                                                 textAlign: 'center',
@@ -506,6 +507,7 @@ const OnsiteTraining = () => {
                         >
                             <Typography
                                 variant="h6"
+                                component="p"
                                 sx={{
                                     fontFamily: '"Noto Kufi Arabic", serif',
                                     color: '#0865a8',

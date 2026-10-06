@@ -27,7 +27,6 @@ const CEAProgram = () => {
         { id: 2, thumbnail: '/images/CEA-Video-bg2.jpg', title: "Delivering the Emirates airline, Britain's First Urban Cable Car, London.", videoUrl: 'https://www.youtube.com/embed/5Aq8dhNO2DE' },
     ];
 
-    useEffect(() => { document.title = 'ICEMT Webinar - CEA Program'; }, []);
 
     // Force document dir to match language — this overrides any global RTL setting
     useEffect(() => {
@@ -88,7 +87,7 @@ const CEAProgram = () => {
                 <Box sx={{ mb: { xs: 4, md: 6 } }}>
 
                     {/* Title — always centered */}
-                    <Typography variant="h3" sx={{
+                    <Typography variant="h3" component="h1" sx={{
                         fontFamily: '"Noto Kufi Arabic", serif', fontWeight: 'bold', mb: 2,
                         color: '#000', fontSize: { xs: '1.5rem', md: '2.5rem' }, textAlign: 'center',
                     }}>
@@ -96,7 +95,7 @@ const CEAProgram = () => {
                     </Typography>
 
                     {/* Subtitle — centered */}
-                    <Typography variant="h6" sx={{
+                    <Typography variant="h6" component="p" sx={{
                         color: '#f57c00', fontFamily: '"Noto Kufi Arabic", serif', mb: 4,
                         fontSize: { xs: '1rem', md: '1.25rem' }, textAlign: 'center',
                     }}>
@@ -147,7 +146,7 @@ const CEAProgram = () => {
 
                 {/* ── Stages Accordion ── */}
                 <Box sx={{ mb: { xs: 6, md: 8 } }}>
-                    <Typography variant="h4" sx={{
+                    <Typography variant="h4" component="h2" sx={{
                         fontFamily: '"Noto Kufi Arabic", serif', fontWeight: 'bold', mb: 4,
                         textAlign: 'center', color: '#0865a8', fontSize: { xs: '1.5rem', md: '2rem' },
                     }}>
@@ -171,7 +170,7 @@ const CEAProgram = () => {
                                     },
                                 }}
                             >
-                                <Typography variant="h6" sx={{
+                                <Typography variant="h6" component="h3" sx={{
                                     fontFamily: '"Noto Kufi Arabic", serif', fontWeight: 'bold',
                                     color: '#0865a8', fontSize: { xs: '1.1rem', md: '1.25rem' },
                                 }}>
@@ -192,7 +191,7 @@ const CEAProgram = () => {
 
                 {/* ── Gallery Slider ── */}
                 <Box sx={{ mb: { xs: 6, md: 8 } }}>
-                    <Typography variant="h4" sx={{
+                    <Typography variant="h4" component="h2" sx={{
                         fontFamily: '"Noto Kufi Arabic", serif', fontWeight: 'bold', mb: 4,
                         textAlign: 'center', color: '#0865a8', fontSize: { xs: '1.5rem', md: '2rem' },
                     }}>
@@ -243,7 +242,7 @@ const CEAProgram = () => {
 
                 {/* ── Videos ── */}
                 <Box sx={{ mb: { xs: 6, md: 8 } }}>
-                    <Typography variant="h4" sx={{
+                    <Typography variant="h4" component="h2" sx={{
                         fontFamily: '"Noto Kufi Arabic", serif', fontWeight: 'bold', mb: 4,
                         textAlign: 'center', color: '#0865a8', fontSize: { xs: '1.5rem', md: '2rem' },
                     }}>

@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ScrollToTop from '../components/ScrollToTop';
+import RouteSeo from '../seo/RouteSeo'; // NEW
 
 // ─── Public Pages ────────────────────────────────────────────────────────────
 const Home = lazy(() => import('../pages/Home'));
@@ -65,6 +66,7 @@ const AppRoutes = () => {
     return (
         <>
             <ScrollToTop />
+            <RouteSeo /> {/* NEW: sets title/description/canonical for the current page */}
             <Suspense fallback={<PageLoader />}>
                 <Routes>
 

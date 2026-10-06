@@ -10,11 +10,7 @@ function Vision_goals() {
     const { t, i18n } = useTranslation();
     const isRTL = i18n.language === 'ar';
 
-    useEffect(() => {
-        document.title = isRTL
-            ? 'الرؤية والأهداف - المعهد التكنولوجي لهندسة التشييد والإدارة'
-            : 'Vision & Goals - ICEMT';
-    }, [isRTL]);
+    
 
     return (
         <div className="page-root-vision" style={{ fontFamily: '"Noto Kufi Arabic", serif', direction: isRTL ? 'rtl' : 'ltr' }}>

@@ -20,10 +20,14 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>المعهد التكنولوجي لهندسة التشييد والإدارة</title>
+    <!-- CHANGED: title now contains the search keywords -->
+    <title>دورات إدارة المشروعات والتشييد المعتمدة | المعهد التكنولوجي</title>
 
     <meta name="description"
           content="المعهد التكنولوجي لهندسة التشييد والإدارة: دورات تدريبية معتمدة في إدارة المشروعات والتشييد، تدريب أونلاين وفي الموقع، وشهادات معتمدة." />
+
+    <!-- NEW: canonical (Seo.jsx updates it for each page) -->
+    <link rel="canonical" href="https://icemt.arabcont.com/" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="المعهد التكنولوجي لهندسة التشييد والإدارة" />
@@ -44,25 +48,38 @@
 
     <!--3mlna add le google site verification-->
     <meta name="google-site-verification" content="B8P8AXJYtdgMM2uZe-tjb1DjSFo19tja2Kv1GRrW7fU" />
+
+    <!-- NEW: Schema.org data (tells Google what this organization is) -->
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          "name": "المعهد التكنولوجي لهندسة التشييد والإدارة",
+          "url": "https://icemt.arabcont.com/",
+          "logo": "https://icemt.arabcont.com/withbackgr.jpg",
+          "foundingDate": "1978",
+          "parentOrganization": { "@type": "Organization", "name": "المقاولون العرب" }
+        }
+    </script>
 </head>
 <body style="background-color: #ffffff;">
     <div id="root"></div>
     <script>
-                                function completeCallback(resultIndicator) {
-                                    if (window.completeCallbackReact) {
-                                        window.completeCallbackReact(resultIndicator);
-                                    }
-                                }
-                                function errorCallback(error) {
-                                    if (window.errorCallbackReact) {
-                                        window.errorCallbackReact(error);
-                                    }
-                                }
-                                function cancelCallback() {
-                                    if (window.cancelCallbackReact) {
-                                        window.cancelCallbackReact();
-                                    }
-                                }
+                                        function completeCallback(resultIndicator) {
+                                            if (window.completeCallbackReact) {
+                                                window.completeCallbackReact(resultIndicator);
+                                            }
+                                        }
+                                        function errorCallback(error) {
+                                            if (window.errorCallbackReact) {
+                                                window.errorCallbackReact(error);
+                                            }
+                                        }
+                                        function cancelCallback() {
+                                            if (window.cancelCallbackReact) {
+                                                window.cancelCallbackReact();
+                                            }
+                                        }
     </script>
     <script src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
             data-error="errorCallback"

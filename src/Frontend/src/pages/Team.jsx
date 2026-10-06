@@ -232,10 +232,7 @@ const MemberCard = ({ member, large = false }) => (
 /* ─── Main Component ─────────────────────── */
 const Team = () => {
 
-    useEffect(() => {
-        injectStyles();
-        document.title = 'فريق العمل - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     const chairman = {
         name: 'أحمد العصار',

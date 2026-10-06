@@ -80,12 +80,7 @@ const Certifications = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const toggleImage = (index) => setVisibleImages(prev => ({ ...prev, [index]: !prev[index] }));
 
-    useEffect(() => {
-        document.title = isRTL
-            ? 'الشهادات وخطابات الشكر - المعهد التكنولوجي لهندسة التشييد والإدارة'
-            : 'Certifications & Commendations - ICEMT';
-    }, [isRTL]);
-
+    
     return (
         <div style={{ direction: isRTL ? 'rtl' : 'ltr', fontFamily: globalFont }}>
 

@@ -11,10 +11,7 @@ import {
 
 function Overview() {
 
-    useEffect(() => {
-        document.title = 'نبذة عامة - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
-
+    
     return (
         <div className="page-root" style={{ fontFamily: '"Noto Kufi Arabic", serif' }}>
 

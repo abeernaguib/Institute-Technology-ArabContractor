@@ -5,9 +5,7 @@ export default function ModernLibrary() {
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    useEffect(() => {
-        document.title = 'المكتبة - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     useEffect(() => {
         const hash = window.location.hash;

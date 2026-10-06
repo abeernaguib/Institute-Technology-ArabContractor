@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
+import Seo from '../components/Seo';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
 
@@ -591,11 +592,7 @@ const CoursesPage = () => {
         })();
     }, [slug]);
 
-    useEffect(() => {
-        document.title = programData?.programName
-            ? `${programData.programName} - المعهد التكنولوجي`
-            : 'الدورات التدريبية - المعهد التكنولوجي';
-    }, [programData]);
+
 
     const handleEnroll = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); navigate('/sign-in'); return; }
@@ -693,6 +690,11 @@ const CoursesPage = () => {
 
     return (
         <>
+            {/* ══ SEO — exact title / description for this course category ══ */}
+            <Seo
+                title={`دورات ${programData?.programName || 'تدريبية'} | المعهد التكنولوجي لهندسة التشييد والإدارة`}
+                description={`استعرض دورات ${programData?.programName || 'المعهد التكنولوجي'} المتاحة بالمعهد التكنولوجي لهندسة التشييد والإدارة وسجّل الآن.`}
+            />
             <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet" />
             <style>{`* { font-family: "Noto Kufi Arabic", serif !important; } ${mediaQueryStyles}`}</style>
             <div dir="rtl" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>

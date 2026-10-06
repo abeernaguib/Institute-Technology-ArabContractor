@@ -6,11 +6,7 @@ export default function ContactPage() {
     const { t, i18n } = useTranslation();
     const isRTL = i18n.language === 'ar';
 
-    useEffect(() => {
-        document.title = isRTL
-            ? 'اتصل بنا - المعهد التكنولوجي لهندسة التشييد والإدارة'
-            : 'Contact Us - ICMT';
-    }, [isRTL]);
+
 
     const cards = [
         {
@@ -78,7 +74,7 @@ export default function ContactPage() {
                 {/* Contact Cards */}
                 <section className="from-blue-55 bg-gradient-to-b to-white py-12">
                     <div className="container mx-auto max-w-6xl px-4">
-                        <h2 className="mb-12 text-center text-3xl font-bold text-gray-800">{t('contact2.sectionTitle')}</h2>
+                        <h1 className="mb-12 text-center text-3xl font-bold text-gray-800">{t('contact2.sectionTitle')}</h1>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                             {cards.map(({ key, borderColor, iconBg, iconColor, icon, content }) => (
                                 <div key={key} className={`rounded-lg border-t-4 ${borderColor} bg-white p-6 text-center shadow-lg transition-shadow duration-300 hover:shadow-xl`}>
@@ -87,7 +83,7 @@ export default function ContactPage() {
                                             <svg className={`h-8 w-8 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">{icon}</svg>
                                         </div>
                                     </div>
-                                    <h4 className="mb-3 text-xl font-semibold text-gray-800">{t(`contact2.${key}`)}</h4>
+                                    <h3 className="mb-3 text-xl font-semibold text-gray-800">{t(`contact2.${key}`)}</h3>
                                     {content}
                                 </div>
                             ))}

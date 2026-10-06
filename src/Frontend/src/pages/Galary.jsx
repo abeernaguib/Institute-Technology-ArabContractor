@@ -410,9 +410,7 @@ const PhotoGallery = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    useEffect(() => {
-        document.title = 'مكتبة الصور والفيديوهات - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+
 
     if (selectedAlbum) {
         return <AlbumDetailPage album={selectedAlbum} onBack={() => setSelectedAlbum(null)} />;
@@ -440,7 +438,9 @@ const PhotoGallery = () => {
                 </div>
             </div>
 
-            <br /><br />
+            <h1 style={{ textAlign: 'center', fontSize: '1.8rem', fontWeight: 800, color: '#0865a8', margin: '12px 0 16px' }}>
+                مكتبة الصور والفيديوهات
+            </h1>
 
             {/* Tab switcher */}
             <div className="gallery-header">

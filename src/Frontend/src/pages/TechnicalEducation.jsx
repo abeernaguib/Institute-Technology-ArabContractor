@@ -13,9 +13,7 @@ export default function TechnicalEducationAlt() {
         document.body.style.overflow = 'auto';
     };
 
-    useEffect(() => {
-        document.title = ' تطوير التعليم الفني - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     return (
         <div className="tech-page-wrapper">

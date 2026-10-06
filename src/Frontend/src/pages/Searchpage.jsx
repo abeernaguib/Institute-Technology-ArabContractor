@@ -29,12 +29,7 @@ const SearchPage = () => {
         'شهادات معتمدة',
     ];
 
-    // Page title
-    useEffect(() => {
-        document.title = queryParam
-            ? `نتائج البحث: "${queryParam}" - المعهد التكنولوجي لهندسة التشييد والإدارة`
-            : 'البحث - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, [queryParam]);
+    
 
     // Load recent searches from localStorage
     useEffect(() => {

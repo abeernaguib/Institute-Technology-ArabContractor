@@ -82,9 +82,7 @@ const GesrElSuezPage = () => {
         document.body.style.overflow = 'auto'; // Restore scrolling
     };
 
-    useEffect(() => {
-        document.title = ' مركز التدريب جسر السويس - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+   
 
     return (
         <>

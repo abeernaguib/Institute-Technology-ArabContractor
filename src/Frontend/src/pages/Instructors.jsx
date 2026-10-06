@@ -18,9 +18,7 @@ const Instructors = () => {
 
     const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23dde3ea' width='100' height='100'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='44' fill='%23899aaa'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";
 
-    useEffect(() => {
-        document.title = 'محاضرينا - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     useEffect(() => {
         const fetchLecturers = async () => {

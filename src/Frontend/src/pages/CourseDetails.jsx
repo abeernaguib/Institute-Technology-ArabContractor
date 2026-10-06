@@ -3,6 +3,7 @@
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import Seo from '../components/Seo';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
 
@@ -904,9 +905,7 @@ const CourseDetails = () => {
         })();
     }, [course?.id, safeGetToken]);
 
-    useEffect(() => {
-        document.title = course?.title ? `${course.title} - المعهد التكنولوجي` : 'المعهد التكنولوجي';
-    }, [course]);
+
 
     // ── Add to cart ───────────────────────────────────────────────────────────
     // Requires sign-in and a fresh, valid token from the server before the item
@@ -1109,6 +1108,14 @@ const CourseDetails = () => {
 
     return (
         <>
+            {/* ══ SEO — exact title / description for this course ══ */}
+            <Seo
+                title={`${course.title} | المعهد التكنولوجي لهندسة التشييد والإدارة`}
+                description={
+                    (course.description || '').replace(/\s+/g, ' ').trim().slice(0, 155) ||
+                    `تفاصيل دورة ${course.title}: المحتوى والمواعيد والتكلفة والتسجيل بالمعهد التكنولوجي.`
+                }
+            />
             <link href="https://fonts.googleapis.com/css2?family=Droid+Arabic+Kufi:wght@400;700&display=swap" rel="stylesheet" />
             <style>{`*{font-family:${font}!important}${mediaQueryStyles}`}</style>
 

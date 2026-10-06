@@ -120,9 +120,7 @@ export default function ShoppingCartPage() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        document.title = 'سلة التسوق - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     useEffect(() => {
         const loadCart = async () => {

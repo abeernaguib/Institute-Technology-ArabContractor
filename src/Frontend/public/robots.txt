@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /mohadren
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment
+Disallow: /my-courses
+Disallow: /search
+Disallow: /api/
 
 Sitemap: https://icemt.arabcont.com/sitemap.xml

@@ -28,10 +28,7 @@ export default function Protocols() {
         return 1;
     };
 
-    useEffect(() => {
-        document.title = '      البروتوكولات والاتفاقيات - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
-
+    
     return (
         <div
             dir="rtl"

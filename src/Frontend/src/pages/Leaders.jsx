@@ -214,17 +214,7 @@ const ProposalCard = ({ title, description, subitems, color = 'orange' }) => (
 export default function FutureLeadersCouncil() {
     const [prog, setProg] = useState(0);
 
-    useEffect(() => {
-        injectStyles();
-        document.title = 'مجلس قادة المستقبل - المعهد التكنولوجي لهندسة التشييد والإدارة';
-        const onScroll = () => {
-            const total = document.documentElement.scrollHeight - window.innerHeight;
-            setProg((window.scrollY / total) * 100);
-        };
-        window.addEventListener('scroll', onScroll);
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-
+   
     const proposals = [
         { title: 'مقترح لتوفير الوقود ( بنزين - سولار )', subitems: ['تحويل الخلاطات للعمل بالغاز الطبيعي', 'تركيب أجهزة GPS', 'استخدام خلايا الهيدروجين'], color: 'orange' },
         { title: 'تفعيل قسم الجودة في جميع مراحل التصنيع', description: 'من بداية اختبار العينات وحتى خروج المصنعات', color: 'blue' },

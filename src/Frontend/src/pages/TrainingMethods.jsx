@@ -51,10 +51,6 @@ const TrainingMethods = () => {
         },
     ];
 
-    useEffect(() => {
-        document.title = '       خدمات تدريبية مميزة - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
-
     return (
         <Box
             dir="ltr"
@@ -66,7 +62,7 @@ const TrainingMethods = () => {
             }}
         >
             {/* Fixed Overview Bar - positioned under navbar */}
-           
+
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
                 <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
                     <a
@@ -94,6 +90,7 @@ const TrainingMethods = () => {
                 <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
                     <Typography
                         variant="h4"
+                        component="h1"
                         sx={{
                             fontWeight: "bold",
                             mb: 2,
@@ -180,6 +177,7 @@ const TrainingMethods = () => {
                                 {/* Title */}
                                 <Typography
                                     variant="h6"
+                                    component="h2"
                                     sx={{
                                         fontWeight: "bold",
                                         mb: 2,

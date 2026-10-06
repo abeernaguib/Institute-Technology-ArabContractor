@@ -86,9 +86,7 @@ const ShobraTrainingPage = () => {
         "دوائر التحكم الآلي"
     ];
 
-    useEffect(() => {
-            document.title = '    مركز تدريب شبرا - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     return (
         <>

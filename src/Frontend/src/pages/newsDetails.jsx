@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Seo from '../components/Seo';
 
 const T = {
     orange: '#f57c00', orangeLight: '#ff9a3c', orangeDark: '#bf5200',
@@ -18,6 +19,14 @@ function resolveImg(url) {
     if (url.startsWith('http')) return url;
     return `${BASE}/${url.replace(/^\//, '')}`;
 }
+
+// The news body is HTML, so strip tags before using it as a meta description
+const stripHtml = (html) =>
+    (html || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
 // ── Build a unified images array from the API response ───────────────────────
 // Handles all possible shapes the backend might return:
@@ -277,11 +286,7 @@ const NewsDetails = () => {
             .catch(err => { setError(err.message); setLoading(false); });
     }, [id]);
 
-    useEffect(() => {
-        document.title = newsItem?.title
-            ? `${newsItem.title} - المعهد التكنولوجي لهندسة التشييد والإدارة`
-            : 'تفاصيل الخبر - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, [newsItem]);
+
 
     // Keyboard navigation in modal
     useEffect(() => {
@@ -331,6 +336,16 @@ const NewsDetails = () => {
 
     return (
         <div className="nd-root">
+
+            {/* ══ SEO — exact title / description / share image for this news item ══ */}
+            <Seo
+                title={`${newsItem.title} | أخبار المعهد التكنولوجي`}
+                description={
+                    stripHtml(newsItem.description || newsItem.details).slice(0, 155) ||
+                    'تفاصيل خبر من أخبار وأنشطة المعهد التكنولوجي لهندسة التشييد والإدارة.'
+                }
+                image={mainImage || undefined}
+            />
 
             {/* ══ BREADCRUMB ══ */}
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: `1px solid ${T.gray300}`, backgroundColor: '#f5f5f5', padding: '8px 20px' }}>

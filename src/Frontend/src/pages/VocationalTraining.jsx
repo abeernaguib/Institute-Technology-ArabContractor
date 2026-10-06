@@ -193,10 +193,7 @@ const HeadingBar = ({ light = false, align = 'center' }) => (
 /* ─── Main Component ─── */
 export default function VocationalTraining() {
 
-    useEffect(() => {
-        injectStyles();
-        document.title = 'التدريب الحرفي - المعهد التكنولوجي لهندسة التشييد والإدارة';
-    }, []);
+    
 
     const handleNavigate = (path) => { window.location.href = path; };
 
