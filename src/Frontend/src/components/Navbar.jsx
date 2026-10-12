@@ -26,6 +26,78 @@ const RECENT_SEARCHES_KEY = 'recentSearches';
 const MAX_RECENT_SEARCHES = 5;
 const API_BASE = 'https://icemt.arabcont.com/api';
 
+// ── Module-level shared helpers (cached across renders and page navigations) ──
+const generateSlug = (title = '') =>
+    title.trim().replace(/\s+/g, '-').replace(/[^\w\u0600-\u06FF\u0660-\u0669-]/g, '').toLowerCase();
+
+let treePromise = null;
+const fetchTreeOnce = () => {
+    if (!treePromise) {
+        treePromise = fetch(`${API_BASE}/Categories/tree`)
+            .then(r => { if (!r.ok) throw new Error('Failed to load categories'); return r.json(); })
+            .catch(e => { treePromise = null; throw e; });
+    }
+    return treePromise;
+};
+
+const COURSES_CACHE_KEY = 'allCoursesCache_v1';
+const COURSES_TTL = 30 * 60 * 1000; // 30 minutes
+let coursesPromise = null;
+
+const mapCourse = (c) => ({
+    id: c.id || c.courseId,
+    title: c.title || c.name || c.courseName || '',
+    slug: c.slug || generateSlug(c.title || c.name || String(c.id)),
+    description: c.description || '',
+    category: c.categoryName || c.category || '',
+    place: c.place || '',
+    date: c.date || '',
+    cost: c.cost,
+    instructor: c.instructorName || c.instructor || '',
+    image: c.imageUrl || c.image || c.thumbnail || null,
+});
+
+const getAllCoursesOnce = () => {
+    if (coursesPromise) return coursesPromise;
+
+    try {
+        const cached = JSON.parse(sessionStorage.getItem(COURSES_CACHE_KEY) || 'null');
+        if (cached && Date.now() - cached.t < COURSES_TTL) {
+            coursesPromise = Promise.resolve(cached.data);
+            return coursesPromise;
+        }
+    } catch { /* ignore */ }
+
+    coursesPromise = (async () => {
+        const tree = await fetchTreeOnce();
+        const slugs = new Set();
+        const collect = (cats) => cats.forEach(c => { if (c.slug) slugs.add(c.slug); if (c.children) collect(c.children); });
+        if (tree[0]?.children) collect(tree[0].children);
+
+        const queue = Array.from(slugs);
+        const results = [];
+        const worker = async () => {
+            while (queue.length) {
+                const slug = queue.shift();
+                try {
+                    const res = await fetch(`${API_BASE}/course/programs/${slug}/courses`);
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    const list = Array.isArray(data) ? data : (data.courses || data.data || []);
+                    results.push(...list.map(mapCourse));
+                } catch { /* skip */ }
+            }
+        };
+        await Promise.all(Array.from({ length: 4 }, worker)); // only 4 requests in parallel
+
+        const unique = Array.from(new Map(results.map(c => [c.id, c])).values());
+        try { sessionStorage.setItem(COURSES_CACHE_KEY, JSON.stringify({ t: Date.now(), data: unique })); } catch { }
+        return unique;
+    })().catch(e => { coursesPromise = null; throw e; });
+
+    return coursesPromise;
+};
+
 const Navbar = () => {
     const { t, i18n } = useTranslation();
     const isRTL = true; // Arabic-only site now
@@ -159,16 +231,11 @@ const Navbar = () => {
         });
     }, []);
 
-    const generateSlug = (title = '') =>
-        title.trim().replace(/\s+/g, '-').replace(/[^\w\u0600-\u06FF\u0660-\u0669-]/g, '').toLowerCase();
-
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${API_BASE}/Categories/tree`);
-                if (!res.ok) throw new Error('Failed to load categories');
-                const data = await res.json();
+                const data = await fetchTreeOnce();
                 const transformed = transformCategories(data);
                 setMainCourses(transformed);
                 if (transformed.length > 0) setSelectedCatId(transformed[0].id);
@@ -215,33 +282,19 @@ const Navbar = () => {
         });
     };
 
-    useEffect(() => {
-        if (!mainCourses.length || coursesLoaded) return;
-        const loadAllCourses = async () => {
-            setCoursesLoading(true);
-            try {
-                const allSlugs = new Set();
-                const collectSlugs = (categories) => { categories.forEach(cat => { if (cat.slug) allSlugs.add(cat.slug); if (cat.children) collectSlugs(cat.children); }); };
-                const treeRes = await fetch(`${API_BASE}/Categories/tree`);
-                if (treeRes.ok) { const treeData = await treeRes.json(); if (treeData[0]?.children) collectSlugs(treeData[0].children); }
-                const coursePromises = Array.from(allSlugs).map(async (slug) => {
-                    try {
-                        const res = await fetch(`${API_BASE}/course/programs/${slug}/courses`);
-                        if (!res.ok) return [];
-                        const data = await res.json();
-                        const coursesList = Array.isArray(data) ? data : (data.courses || data.data || []);
-                        return coursesList.map(c => ({ id: c.id || c.courseId, title: c.title || c.name || c.courseName || '', slug: c.slug || generateSlug(c.title || c.name || String(c.id)), description: c.description || '', category: c.categoryName || c.category || '', place: c.place || '', date: c.date || '', cost: c.cost, instructor: c.instructorName || c.instructor || '', image: c.imageUrl || c.image || c.thumbnail || null }));
-                    } catch { return []; }
-                });
-                const results = await Promise.all(coursePromises);
-                const unique = Array.from(new Map(results.flat().map(c => [c.id, c])).values());
-                setAllCourses(unique);
-                setCoursesLoaded(true);
-            } catch (err) { console.error('Error loading courses:', err); }
-            finally { setCoursesLoading(false); }
-        };
-        loadAllCourses();
-    }, [mainCourses, coursesLoaded]);
+    // Lazy: only runs when the user focuses the search box (cached + 4 parallel requests max)
+    const loadAllCourses = useCallback(async () => {
+        if (coursesLoaded || coursesLoading) return;
+        setCoursesLoading(true);
+        try {
+            setAllCourses(await getAllCoursesOnce());
+            setCoursesLoaded(true);
+        } catch (err) {
+            console.error('Error loading courses:', err);
+        } finally {
+            setCoursesLoading(false);
+        }
+    }, [coursesLoaded, coursesLoading]);
 
     useEffect(() => {
         if (suggestionDebounce.current) clearTimeout(suggestionDebounce.current);
@@ -549,7 +602,7 @@ const Navbar = () => {
                                     name="q"
                                     value={searchValue}
                                     onChange={e => { setSearchValue(e.target.value); setActiveSuggestionIndex(-1); }}
-                                    onFocus={() => setSearchFocused(true)}
+                                    onFocus={() => { setSearchFocused(true); loadAllCourses(); }}
                                     onKeyDown={handleSearchKeyDown}
                                     placeholder={t('courses.search')}
                                     autoComplete="off"
