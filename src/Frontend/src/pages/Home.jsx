@@ -46,7 +46,7 @@ const DynamicCoursesSection = React.lazy(() =>
 );
 const slides = [
     { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/training-methods', image: '/images/banner6.jpg' },
-    { title: 'ورش الميكانيكا والكهرباء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/shobra', image: '/images/banner3.jpg' },
+    { title: 'التدريب الحرفي على\nمهن التشييد والبناء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/shobra', image: '/images/Picture1.jpg' },
     { title: 'التدريب في موقع العمل', subtitle: 'تدريب ميداني احترافي', tag: 'ميداني', link: '/onsite-training', image: '/images/banner4.jpg' },
     { title: 'مدرسة المقاولون العرب الفنية  \n للتعليم والتدريب المزدوج ', subtitle: 'جيل مهني متميز', tag: 'تعليم فني', link: '/Technical_Schools', image: '/images/banner7.jpg' },
 ];
