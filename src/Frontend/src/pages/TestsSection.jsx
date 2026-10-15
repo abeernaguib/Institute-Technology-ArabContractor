@@ -1,33 +1,124 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState } from 'react';
 
 export default function ICMETTests() {
     const [selectedImg, setSelectedImg] = useState(null);
 
-    const externalClients = [
-        { name: 'هيئة المجتمعات العمرانية', count: 226 },
-        { name: 'شركة اليو مصر', count: 16 },
-        { name: 'شركة دار المعمار DMC', count: 51 },
-        { name: 'شركة منار الخليج', count: 181 },
-        { name: 'شركة العربي', count: 655 }
+    const heroParagraphs = [
+        'أنشأ المعهد التكنولوجي للهندسة والتشييد والإدارة ICEMT قسم الاختبارات منذ 2013 ليكون أحد أهم الأدوات العلمية التي تعتمد عليها الشركة في اتخاذ القرارات المتعلقة بالموارد البشرية، حيث يوفر بيانات موضوعية ودقيقة تساعد متخذي القرار على اختيار أفضل العناصر البشرية، وتوجيهها إلى الوظائف التي تتوافق مع قدراتها وإمكاناتها، بما يحقق أعلى مستويات الكفاءة والفاعلية.',
+        'ويمتلك قسم الاختبارات خبرة في تصميم وإدارة وتنفيذ الاختبارات الإلكترونية، سواء للعاملين داخل شركة المقاولون العرب AC أو للعملاء من الجهات الخارجية، مستنداً إلى أساليب علمية ومعايير مهنية تضمن العدالة والموضوعية والدقة في القياس، مع الاعتماد الكامل على أنظمة إلكترونية تقوم بتصحيح الاختبارات واستخراج النتائج بصورة آلية دون تدخل بشري، الأمر الذي يحقق السرعة والشفافية ويقضي على احتمالات التحيز.',
+        'يقدّم القسم منظومة متكاملة من الاختبارات تغطي ثلاثة محاور رئيسة، تتكامل فيما بينها لتشكّل صورة شاملة عن قدرات الفرد ومؤهلاته، وذلك للعاملين بالشركة وكذلك للعملاء من خارجها على حدٍّ سواء.'
     ];
 
-    const internalTests = [
-        'تعديل مهنة',
-        'بدل حاسب',
-        'ترقيات',
-        'دواعى السفر للفروع الخارجية',
-        'قادة المستقبل',
-        'تعيين'
+    // Vision & mission
+    const visionMission = [
+        {
+            title: 'رؤية القسم',
+            icon: '👁️',
+            text: 'أن نكون المرجعية العلمية الأولى داخل شركة المقاولون العرب AC في تقييم الكفاءات البشرية، عبر منظومة اختبارات رقمية متطورة تُسهم في بناء بيئة عمل تقوم على الجدارة والكفاءة، وتُمكّن الشركة من اتخاذ قراراتها المتعلقة بمواردها البشرية على أسس علمية راسخة.'
+        },
+        {
+            title: 'رسالة القسم',
+            icon: '🎯',
+            text: 'تقديم خدمات تقييم شاملة ودقيقة وموضوعية للعاملين بالشركة وللعملاء من خارجها، تغطي الجوانب الفنية والحاسب الآلي واللغوية والسيكومترية والمعرفية، باستخدام أدوات قياس علمية معتمدة، وتقنيات آلية تضمن الحياد الكامل واستخراج النتائج دون أي تدخل بشري، بما يعزز الثقة في مخرجات القسم ويرسّخ مكانته كشريك استراتيجي في قرارات اختيار وتطوير الموارد البشرية.'
+        }
     ];
 
+    // Assessment axes
+    const axes = [
+        {
+            title: 'التقييمات الفنية',
+            icon: '🛠️',
+            desc: 'تقييم المعارف والمهارات الفنية المتخصصة المرتبطة بطبيعة الوظيفة.',
+            goal: 'التحقق من الكفاءة العملية والتخصصية للمرشح أو الموظف طبقاً للوصف الوظيفي لكل وظيفة.'
+        },
+        {
+            title: 'الحاسب الآلي واللغات',
+            icon: '💻',
+            desc: 'تقييم مهارات استخدام الحاسب الآلي، وتحديد مستوى إجادة اللغتين الإنجليزية والفرنسية.',
+            goal: 'قياس الجاهزية للتعامل مع أدوات العمل الرقمية والتواصل بلغات متعددة.'
+        },
+        {
+            title: 'القياسات السيكومترية',
+            icon: '🧠',
+            desc: 'قياسات الشخصية والذكاء وتحديد السمات السلوكية للفرد.',
+            goal: 'الكشف عن الفروق الشخصية بين الأفراد أو بين الجماعات الإنسانية وتحديد نوعيتها، والكشف عن نقاط القوة والضعف لدى الممتحن.'
+        }
+    ];
+
+    // Objectives
+    const objectives = [
+        'تحسين وتطوير الاختبارات المقدَّمة من المعهد للعملاء الداخليين والخارجيين بصورة مستمرة، بما يواكب أحدث المعايير العالمية في القياس والتقييم، ويلبي التطورات المتلاحقة في متطلبات سوق العمل.',
+        'تطوير نماذج الاختبارات المقدَّمة للعملاء، من حيث المحتوى والشكل وآلية العرض، بما يضمن قياساً أدق للمعارف والمهارات، ويحقق تجربة اختبار سلسة وموثوقة للمتقدمين.',
+        'تطوير وتحديث قاعدة بيانات كاملة وشاملة للمرشحين للاختبارات، توثّق نتائجهم وتاريخهم التقييمي، وتتيح تحليل الاتجاهات والمقارنات، وتشكّل ذاكرة مؤسسية يُستند إليها في القرارات المستقبلية.',
+        'رفع كفاءة أدوات القياس النفسي والشخصي بما يضمن تقييماً متكاملاً لا يقتصر على الجانب المعرفي، بل يمتد إلى السمات السلوكية والقدرات الكامنة لدى الأفراد.',
+        'ترسيخ ثقافة الشفافية والحياد في جميع مراحل التقييم، بدءاً من إعداد الاختبار وانتهاءً باستخراج النتيجة النهائية آلياً دون أي تدخل بشري.',
+        'بناء بنوك أسئلة متخصصة تغطي مختلف التخصصات والمستويات الوظيفية.',
+        'تقديم تقارير تحليلية تدعم متخذي القرار في جميع مراحل إدارة الموارد البشرية.'
+    ];
+
+    // Vital role
+    const roleItems = [
+        'تقييم مدى توافق المرشح مع متطلبات الوظيفة.',
+        'قياس الكفاءة الفنية بصورة موضوعية.',
+        'تحديد نقاط القوة وفرص التطوير لكل مرشح.',
+        'دعم قرارات التعيين والترقية والنقل والتكليف.',
+        'تقليل مخاطر الاختيار غير المناسب.',
+        'رفع جودة رأس المال البشري داخل المؤسسة.',
+        'تحقيق العدالة وتكافؤ الفرص بين جميع المتقدمين.'
+    ];
+
+    // Remaining sections
     const news = [
-        'في اطار التعاون مع وزارة الاسكان والمرافق والمجتمعات العمرانية ، ولخلق كوادر للقيادات الشابة من موظفي هيئة المجتمعات العمرانية الجديدة ، تم تتعيم عدد 226 موظف لشغل وظيفة معاون نائب رئيس الهيئة او معاون رئيس جهاز مدينة ، حيث تم التقييم لمهارات ( اللغة – الحاسب الآلي – القياسات الشخصية والذكاءات ).',
-        'نظرا لاسناد مشروعات جديدة للشركة وحرصا من قيادات الشركة لاتاحة فرص عمل لشباب المهندسين ، يجري حاليا عمل التقييمات اللازمة لتعيين عدد من المهندسين حديثي التخرج للانضمام لاسرة الشركة ، فتم خلال العام 2019-2020 عمل التقييمات لعدد 663 مهندس في تخصصات ( مدني – عمارة – ميكانكيكا – كهرباء – مساحة ) وذلك في قدرات ومهارات استخدام الحاسب الآلي ، وتحديد درجة اجادة اللغة ، بالاضافة الى تقييم معلومات التخصص و القياسات الشخصية والذكاءات.',
-        'حرصا من المعهد على توفير سبل الراحة للسادة الممتحنين ، فقد تم تطوير معمل الاختبارات وتزويده باحدث اجهزة الحاسب الآلي وزيادة عددها لاستيعاب اعداد الممتحنين ، وذلك تحديث الاثاث المستخدم من مكاتب وكراسي.',
-        'ايماناً من الشركة بأهمية اتاحة الفرصة للقيادات الشابة ، يتم عمل التقييمات لقادة المستقبل على مستوى الافرع والادارات المختلفة ، حيث يتم تقييم السادة المرشحين للانضمام لمجلس قادة المستقبل في مهارات ( اللغة – الحاسب الآلي – القياسات الشخصية والذكاءات) وتجرى التقييمات بصفة دورية ، و فيما يلي عرض موجز لمشروع قادة المستقبل.'
+        {
+            title: 'التصحيح الآلي',
+            text: 'وتُجرى هذه الاختبارات جميعها إلكترونياً عبر منظومة آلية متكاملة، تتولى استخراج النتائج آلياً فور الانتهاء من الاختبار، دون أي تدخل بشري في عملية التصحيح أو التقدير، الأمر الذي يرفع من مستوى الحياد والموضوعية، ويقطع الطريق أمام أي تحيّز أو اجتهاد شخصي قد يشوب عملية التقييم.'
+        },
+        {
+            title: 'كيف تُجرى اختبارات السيكومترى؟',
+            text: 'هذه الاختبارات تأخذ شكلاً رقمياً وهو ما يسهل دمجها ضمن عملية التوظيف، وتُستخدم كطريقة عملية لفحص وفرز وتصفية عدد كبير من المرشحين في بداية عملية التوظيف. وبالتالي تخفف هذه الاختبارات عبء العمل على مدير التوظيف لأنها تساعد في تحديد العدد الأقل من المرشحين المتمتعين بالمواصفات النفسية المطلوبة لشغل الوظيفة، لتسهل عملية الاختيار. ويتم عمل القياسات الشخصية والذكاءات لتحديد بعض ملامح وقدرات الشخصية، لأخذها في الاعتبار في تحديد الوظيفة المناسبة للمرشح لشغلها. نسبة الذكاء IQ هي الدرجة الكلية المشتقة من عدة اختبارات قياسية مصممة لقياس الذكاء الإنساني.'
+        },
+        {
+            title: 'الدور الحيوي في اختيار أفضل العناصر البشرية',
+            text: 'يمثل قسم الاختبارات أحد أهم الأدوات الاستراتيجية الداعمة لإدارة الموارد البشرية، حيث يعتمد على القياس العلمي بدلاً من التقديرات الشخصية والانطباعات الفردية. كما تسهم نتائج الاختبارات في بناء قاعدة معلومات دقيقة يمكن الرجوع إليها عند شغل الوظائف المستقبلية أو تكوين فرق العمل أو إعداد القيادات.'
+        },
+        {
+            title: 'رسم المسار المهني للمرشحين من خلال القياسات',
+            text: 'لا يقف دور القسم عند لحظة الاختيار الأولى، بل يمتد ليكون بوصلة توجّه المسار المهني للفرد طوال حياته الوظيفية. فمن خلال تحليل نتائج الاختبارات الفنية والمعرفية والسيكومترية مجتمعة، يمكن رسم صورة متكاملة عن نقاط القوة الكامنة لدى كل مرشح، وتحديد المسارات التي يُرجَّح أن يبرع فيها، سواء في التخصصات الفنية الدقيقة أو في الأدوار الإشرافية والقيادية. وتُستخدم هذه البيانات في وضع خطط تطوير فردية تُراعي الفروق بين الأفراد، وتحديد الاحتياجات التدريبية اللازمة لسد الفجوات المعرفية أو المهارية، وتوجيه كل موظف نحو المسار الذي يحقق أعلى مستويات الإنتاجية والرضا الوظيفي معاً، بما يخدم مصلحة الفرد والمؤسسة في آنٍ واحد.'
+        },
+        {
+            title: 'الكشف عن الكفاءات المؤهَّلة لتقلّد المناصب القيادية',
+            text: 'تحظى القياسات السيكومترية بأهمية خاصة في هذا الإطار، إذ تتجاوز قياس المعرفة إلى سبر أغوار الشخصية؛ من قدرة على اتخاذ القرار تحت الضغط، ومهارة في التعامل مع الفرق، وذكاء انفعالي، وقدرة على التخطيط الاستراتيجي. ومن خلال دمج هذه المؤشرات مع نتائج التقييمات الفنية والمعرفية، يتمكّن القسم من تحديد الكفاءات التي تحمل بذور القيادة قبل أن تتجلى بوضوح في الممارسة العملية، فيتيح ذلك للمؤسسة بناء قاعدة بيانات استباقية بالقيادات المرشّحة للمستقبل، وإعدادها وتأهيلها في الوقت المناسب، بدلاً من الاكتفاء بالبحث عن القيادة عند الحاجة الطارئة إليها.'
+        }
     ];
 
+    // External clients
+    const externalClients = [
+        { name: 'وزارة الإسكان - هيئة المجتمعات العمرانية', purpose: 'مشروع المعاونين من القيادات الشابة لنواب ورؤساء الأجهزة - هيئة المجتمعات العمرانية', count: 226 },
+        { name: 'شركة اليومصر', purpose: 'اختبارات تعيينات مهندسين - ماليين', count: 16 },
+        { name: 'شركة دار المعمار DMC', purpose: 'اختبارات مشرفي تنفيذ - مهن حرفية', count: 51 },
+        { name: 'شركة منار الخليج', purpose: 'اختبار عمالة حرفية للسفر', count: 181 },
+        { name: 'شركة العربي لإلحاق العمالة المصرية بالخارج', purpose: 'اختبار عمالة حرفية للسفر', count: 655 },
+        { name: 'شركة الصالحية للاستثمار والتنمية', purpose: 'اختبارات للسادة المرشحين للترقي لدرجتي مدير عام - مدير إدارة', count: 111 },
+        { name: 'شركة سفر لإلحاق العمالة بالخارج', purpose: 'اختبار عمالة حرفية للسفر', count: 220 },
+        { name: 'شركة العاصمة الإدارية', purpose: 'اختبارات تعيينات مهندسين - ماليين - إداريين', count: 52 },
+        { name: 'شركة أحمد الشحات لإلحاق العمالة بالخارج', purpose: 'اختبار عمالة حرفية للسفر', count: 26 }
+    ];
 
+    const maxClientCount = Math.max(...externalClients.map(c => c.count));
+
+    const testCounts = {
+        period: 'الربع الأول من 2026/07/01 حتى 2026/09/30',
+        inside: 414,
+        outside: 224
+    };
+
+    const facilities = [
+        'معامل اختبارات إلكترونية مجهزة بأجهزة حاسب حديثة ذات مواصفات مناسبة لتشغيل جميع أنظمة الاختبارات.',
+        'شبكة داخلية مؤمنة لضمان سرعة الاتصال وسلامة البيانات.',
+        'خادم مركزي لإدارة قواعد البيانات وحفظ نتائج الاختبارات.',
+        'نظام آلي لتصحيح الاختبارات وإصدار النتائج والتقارير.',
+        'قواعد بيانات مؤمنة لحفظ نتائج المرشحين.'
+    ];
 
     return (
         <div className="rtl-layout" dir="rtl">
@@ -133,6 +224,10 @@ export default function ICMETTests() {
                     padding: 0 1.5rem;
                 }
 
+                .stats-grid.wide {
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                }
+
                 .stat-card {
                     background: white;
                     padding: 1.2rem 0.5rem;
@@ -148,6 +243,13 @@ export default function ICMETTests() {
                     gap: 0.5rem;
                 }
 
+                /* text-heavy cards: no forced square ratio */
+                .stat-card.text-card {
+                    aspect-ratio: auto;
+                    padding: 1.5rem 1.2rem;
+                    justify-content: flex-start;
+                }
+
                 .stat-card:hover {
                     transform: translateY(-5px);
                     box-shadow: 0 15px 30px rgba(8,101,168,0.15);
@@ -156,6 +258,8 @@ export default function ICMETTests() {
                 .stat-icon { font-size: 2rem; color: var(--secondary); }
                 .stat-title { font-size: 1rem; font-weight: 700; color: var(--dark); }
                 .stat-number { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+                .stat-text { font-size: 0.95rem; line-height: 1.8; color: #333; }
+                .stat-goal { font-size: 0.9rem; line-height: 1.8; color: var(--primary); font-weight: 600; }
 
                 .content-section {
                     max-width: 1200px;
@@ -174,6 +278,8 @@ export default function ICMETTests() {
                 @media (max-width: 768px) {
                     .content-grid { grid-template-columns: 1fr; }
                     .image-grid { grid-template-columns: 1fr; }
+                    .bar-row { flex-direction: column; align-items: stretch; gap: 0.3rem; }
+                    .bar-label { flex: none; }
                 }
 
                 .content-image {
@@ -234,6 +340,7 @@ export default function ICMETTests() {
                     padding-right: 1.5rem;
                     position: relative;
                     font-size: 0.95rem;
+                    line-height: 1.8;
                     color: #333;
                 }
 
@@ -261,6 +368,13 @@ export default function ICMETTests() {
 
                 .large-stats-title { font-size: 1.6rem; color: white; margin-bottom: 1rem; font-weight: 700; }
 
+                .large-stats-row {
+                    display: flex;
+                    justify-content: center;
+                    gap: 4rem;
+                    flex-wrap: wrap;
+                }
+
                 .large-stat-icon {
                     font-size: 2.5rem;
                     color: var(--secondary);
@@ -285,8 +399,10 @@ export default function ICMETTests() {
 
                 .section-title { color: var(--primary); font-size: 1.6rem; font-weight: bold; margin-bottom: 1.5rem; }
 
+                .section-text { font-size: 1rem; line-height: 1.9; margin-bottom: 1rem; }
+
                 .news-item {
-                    padding: 1rem 2rem 1rem 1rem;
+                    padding: 1rem 2.5rem 1rem 1rem;
                     margin-bottom: 1.2rem;
                     background: #fcfcfc;
                     border-radius: 16px;
@@ -310,6 +426,44 @@ export default function ICMETTests() {
                     align-items: center;
                     justify-content: center;
                     font-size: 0.7rem;
+                }
+
+                .news-item h3 {
+                    color: var(--primary);
+                    font-size: 1.05rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .bar-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 0.9rem;
+                }
+
+                .bar-label {
+                    flex: 0 0 260px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    line-height: 1.5;
+                }
+
+                .bar-track {
+                    flex: 1;
+                    background: #f1f1f1;
+                    border-radius: 8px;
+                    overflow: hidden;
+                }
+
+                .bar-fill {
+                    background: var(--primary);
+                    color: white;
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    padding: 0.4rem 0.8rem;
+                    border-radius: 8px;
+                    min-width: 36px;
+                    transition: width 0.6s ease;
                 }
 
                 .modal-overlay {
@@ -343,39 +497,47 @@ export default function ICMETTests() {
             <div className="main-content">
                 <section className="hero-section">
                     <h1 className="hero-title">الاختبارات</h1>
-                    <p className="hero-description">
-                        تم انشاء قسم الاختبارات بالمعهد مواكبة لاحد النظم في اختيار الموارد البشرية وايماناً من الشركة بأهمية اختيار افضل العناصر لشغل الوظائف المختلفة بالشركة وفقاً للضوابط والمعايير المطلوبة لكل وظيفة
-                    </p>
-                    <p className="hero-description">
-                        يعد معهد الإدارة والتكنولوجيا- المقاولون العرب واحد من أوائل المعاهد في جمهورية مصر العربية ، حيث يقوم هذا القسم  باجراء عدد كبير من الاختبارات المقننة الى العملاء الخارجيين طبقا للتعاقد وجميع الفروع والإدارات داخل الشركة
-                    </p>
-                    <p className="hero-description">
-                        كما يقوم القسم بعمل التقييمات اللازمة لتحديد مدى صلاحية الموظف لشغل الوظيفة ، معتمداً على خبرة السادة المحاضرين في عمل فنية تقييمات مناسبة لكافة الوظائف والمهن المختلفة ذات مرجعية لاختبارات الشهادات الدولية مثل ( ICDL & Toefl ) ، كذلك مستويات المهارات القومية ، واصدار النتيجة المعتمدة والمحددة لصلاحية شغل الوظيفة
-                    </p>
+                    {heroParagraphs.map((p, idx) => (
+                        <p key={idx} className="hero-description">{p}</p>
+                    ))}
                 </section>
 
-                <h2 className="hero-title" style={{ fontSize: '1.7rem', marginTop: '0' }}>ولم يقتصر العمل في قسم الاختبارات على العاملين بالشركة فقط ، بل امتد عمل التقييمات ليشمل العملاء خارجيين ايضاً</h2>
-
-                <div className="stats-grid">
-                    {externalClients.map((client, idx) => (
-                        <div key={idx} className="stat-card">
-                            <div className="stat-icon">📊</div>
-                            <h3 className="stat-title">{client.name}</h3>
-                            <div className="stat-number">{client.count}</div>
+                {/* Vision & Mission */}
+                <div className="stats-grid wide">
+                    {visionMission.map((item, idx) => (
+                        <div key={idx} className="stat-card text-card">
+                            <div className="stat-icon">{item.icon}</div>
+                            <h3 className="stat-title">{item.title}</h3>
+                            <p className="stat-text">{item.text}</p>
                         </div>
                     ))}
                 </div>
 
+                {/* Assessment method */}
+                <h2 className="hero-title" style={{ fontSize: '1.7rem', marginTop: '2rem' }}>أسلوب التقييم</h2>
+
+                <div className="stats-grid wide">
+                    {axes.map((axis, idx) => (
+                        <div key={idx} className="stat-card text-card">
+                            <div className="stat-icon">{axis.icon}</div>
+                            <h3 className="stat-title">{axis.title}</h3>
+                            <p className="stat-text">{axis.desc}</p>
+                            <p className="stat-goal">{axis.goal}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Objectives + image */}
                 <section className="content-section">
                     <div className="content-grid">
                         <div className="content-text">
                             <div className="list-container">
                                 <ul className="custom-list">
                                     <li>
-                                        الاختبارات الخاصة بالعاملين بالشركة
+                                        الأهداف: يسعى القسم إلى تحقيق مجموعة من الأهداف الاستراتيجية التي تصب جميعها في خدمة رسالته ورؤيته، ومن أبرزها:
                                         <ul className="nested-list">
-                                            {internalTests.map((test, idx) => (
-                                                <li key={idx}>{test}</li>
+                                            {objectives.map((obj, idx) => (
+                                                <li key={idx}>{obj}</li>
                                             ))}
                                         </ul>
                                     </li>
@@ -397,31 +559,127 @@ export default function ICMETTests() {
                     </div>
                 </section>
 
+                {/* Big number band: founding year */}
                 <section className="large-stats-section">
-                    <h2 className="large-stats-title">ما تم اختباره في عام 2020-2021</h2>
+                    <h2 className="large-stats-title">قسم الاختبارات بالمعهد</h2>
                     <div className="large-stat-display">
-                        <div className="large-stat-icon">👥</div>
-                        <div className="large-stat-number">2315</div>
-                        <div className="large-stat-label">مهندس</div>
+                        <div className="large-stat-icon">🏛️</div>
+                        <div className="large-stat-number">2013</div>
+                        <div className="large-stat-label">عام تأسيس القسم</div>
                     </div>
                 </section>
 
+                {/* Vital role list */}
+                <section className="content-section">
+                    <div className="list-container">
+                        <ul className="custom-list">
+                            <li>
+                                يؤدي القسم دوراً محورياً في:
+                                <ul className="nested-list">
+                                    {roleItems.map((item, idx) => (
+                                        <li key={idx}>{item}</li>
+                                    ))}
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                {/* Remaining sections */}
                 <section className="content-section">
                     <div className="news-section">
-                        <h2 className="section-title">من اخبار قسم الاختبارات</h2>
+                        <h2 className="section-title">المزيد عن قسم الاختبارات</h2>
                         {news.map((item, idx) => (
                             <div key={idx} className="news-item">
-                                {item}
+                                <h3>{item.title}</h3>
+                                <p>{item.text}</p>
                             </div>
                         ))}
                     </div>
+                </section>
+
+                {/* External clients */}
+                <h2 className="hero-title" style={{ fontSize: '1.7rem', marginTop: '2rem' }}>
+                    العملاء الخارجيون
+                </h2>
+                <p className="hero-description" style={{ maxWidth: '1200px', margin: '0 auto 1rem auto' }}>
+                    لم يقتصر العمل في قسم الاختبارات على العاملين بالشركة فقط، بل امتد عمل التقييمات ليشمل العملاء الخارجيين أيضاً:
+                </p>
+
+                <div className="stats-grid wide">
+                    {externalClients.map((client, idx) => (
+                        <div key={idx} className="stat-card text-card">
+                            <div className="stat-icon">📊</div>
+                            <h3 className="stat-title">{client.name}</h3>
+                            <p className="stat-text">{client.purpose}</p>
+                            <div className="stat-number">{client.count}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Chart */}
+                <section className="content-section">
+                    <div className="list-container">
+                        <h2 className="section-title">أعداد المختبرين من العملاء الخارجيين</h2>
+                        {externalClients.map((client, idx) => (
+                            <div key={idx} className="bar-row">
+                                <div className="bar-label">{client.name}</div>
+                                <div className="bar-track">
+                                    <div
+                                        className="bar-fill"
+                                        style={{ width: `${(client.count / maxClientCount) * 100}%` }}
+                                    >
+                                        {client.count}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Test counts */}
+                <section className="large-stats-section">
+                    <h2 className="large-stats-title">عداد الاختبارات</h2>
+                    <p className="large-stat-label" style={{ marginBottom: '1.5rem' }}>{testCounts.period}</p>
+                    <div className="large-stats-row">
+                        <div className="large-stat-display">
+                            <div className="large-stat-icon">🏢</div>
+                            <div className="large-stat-number">{testCounts.inside}</div>
+                            <div className="large-stat-label">مختبر داخل الشركة</div>
+                        </div>
+                        <div className="large-stat-display">
+                            <div className="large-stat-icon">🤝</div>
+                            <div className="large-stat-number">{testCounts.outside}</div>
+                            <div className="large-stat-label">مختبر خارج الشركة</div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Facilities */}
+                <section className="content-section">
+                    <h2 className="section-title">الإمكانيات المادية للقسم</h2>
+                    <div className="list-container">
+                        <ul className="custom-list">
+                            <li>
+                                يمتلك القسم بنية تحتية متكاملة تتيح تنفيذ الاختبارات بكفاءة عالية، وتشمل:
+                                <ul className="nested-list">
+                                    {facilities.map((f, idx) => (
+                                        <li key={idx}>{f}</li>
+                                    ))}
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <p className="section-text" style={{ marginTop: '1rem' }}>
+                        ويبلغ عدد أجهزة الاختبارات الإلكترونية (12 جهاز)، مع إمكانية استخدام قاعة التدريب (11 جهاز) وكذلك تشغيل عدة جلسات اختبار في اليوم نفسه، بما يسمح بخدمة أعداد كبيرة من المتقدمين بكفاءة عالية.
+                    </p>
                 </section>
             </div>
 
             {selectedImg && (
                 <div className="modal-overlay" onClick={() => setSelectedImg(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <span className="close-modal">&times;</span>
+                        <span className="close-modal" onClick={() => setSelectedImg(null)}>&times;</span>
                         <img src={selectedImg} alt="Enlarged view" />
                     </div>
                 </div>
