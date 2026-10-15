@@ -199,7 +199,7 @@ export default function VocationalTraining() {
 
     const centers = [
         {
-            title: 'مركز جسر السويس',
+            title: 'مركز التدريب الحرفى على مهن التشييد و البناء',
             description: 'مركز تدريب متخصص يقدم برامج حرفية متنوعة لتطوير المهارات المهنية وتأهيل الكوادر البشرية.',
             path: '/gesr-el-suez',
             icon: '🏢',

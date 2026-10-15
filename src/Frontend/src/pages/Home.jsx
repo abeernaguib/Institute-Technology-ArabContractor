@@ -129,7 +129,7 @@ const protocols = [
 ];
 
 const craftItems = [
-    { Icon: EngineeringIcon, title: 'التدريب الحرفي', text: 'مراكز جسر السويس وشبرا لبناء المهارات الحرفية وتأهيل الكوادر المتخصصة.', link: '/vocational-training' },
+    { Icon: EngineeringIcon, title: 'التدريب الحرفي', text: 'مركز التدريب الحرفى على مهن التشييد و البناء ومركز شبرا لبناء المهارات الحرفية وتأهيل الكوادر المتخصصة.', link: '/vocational-training' },
     { Icon: SchoolIcon, title: 'التعليم الفني', text: 'بروتوكول تعاون مع وزارة التربية لتطوير الثانويات الصناعية وكوادرها.', link: '/technical-education' },
     { Icon: AssignmentTurnedInIcon, title: 'الاختبارات والتقييم', text: 'اختبارات سيكومترية وتقييمات تخصصية في اللغة والحاسب والهندسة.', link: '/tests' },
 ];
