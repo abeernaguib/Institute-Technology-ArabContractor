@@ -170,7 +170,7 @@ const Navbar = () => {
     const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const aboutLinks = [
-        { ar: 'نبذة عامة', en: 'Overview', path: '/overview' },
+        { ar: 'نبذة عامة والخدمات', en: 'Overview', path: '/overview' },
         { ar: 'الرؤية والأهداف', en: 'Vision & Goals', path: '/mission' },
         { ar: 'الشهادات والاعتمادات', en: 'Certifications', path: '/certifications' },
         { ar: 'فريق العمل', en: 'Our Team', path: '/team' },
