@@ -48,7 +48,7 @@ const slides = [
     { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/training-methods', image: '/images/banner6.jpg' },
     { title: 'ورش الميكانيكا والكهرباء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/shobra', image: '/images/banner3.jpg' },
     { title: 'التدريب في موقع العمل', subtitle: 'تدريب ميداني احترافي', tag: 'ميداني', link: '/onsite-training', image: '/images/banner4.jpg' },
-    { title: 'مدرسة المقاولون العرب الفنية', subtitle: 'جيل مهني متميز', tag: 'تعليم فني', link: '/Technical_Schools', image: '/images/banner7.jpg' },
+    { title: 'مدرسة المقاولون العرب الفنية  \n للتعليم والتدريب المزدوج ', subtitle: 'جيل مهني متميز', tag: 'تعليم فني', link: '/Technical_Schools', image: '/images/banner7.jpg' },
 ];
 
 const features = [
@@ -743,12 +743,16 @@ export default function Home() {
                                 <div
                                     ref={i === 0 ? heroInnerRef : null}
                                     className="hero-entrance"
-                                    style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 700, textAlign: 'center', padding: '0 clamp(16px,5vw,56px)', paddingBottom: 'clamp(48px,6vh,80px)' }}>
+                                    style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1000, textAlign: 'center', padding: '0 clamp(16px,5vw,56px)', paddingBottom: 'clamp(48px,6vh,80px)' }}>
                                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: F, fontSize: '.68rem', fontWeight: 700, letterSpacing: 2.5, textTransform: 'uppercase', color: C.o, marginBottom: 14 }}>
                                         <div style={{ width: 24, height: 2, background: C.o }} />{sl.tag}<div style={{ width: 24, height: 2, background: C.o }} />
                                     </div>
                                     <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.2vw,.9rem)', color: 'rgba(255,255,255,.55)', marginBottom: 10, fontWeight: 600 }}>{sl.subtitle}</p>
-                                    <h2 className="hero-h1" style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1.5rem,4.5vw,3.8rem)', color: C.w, lineHeight: 1.3, letterSpacing: '-0.02em', marginBottom: 28 }}>{sl.title}</h2>
+                                    <h2 className="hero-h1" style={{ fontFamily: F, fontWeight: 900, fontSize: sl.title.includes('\n') ? 'clamp(1.2rem,3.4vw,2.8rem)' : 'clamp(1.5rem,4.5vw,3.8rem)', color: C.w, lineHeight: 1.4, letterSpacing: '-0.02em', marginBottom: 28 }}>
+                                        {sl.title.split('\n').map((line, k) => (
+                                            <span key={k} style={{ display: 'block', whiteSpace: 'nowrap' }}>{line.trim()}</span>
+                                        ))}
+                                    </h2>
                                     <div style={{ width: 56, height: 3, background: C.o, margin: '0 auto 28px', borderRadius: 2 }} />
                                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
                                         <SolidBtn to={sl.link} orange>اقرأ المزيد <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn>
