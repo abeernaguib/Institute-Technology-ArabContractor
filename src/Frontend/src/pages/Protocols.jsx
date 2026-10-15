@@ -1,24 +1,55 @@
 ﻿import React from "react";
-import { useEffect } from "react";
 
 export default function Protocols() {
     const isMobile = window.innerWidth < 700;
     const globalFont = '"Noto Kufi Arabic", serif';
 
-    const partners = [
-        "جمعية المحاسبين والمراجعين المصرية",
-        "مؤسسة المهندسين المدنيين البريطانيين (ICE)",
-        "مركز تحديث الصناعة",
-        "الغرفة الألمانية العربية للصناعة والتجارة",
-        "المركز الإقليمي لتعليم الكبار (أسفك)-أحد المراكز التابعة لليونسكو",
-        "المؤسسة الثقافية العمالية",
-        "المجمع التعليمي التكنولوجي المتكامل بأسيوط",
-        "نقابة المهندسين بالقاهرة",
-        "جامعة 6 أكتوبر (كلية الهندسة)",
-        "صندوق تطوير التعليم",
-        "المؤسسة المصرية للزكاة",
-        "جامعة عين شمس (التعليم المفتوح)",
-        "الجامعة المصرية الروسية (كلية الهندسة)",
+    const groups = [
+        {
+            title: "البروتوكولات الدولية",
+            icon: "🌍",
+            items: [
+                "هيئة الإغاثة الكاثوليكية",
+                "معهد إيكون - ألمانيا",
+                "معهد إينفايروتك للتدريب الأهلي - الكويت",
+                "معهد الأكاديمية السعودية للتدريب",
+                "مركز الثقافة الخضراء - فرنسا",
+                "Evolve Masters group",
+            ],
+        },
+        {
+            title: "البروتوكولات المحلية",
+            icon: "🏢",
+            items: [
+                "المعهد القومي للحوكمة",
+                "شركة العاصمة الإدارية",
+                "مركز الإدارة التعاقدية والتحكيم - د. شريف الهجان",
+                "المعهد القومي للنقل",
+                "مصلحة الضرائب",
+                "جمعية المهندسين المصرية",
+                "شركة ميدكس",
+            ],
+        },
+        {
+            title: "بروتوكولات الجامعات",
+            icon: "🎓",
+            items: [
+                "جامعة بنها",
+                "جامعة بنها الأهلية",
+                "الجامعة المصرية الروسية",
+                "معاهد كنج مريوط",
+                "جامعة المدينة",
+                "جامعة شرق بورسعيد التكنولوجية",
+                "جامعة القاهرة التكنولوجية",
+                "المعهد العالي للهندسة والتكنولوجيا بالزقازيق",
+                "معهد الدلتا العالي للهندسة والتكنولوجيا",
+            ],
+        },
+        {
+            title: "أوامر الإسناد",
+            icon: "📄",
+            items: ["الهيئة العامة للتأمين الصحي الشامل"],
+        },
     ];
 
     const getColumns = () => {
@@ -28,7 +59,6 @@ export default function Protocols() {
         return 1;
     };
 
-    
     return (
         <div
             dir="rtl"
@@ -39,7 +69,7 @@ export default function Protocols() {
             }}
         >
             {/* Fixed Overview Bar — SAME STYLE & COLORS */}
-            
+
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
                 <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
                     <a
@@ -51,7 +81,7 @@ export default function Protocols() {
                         الصفحة الرئيسية
                     </a>
                     <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                    <span style={{ color: '#374151', marginRight: '8px' }}>البروتوكولات و الاتفاقيات</span>
+                    <span style={{ color: '#374151', marginRight: '8px' }}>البروتوكولات و التعاقدات</span>
                 </div>
             </div>
 
@@ -74,7 +104,7 @@ export default function Protocols() {
                             fontFamily: globalFont,
                         }}
                     >
-                        البروتوكولات و الاتفاقيات
+                        البروتوكولات و التعاقدات
                     </h1>
                     <div
                         style={{
@@ -102,49 +132,65 @@ export default function Protocols() {
                     في:
                 </p>
 
-                {/* PARTNERS GRID */}
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: `repeat(${getColumns()}, 1fr)`,
-                        gap: 14,
-                        marginTop: 30,
-                    }}
-                >
-                    {partners.map((p, i) => (
-                        <div
-                            key={i}
+                {/* GROUPS */}
+                {groups.map((group, gi) => (
+                    <div key={gi} style={{ marginTop: 40 }}>
+                        <h2
                             style={{
-                                background: "#fff",
-                                borderRadius: 16,
-                                padding: "12px 14px",
-                                display: "flex",
-                                alignItems: "center",
-                                boxShadow: "0 5px 12px rgba(0,0,0,0.08)",
+                                fontSize: isMobile ? 18 : 24,
+                                color: "#0865a8",
+                                fontFamily: globalFont,
+                                borderRight: "4px solid #f57c00",
+                                paddingRight: 12,
                             }}
                         >
-                            <span
-                                style={{
-                                    fontSize: isMobile ? 20 : 22,
-                                    color: "#0865a8",
-                                    marginLeft: 10,
-                                }}
-                            >
-                                🏢
-                            </span>
-                            <span
-                                style={{
-                                    fontSize: isMobile ? 12 : 13.5,
-                                    lineHeight: 1.5,
-                                    color: "#000",
-                                    fontFamily: globalFont,
-                                }}
-                            >
-                                {p}
-                            </span>
+                            {group.icon} {group.title}
+                        </h2>
+
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: `repeat(${getColumns()}, 1fr)`,
+                                gap: 14,
+                                marginTop: 20,
+                            }}
+                        >
+                            {group.items.map((p, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        background: "#fff",
+                                        borderRadius: 16,
+                                        padding: "12px 14px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        boxShadow: "0 5px 12px rgba(0,0,0,0.08)",
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            fontSize: isMobile ? 20 : 22,
+                                            color: "#0865a8",
+                                            marginLeft: 10,
+                                        }}
+                                    >
+                                        {group.icon}
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: isMobile ? 12 : 13.5,
+                                            lineHeight: 1.5,
+                                            color: "#000",
+                                            fontFamily: globalFont,
+                                        }}
+                                    >
+                                        {p}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
 
                 {/* IMAGES */}
                 <div
