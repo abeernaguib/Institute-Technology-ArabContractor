@@ -1,5 +1,148 @@
 ﻿import React, { useState } from 'react';
-import { useEffect } from 'react';
+
+// Image helper: /images/shobra/<prefix>-1.jpg ... <prefix>-N.jpg
+const imgs = (prefix, count) =>
+    Array.from({ length: count }, (_, i) => `/images/shobra/${prefix}-${i + 1}.jpg`);
+
+// Top gallery: the two images kept from the old page + the 7 new ones (gallery-1 ... gallery-7)
+const gallery = [
+    { src: '/images/Shobra12.jpg', title: 'التدريبات العملية' },
+    { src: '/images/Shobra11.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh1.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh2.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh3.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh4.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh5.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh6.jpg', title: 'التدريبات العملية' },
+    { src: '/images/sh7.jpg', title: 'التدريبات العملية' },
+];
+
+const mission = [
+    'إعداد وتأهيل العمالة الفنية المتخصصة في تشغيل وصيانة وإصلاح معدات الإنشاء بمختلف أنواعها، لتلبية احتياجات الشركة.',
+    'تطوير كفاءة العمالة الحالية ومواكبة التطورات التكنولوجية في المعدات وأساليب الإنشاء الحديثة.',
+    'تعزيز التعاون مع التوكيلات والشركات المتخصصة في المعدات لتنمية مهارات المهندسين والفنيين والعاملين وفقًا لتخصصاتهم.',
+    'إتاحة البرامج التدريبية للجهات الخارجية، والمساهمة في تنمية الكوادر الفنية الوطنية وخدمة المجتمع.',
+];
+
+const workshops = [
+    {
+        id: 1,
+        title: 'ورشة المحركات',
+        text: 'تحتوي الورشة على مجموعة متنوعة من محركات الديزل والبنزين المستخدمة في المعدات والسيارات، لتدريب المتدربين على أنظمة التشغيل ودورات عمل المحركات، وأساسيات أنظمة حقن الديزل والحساسات المرتبطة بمحركات البنزين، بالإضافة إلى تنفيذ عمليات فك وتجميع المحركات باستخدام العدد والأدوات المناسبة، ووفقًا للأصول الفنية السليمة.',
+        images: [
+            '/images/warshamohrk1.jpg',
+            '/images/warshamohrk2.jpg'
+        ],
+    },
+    {
+        id: 2,
+        title: 'ورشة نقل القدرة وأنظمة الفرامل للمعدات والسيارات',
+        text: 'تحتوي الورشة على المكونات والوحدات الأساسية لمجموعات نقل القدرة وأنظمة الفرامل المستخدمة في المعدات والسيارات، لتدريب المتدربين على أساسيات نقل القدرة، وفهم مكونات ومبادئ عمل القابض (الدبرياج) وصناديق التروس اليدوية، والتعرف على أنظمة الفرامل الهيدروليكية والهوائية، مع التدريب على عمليات الفك والتركيب واختبار المنظومات وتشخيص الأعطال وتحديد طرق معالجتها، باستخدام العدد والأدوات المناسبة ووفقًا للأصول الفنية السليمة.',
+        images: [
+            '/images/warshanakl1.jpg',
+            '/images/warshanakl2.jpg',
+            '/images/warshanakl3.jpg',
+            '/images/warshanakl4.jpg',
+            '/images/warshanakl5.jpg'
+        ],
+    },
+    {
+        id: 3,
+        title: 'ورشة الهيدروليك',
+        text: 'تحتوي الورشة على مجموعة متنوعة من الطلمبات والمحركات والصمامات الهيدروليكية المستخدمة في الدوائر الهيدروليكية للمعدات، لتدريب المتدربين على التعرف على مكوناتها ومبادئ عملها وطرق تشغيلها، وتنفيذ عمليات الفك والتركيب والصيانة باستخدام العدد والأدوات المناسبة، وفقًا للأساليب الفنية السليمة.',
+        images: [
+            '/images/warshahydro1.jpg',
+            '/images/warshahydro2.jpg',
+            '/images/warshahydro3.jpg',
+            '/images/warshahydro4.jpg',
+            '/images/warshahydro5.jpg'
+        ],
+    },
+    {
+        id: 4,
+        title: 'ورشة اللحام',
+        text: 'تضم الورشة مجموعة من ماكينات اللحام اللازمة لتدريب المتدربين عمليًا على اللحام بالقوس الكهربائي (SMAW)، واللحام بالغاز الواقي (MIG/MAG – CO₂)، واللحام بالأوكسي أستيلين، بالإضافة إلى عمليات القطع الحراري للمعادن، بما يسهم في إكسابهم المهارات الفنية اللازمة لتنفيذ أعمال اللحام وفقًا للأصول الفنية السليمة، مع الالتزام باشتراطات السلامة والصحة المهنية.',
+        images: [
+            '/images/warshabrad1.jpg',
+            '/images/warshabrad2.jpg',
+            '/images/warshabrad3.jpg'
+        ],
+    },
+    {
+        id: 5,
+        title: 'ورشة البرادة',
+        text: 'تحتوي الورشة على العدد والأدوات اللازمة للتدريب على الأعمال الأساسية لقطع وتشغيل المعادن، مثل القياس والشنكرة والنشر والبرد والثقب والقلاووظ، بهدف إكساب المتدربين المهارات العملية الأساسية في أعمال البرادة، وتأهيلهم للعمل في مجالات التركيبات الميكانيكية والمواسير والأعمال المعدنية.',
+        images: [
+            '/images/warshabrad4.jpg',
+            '/images/warshabrad5.jpg'
+        ],
+    },
+    {
+        id: 6,
+        title: 'ورشة التركيبات الكهربائية الداخلية',
+        text: 'تحتوي الورشة على نماذج متنوعة لدوائر التركيبات الكهربائية الداخلية بالمباني والمنشآت، لتدريب المتدربين على أعمال التأسيس والتمديدات وسحب الأسلاك وتوزيع الأحمال وتوصيل المكونات الكهربائية، وإجراء الاختبارات وعمليات الاستلام وإعداد المقايسات المطلوبة، وفقًا للأصول الفنية ومستويات المهارة القومية. كما تضم الورشة العدد والأدوات وأجهزة القياس اللازمة لتنفيذ أعمال التركيبات الكهربائية والتحقق من سلامتها وكفاءة أدائها.',
+        images: [
+            '/images/warshatarkeb1.jpg',
+            '/images/warshatarkeb2.jpg',
+            '/images/warshatarkeb3.jpg',
+            '/images/warshatarkeb4.jpg'
+        ],
+    },
+    {
+        id: 7,
+        title: 'ورشة كهرباء التحكم الآلي',
+        text: 'تحتوي الورشة على المكونات والأدوات اللازمة لتنفيذ دوائر التحكم الكهربائي التقليدي (Classic Control) والتحكم الآلي، بالإضافة إلى وحدات التحكم المنطقي المبرمج (PLC)، لتدريب المتدربين على تصميم وتوصيل دوائر التحكم وبرمجتها، ومحاكاة نظم التشغيل المختلفة، بما يسهم في تنمية مهاراتهم في تشغيل الأنظمة الكهربائية والتحكم في المعدات وفقًا للأصول الفنية السليمة.',
+        images: [
+            '/images/warshakahrb1.jpg',
+            '/images/warshakahrb2.jpg',
+            '/images/warshakahrb3.jpg',
+            '/images/warshakahrb4.jpg'
+        ],
+    },
+    {
+        id: 8,
+        title: 'ورشة كهرباء المعدات',
+        text: 'تحتوي الورشة على نماذج متنوعة من الدوائر الكهربائية للمعدات الثقيلة والمولدات والمحركات الكهربائية، لتدريب المتدربين على التعرف على مكوناتها ومبادئ عملها، وتنفيذ أعمال الفحص والصيانة والفك والتركيب والتجميع للوحدات الكهربائية باستخدام العدد والأدوات المناسبة، وفقًا للأصول والأساليب الفنية السليمة.',
+        images: [
+            '/images/warshamoad1.jpg',
+            '/images/warshamoad2.jpg'
+        ],
+    },
+];
+
+const mechanicsPrograms = [
+    'إعداد وتأهيل ميكانيكا سيارات',
+    'إعداد وتأهيل فني ميكانيكا سيارات',
+    'إعداد وتأهيل ميكانيكا معدات',
+    'إعداد وتأهيل فني ميكانيكا معدات',
+    'إعداد وتأهيل فني ميكانيكا هيدروليك',
+    'إعداد وتأهيل فني ميكانيكا محركات',
+    'مجموعة نقل القدرة (Power Train)',
+    'إعداد وتأهيل فني تشغيل معدات',
+    'إعداد وتأهيل فني وناش ارضي',
+    'دورة عامة عن سيارات الإفيكو',
+    'صيانة وإصلاح الإطارات (لحام كاوتش)',
+];
+
+const weldingPrograms = [
+    'رفع كفاءة فني وملاحظ برادة معادن',
+    'رفع كفاءة فني براد تركيبات',
+    'رفع كفاءة فني و ملاحظ لحام معادن',
+    'رفع كفاءة فني لحام كهرباء وأكسجين',
+    'رفع كفاءة فني لحام Co2',
+    'رفع كفاءة في عمليات اللحام والقطع المختلفة',
+    'طرق فحص اللحام و كيفية تلافيها',
+];
+
+const electricalPrograms = [
+    'إعداد وتأهيل كهربائي تركيبات داخلية - المستوى الثاني',
+    'إعداد وتأهيل فني / ملاحظ كهرباء تركيبات كهربائية - المستوى الثالث',
+    'إعداد وتأهيل فني / ملاحظ كهرباء صيانة وتشغيل',
+    'إعداد وتأهيل فني / ملاحظ كهرباء سيارات ومعدات',
+    'مقدمة في التحكم المنطقي المبرمج PLC',
+    'التمديدات ولوحات التوزيع الكهربائية',
+    'دوائر التحكم الآلي',
+];
 
 const ShobraTrainingPage = () => {
     const [openSection, setOpenSection] = useState(null);
@@ -19,75 +162,6 @@ const ShobraTrainingPage = () => {
         document.body.style.overflow = 'auto';
     };
 
-    const workshops = [
-        {
-            id: 1,
-            title: "ورشة المحركات",
-            text: "تحتوي الورشة علي معظم أنواع محركات الديزل والبنزين المستخدمة في المعدات والسيارات للتدريب عليها في عمليات الفك والتركيب بالطرق المعتمدة في التدريب ، ويوجد في الورشة كافة العدد والأدوات المستخدمة في أعمال الفك والتجميع للوحدات تحت الإصلاح وذلك باستخدام الطرق والأساليب الفنية السليمة."
-        },
-        {
-            id: 2,
-            title: "ورشة اللحام والبرادة",
-            text: "تحتوي ورشة اللحام على معظم ماكينات اللحام للتدريب علي أعمال القطع واللحام وإعداد اللحامين عملياً بالتدريب علي أعمال ومهارات اللحام بالقوس الكهربي واللحام بالاكسي استيلين مع مراعاة شروط واحتياطات السلامة والصحة المهنية. تحتوي ورشة البرادة على كافة العدد والأدوات المستخدمة في الأعمال الأساسية في قطع وتشغيل المعادن وإكساب المتدرب المهارات الأساسية اللازمة للعمل كبراد تركيبات أو مواسير أو تزجة."
-        },
-        {
-            id: 3,
-            title: "ورشة الهيدروليك",
-            text: "تحتوي الورشة علي معظم أنواع الطلمبات والمواتير والصمامات الهيدروليكية المستخدمة في الدوائر الهيدروليكية للمعدات للتدريب عليها ومعرفة مكوناته وطريقة عملها، ويوجد في الورشة كافة العدد والأدوات المستخدمة في أعمال الفك والتجميع للوحدات الهيدروليكية باستخدام الطرق والأساليب الفنية السليمة."
-        },
-        {
-            id: 4,
-            title: "ورشة التركيبات الكهربائية الداخليه",
-            text: "تحتوي الورشة علي مختلف أنواع دوائر التركيبات الكهربائيه الداخلية من التأسيس و التمديدات و سحب الاسلاك و توزيع الاحمال و مكوناتها و طرق التنفيذ و التوصيل و الاختبارات الخاصه بالمبانى و المنشأت ، و عمل المقايسات المطلوبة و طرق الاستلام طبقاً لمستويات المهارة القومية ، ويوجد في الورشة كافة العدد والأدوات و اجهزه القياس المستخدمة في أعمال تنفيذ التركيبات الكهربائية ."
-        },
-        {
-            id: 5,
-            title: "ورشة كهرباء المعدات",
-            text: "تحتوي الورشة علي أنواع من الدوائر الكهربائية للمعدات الثقيلة و المولدات الكهربائية و كذلك المواتير الكهربائية ومكوناتها و كذلك بعض من النماذج المستخدمة في الدوائر الكهربائية للمعدات للتدريب عليها ومعرفة مكوناتها وطريقة عملها، ويوجد في الورشة كافة العدد والأدوات المستخدمة في أعمال الفك والتجميع للوحدات الكهربائية باستخدام الطرق والأساليب الفنية السليمة."
-        },
-        {
-            id: 6,
-            title: "ورشة كهرباء التحكم الالى",
-            text: "تحتوي الورشة علي مكونات وادوات دوائر التحكم الالى الكلاسيكى و الاتوماتيكى Automatic Control Classic and و كذلك أجهزة ال PLC للتدريب عليها و عمل محاكاه لنظم التشغيل المختلفة ."
-        }
-    ];
-
-    const mechanicsPrograms = [
-        "إعداد وتأهيل ميكانيكا سيارات",
-        "إعداد وتأهيل فني ميكانيكا سيارات",
-        "إعداد وتأهيل ميكانيكا معدات",
-        "إعداد وتأهيل فني ميكانيكا معدات",
-        "إعداد وتأهيل فني ميكانيكا هيدروليك",
-        "إعداد وتأهيل فني ميكانيكا محركات",
-        "مجموعة نقل القدرة (Power Train)",
-        "إعداد وتأهيل فني تشغيل معدات",
-        "إعداد وتأهيل فني وناش ارضي",
-        "دورة عامة عن سيارات الإفيكو",
-        "صيانة وإصلاح الإطارات (لحام كاوتش)"
-    ];
-
-    const weldingPrograms = [
-        "رفع كفاءة فني وملاحظ برادة معادن",
-        "رفع كفاءة فني براد تركيبات",
-        "رفع كفاءة فني و ملاحظ لحام معادن",
-        "رفع كفاءة فني لحام كهرباء وأكسجين",
-        "رفع كفاءة فني لحام Co2",
-        "رفع كفاءة في عمليات اللحام والقطع المختلفة",
-        "طرق فحص اللحام و كيفية تلافيها"
-    ];
-
-    const electricalPrograms = [
-        "إعداد وتأهيل كهربائي تركيبات داخلية - المستوى الثاني",
-        "إعداد وتأهيل فني / ملاحظ كهرباء تركيبات كهربائية - المستوى الثالث",
-        "إعداد وتأهيل فني / ملاحظ كهرباء صيانة وتشغيل",
-        "إعداد وتأهيل فني / ملاحظ كهرباء سيارات ومعدات",
-        "مقدمة في التحكم المنطقي المبرمج PLC",
-        "التمديدات ولوحات التوزيع الكهربائية",
-        "دوائر التحكم الآلي"
-    ];
-
-    
-
     return (
         <>
             <style>{`
@@ -105,16 +179,50 @@ const ShobraTrainingPage = () => {
                     background-color: rgba(8, 101, 168, 0.05);
                 }
 
-                .shobra-image {
-                    object-fit: contain;
+                /* Top gallery */
+                .shobra-gallery {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 1rem;
+                }
+
+                .shobra-gallery-item {
+                    height: 240px;
+                    overflow: hidden;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e8e8e8;
                     background-color: #f5f5f5;
+                }
+
+                .shobra-image {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center top;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    display: block;
+                    transition: transform 0.4s ease;
                 }
 
                 .shobra-image:hover {
-                    transform: scale(1.02);
-                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+                    transform: scale(1.05);
+                }
+
+                /* Workshop thumbnails */
+                .shobra-thumbs {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                    gap: 0.75rem;
+                    margin-top: 1rem;
+                }
+
+                .shobra-thumb {
+                    height: 130px;
+                    overflow: hidden;
+                    border-radius: 8px;
+                    border: 2px solid #e8e8e8;
+                    background-color: #f5f5f5;
                 }
 
                 /* Modal Styles */
@@ -210,11 +318,6 @@ const ShobraTrainingPage = () => {
                 }
 
                 @media (max-width: 768px) {
-                    .shobra-fixed-bar {
-                        top: 60px !important;
-                        padding: 0.4rem 1rem !important;
-                    }
-
                     .shobra-main-content {
                         padding-top: calc(60px + 45px + 2rem) !important;
                         padding-left: 1rem !important;
@@ -229,16 +332,12 @@ const ShobraTrainingPage = () => {
                         font-size: 1.75rem !important;
                     }
 
-                    .shobra-image-grid {
-                        grid-template-columns: 1fr !important;
+                    .shobra-gallery {
+                        grid-template-columns: repeat(2, 1fr);
                     }
 
-                    .shobra-image-large {
-                        height: 300px !important;
-                    }
-
-                    .shobra-image-small {
-                        height: 200px !important;
+                    .shobra-gallery-item {
+                        height: 200px;
                     }
 
                     .shobra-vision-grid {
@@ -262,10 +361,6 @@ const ShobraTrainingPage = () => {
                 }
 
                 @media (max-width: 480px) {
-                    .shobra-fixed-bar-text {
-                        font-size: 0.875rem !important;
-                    }
-
                     .shobra-header {
                         padding: 1rem !important;
                         border-right-width: 4px !important;
@@ -280,12 +375,16 @@ const ShobraTrainingPage = () => {
                         font-size: 0.95rem !important;
                     }
 
-                    .shobra-image-large {
-                        height: 250px !important;
+                    .shobra-gallery {
+                        grid-template-columns: 1fr;
                     }
 
-                    .shobra-image-small {
-                        height: 180px !important;
+                    .shobra-gallery-item {
+                        height: 220px;
+                    }
+
+                    .shobra-thumbs {
+                        grid-template-columns: repeat(2, 1fr);
                     }
 
                     .shobra-section-title {
@@ -323,10 +422,6 @@ const ShobraTrainingPage = () => {
                     .shobra-header-title {
                         font-size: 1.3rem !important;
                     }
-
-                    .shobra-image-large {
-                        height: 220px !important;
-                    }
                 }
             `}</style>
 
@@ -337,7 +432,6 @@ const ShobraTrainingPage = () => {
                 textAlign: 'right'
             }}>
                 {/* Fixed Overview Bar */}
-                
                 <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
                     <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
                         <a
@@ -349,7 +443,7 @@ const ShobraTrainingPage = () => {
                             الصفحة الرئيسية
                         </a>
                         <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                        <span style={{ color: '#374151', marginRight: '8px' }}> مركز تدريب شبرا</span>
+                        <span style={{ color: '#374151', marginRight: '8px' }}>مركز التدريب على المهن الميكانيكية و الكهربائية</span>
                     </div>
                 </div>
 
@@ -384,101 +478,50 @@ const ShobraTrainingPage = () => {
                                 color: '#000000'
                             }}
                         >
-                            مركز التدريب شبرا
+                            مركز التدريب على المهن الميكانيكية و الكهربائية
                         </h1>
-                        <div
+                        <p
                             className="shobra-header-text"
                             style={{
                                 fontSize: '1.125rem',
                                 lineHeight: '1.9',
-                                color: '#333333'
+                                color: '#333333',
+                                margin: 0
                             }}
                         >
-                            <p style={{ marginBottom: '1rem' }}>
-                                إن حاجة الشركة المتزايدة للأيدي العاملة المدربة دفعها إلى إنشاء مركز متخصص لتدريب الفنيين ومساعدي فنيين وسائقي معدات بمختلف أنواعها ، وذلك لسد احتياجات الشركة في تنفيذ كافة المشروعات وتغذية الشركات الأخرى.
-                            </p>
-                            <p style={{ marginBottom: '1rem' }}>
-                                ويعتبر مركز تدريب المعدات - شبرا بالمعهد التكنولوجى لهندسة التشييد و الادارة هو التدريب العملي لهذه الفئات وفقا لبرامج منتظمة ومحددة.
-                            </p>
-                            <p style={{ marginBottom: 0 }}>
-                                إلى جانب ذلك يقوم المركز بعمل برامج تدريب دورية للعاملين في الشركة لرفع كفاءتهم الإنتاجية أو تعديل مهنهم أو التدريب التحويلي ويقدم المركز أيضا خدماته للهيئات الخارجية كتدريب طلبة المدارس الثانوية الصناعية وطلبة المعاهد الفنية وكليات الهندسة في تدريبهم الصيفي.
-                            </p>
+                            يُعد مركز التدريب على المهن الميكانيكية والكهربائية بشبرا، التابع للمعهد التكنولوجي لهندسة التشييد والإدارة، أحد مراكز تدريب شركة المقاولون العرب المتخصصة في إعداد وتأهيل الفنيين ومساعدي الفنيين وملاحظي المعدات، وتطوير مهارات العاملين بالشركة من خلال برامج التدريب الفني والتدريب التحويلي، بما يلبي احتياجات مشروعات الشركة. كما يقدم المركز خدماته للجهات الخارجية، من خلال تدريب طلاب المدارس الصناعية والمعاهد الفنية وكليات الهندسة، وربط الدراسة النظرية بالتطبيق العملي.
+                        </p>
+                        <div
+                            style={{
+                                marginTop: '1.5rem',
+                                paddingTop: '1.25rem',
+                                borderTop: '1px solid #e8e8e8',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '0.5rem',
+                                alignItems: 'flex-start',
+                                lineHeight: '1.9'
+                            }}
+                        >
+                            <strong style={{ color: '#f57c00' }}>📍 العنوان :</strong>
+                            <span style={{ color: '#333333', fontWeight: 600 }}>
+                                ١٠ شارع ٦ أكتوبر – ترعة الاسماعيلية – شبرا الخيمة - القليوبية
+                            </span>
                         </div>
                     </header>
 
                     {/* Image Gallery */}
-                    <div
-                        className="shobra-image-grid"
-                        style={{
-                            marginBottom: '3rem',
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: '1rem'
-                        }}
-                    >
-                        <div
-                            style={{
-                                gridColumn: 'span 2',
-                                height: '400px',
-                                overflow: 'hidden',
-                                borderRadius: '16px',
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                border: '1px solid #e8e8e8'
-                            }}
-                        >
-                            <img
-                                src="/images/Shobra12.jpg"
-                                alt="التدريبات العملية"
-                                className="shobra-image shobra-image-large"
-                                onClick={() => openModal('/images/Shobra12.jpg', 'التدريبات العملية')}
-                                style={{
-                                    height: '100%',
-                                    width: '100%'
-                                }}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div
-                                style={{
-                                    height: '192px',
-                                    overflow: 'hidden',
-                                    borderRadius: '16px',
-                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                    border: '1px solid #e8e8e8'
-                                }}
-                            >
+                    <div className="shobra-gallery" style={{ marginBottom: '3rem' }}>
+                        {gallery.map((g, i) => (
+                            <div key={i} className="shobra-gallery-item">
                                 <img
-                                    src="/images/Shobra8.jpg"
-                                    alt="اختبار الطلبة"
-                                    className="shobra-image shobra-image-small"
-                                    onClick={() => openModal('/images/Shobra8.jpg', 'اختبار الطلبة')}
-                                    style={{
-                                        height: '100%',
-                                        width: '100%'
-                                    }}
+                                    src={g.src}
+                                    alt={g.title}
+                                    className="shobra-image"
+                                    onClick={() => openModal(g.src, g.title)}
                                 />
                             </div>
-                            <div
-                                style={{
-                                    height: '192px',
-                                    overflow: 'hidden',
-                                    borderRadius: '16px',
-                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                    border: '1px solid #e8e8e8'
-                                }}
-                            >
-                                <img
-                                    src="/images/Shobra11.jpg"
-                                    alt="التدريبات العملية"
-                                    className="shobra-image shobra-image-small"
-                                    onClick={() => openModal('/images/Shobra11.jpg', 'التدريبات العملية')}
-                                    style={{
-                                        height: '100%',
-                                        width: '100%'
-                                    }}
-                                />
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
                     {/* Vision & Mission */}
@@ -488,7 +531,8 @@ const ShobraTrainingPage = () => {
                             marginBottom: '3rem',
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: '1.5rem'
+                            gap: '1.5rem',
+                            alignItems: 'start'
                         }}
                     >
                         <div
@@ -512,10 +556,11 @@ const ShobraTrainingPage = () => {
                             <p
                                 style={{
                                     lineHeight: '1.8',
-                                    opacity: 0.95
+                                    opacity: 0.95,
+                                    margin: 0
                                 }}
                             >
-                                يسعى المركز من خلال خطة تدريبية طموحة إلى تلبية كافة الاحتياجات التدريبية للشركة .
+                                يسعى المركز إلى تلبية الاحتياجات التدريبية للشركة والجهات الخارجية، من خلال برامج تدريبية متكاملة تسهم في تطوير الكفاءات ورفع كفاءة الأداء.
                             </p>
                         </div>
                         <div
@@ -547,10 +592,12 @@ const ShobraTrainingPage = () => {
                                     fontSize: '0.95rem'
                                 }}
                             >
-                                <li style={{ marginBottom: '0.75rem' }}>1. تجهيز عمالة في مجالات أنشطة صيانة وإصلاح وتشغيل معدات الإنشاء بجميع أنواعها لسد احتياجات عجز العمالة بالشركة.</li>
-                                <li style={{ marginBottom: '0.75rem' }}>2. رفع مستوى وكفاءة التشغيل للعمالة الحالية حتى تواكب كل من صعوبة وتعقيد المعدات الحديثة وكذلك أساليب الإنشاء الحديثة بمجالاتها التي أصبحت غاية في التنوع والتعقيد.</li>
-                                <li style={{ marginBottom: '0.75rem' }}>3. عمل ربط ما بين عمالة الشركة من مهندسين وفنيين وعمال والتوكيلات المختلفة للتدريب الخاص بالمعدات كل في تخصصه.</li>
-                                <li>4. إتاحة التدريب لمن يريد من خارج الشركة كنوع من التنمية لأبناء الوطن وكرسالة للشركة .</li>
+                                {mission.map((m, i) => (
+                                    <li key={i} style={{ marginBottom: i === mission.length - 1 ? 0 : '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                                        <span style={{ color: '#f57c00', fontWeight: 'bold' }}>✓</span>
+                                        <span>{m}</span>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     </div>
@@ -629,7 +676,21 @@ const ShobraTrainingPage = () => {
                                             lineHeight: '1.8'
                                         }}
                                     >
-                                        {ws.text}
+                                        <p style={{ margin: 0 }}>{ws.text}</p>
+                                        {ws.images.length > 0 && (
+                                            <div className="shobra-thumbs">
+                                                {ws.images.map((src, index) => (
+                                                    <div key={index} className="shobra-thumb">
+                                                        <img
+                                                            src={src}
+                                                            alt={`${ws.title} - صورة ${index + 1}`}
+                                                            className="shobra-image"
+                                                            onClick={() => openModal(src, ws.title)}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -679,13 +740,7 @@ const ShobraTrainingPage = () => {
                             >
                                 برامج قسم الميكانيكا
                             </h4>
-                            <ul
-                                style={{
-                                    listStyle: 'none',
-                                    padding: 0,
-                                    margin: 0
-                                }}
-                            >
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                 {mechanicsPrograms.map((item, index) => (
                                     <li
                                         key={index}
@@ -726,13 +781,7 @@ const ShobraTrainingPage = () => {
                             >
                                 برامج اللحام والبرادة
                             </h4>
-                            <ul
-                                style={{
-                                    listStyle: 'none',
-                                    padding: 0,
-                                    margin: 0
-                                }}
-                            >
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                 {weldingPrograms.map((item, index) => (
                                     <li
                                         key={index}
@@ -773,13 +822,7 @@ const ShobraTrainingPage = () => {
                             >
                                 برامج قسم الكهرباء
                             </h4>
-                            <ul
-                                style={{
-                                    listStyle: 'none',
-                                    padding: 0,
-                                    margin: 0
-                                }}
-                            >
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                 {electricalPrograms.map((item, index) => (
                                     <li
                                         key={index}

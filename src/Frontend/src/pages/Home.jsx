@@ -46,7 +46,8 @@ const DynamicCoursesSection = React.lazy(() =>
 );
 const slides = [
     { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/training-methods', image: '/images/banner6.jpg' },
-    { title: 'التدريب الحرفي على\nمهن التشييد والبناء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/shobra', image: '/images/Picture1.jpg' },
+    { title: 'التدريب الفني على المهن\nالميكانيكية والكهربائية', subtitle: 'تأهيل الكوادر الفنية', tag: 'تدريب تقني', link: '/shobra', image: '/images/banner3.jpg' },
+    { title: 'التدريب الحرفي على\nمهن التشييد والبناء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/gesr-el-suez', image: '/images/Picture1.jpg' },
     { title: 'التدريب في موقع العمل', subtitle: 'تدريب ميداني احترافي', tag: 'ميداني', link: '/onsite-training', image: '/images/banner4.jpg' },
     { title: 'مدرسة المقاولون العرب الفنية  \n للتعليم والتدريب المزدوج ', subtitle: 'جيل مهني متميز', tag: 'تعليم فني', link: '/Technical_Schools', image: '/images/banner7.jpg' },
 ];
@@ -129,7 +130,7 @@ const protocols = [
 ];
 
 const craftItems = [
-    { Icon: EngineeringIcon, title: 'التدريب الحرفي', text: 'مركز التدريب الحرفى على مهن التشييد و البناء ومركز شبرا لبناء المهارات الحرفية وتأهيل الكوادر المتخصصة.', link: '/vocational-training' },
+    { Icon: EngineeringIcon, title: 'التدريب الحرفي', text: 'مركز التدريب الحرفى على مهن التشييد و البناء ومركز التدريب على المهن الميكانيكية و الكهربائية لبناء المهارات الحرفية وتأهيل الكوادر المتخصصة.', link: '/vocational-training' },
     { Icon: SchoolIcon, title: 'التعليم الفني', text: 'بروتوكول تعاون مع وزارة التربية لتطوير الثانويات الصناعية وكوادرها.', link: '/technical-education' },
     { Icon: AssignmentTurnedInIcon, title: 'الاختبارات والتقييم', text: 'اختبارات سيكومترية وتقييمات تخصصية في اللغة والحاسب والهندسة.', link: '/tests' },
 ];

@@ -206,7 +206,7 @@ export default function VocationalTraining() {
             accent: T.orange,
         },
         {
-            title: 'مركز تدريب شبرا',
+            title: 'مركز التدريب على المهن الميكانيكية و الكهربائية',
             description: 'مركز تدريب حديث لتطوير المهارات الحرفية وبناء قدرات العاملين وفق أحدث المعايير.',
             path: '/shobra',
             icon: '🏛️',
