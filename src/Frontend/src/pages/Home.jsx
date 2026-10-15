@@ -121,12 +121,15 @@ const makawlenSchool = {
 };
 
 const protocols = [
-    { name: 'جمعية المحاسبين والمراجعين المصرية', country: 'مصر', type: 'مهني' },
-    { name: 'مؤسسة المهندسين المدنيين البريطانيين (ICE)', country: 'المملكة المتحدة', type: 'دولي' },
-    { name: 'مركز تحديث الصناعة', country: 'مصر', type: 'صناعي' },
-    { name: 'الغرفة الألمانية العربية للصناعة والتجارة', country: 'ألمانيا', type: 'تجاري' },
-    { name: 'المركز الإقليمي لتعليم الكبار (أسفك) - اليونسكو', country: 'اليونسكو', type: 'دولي' },
-    { name: 'نقابة المهندسين بالقاهرة', country: 'مصر', type: 'مهني' },
+    { name: 'معهد إيكون', country: 'ألمانيا', type: 'دولي' },
+    { name: 'معهد اينفايروتك للتدريب الأهلي', country: 'الكويت', type: 'دولي' },
+    { name: 'معهد الأكاديمية السعودية للتدريب', country: 'السعودية', type: 'دولي' },
+    { name: 'مركز الثقافة الخضراء', country: 'فرنسا', type: 'دولي' },
+    { name: 'المعهد القومي للحوكمة', country: 'مصر', type: 'محلي' },
+    { name: 'المعهد القومي للنقل', country: 'مصر', type: 'محلي' },
+    { name: 'جامعة بنها', country: 'مصر', type: 'جامعي' },
+    { name: 'الجامعة المصرية الروسية', country: 'مصر', type: 'جامعي' },
+    { name: 'الهيئة العامة للتأمين الصحي الشامل', country: 'مصر', type: 'أمر إسناد' },
 ];
 
 const craftItems = [
@@ -1114,13 +1117,13 @@ export default function Home() {
                     <div className="proto-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 12 }}>
                         <div>
                             <Eyebrow light>شراكاتنا</Eyebrow>
-                            <SplitTitle light size="sm">البروتوكولات والاتفاقيات</SplitTitle>
+                            <SplitTitle light size="sm">البروتوكولات والتعاقدات</SplitTitle>
                             <div style={{ width: 44, height: 3, background: C.o, marginTop: 16 }} />
                         </div>
                         <SolidBtn to="/protocols" orange>عرض الكل <ArrowForwardIosIcon sx={{ fontSize: 10 }} /></SolidBtn>
                     </div>
                     <p style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.95rem)', color: 'rgba(255,255,255,.5)', lineHeight: 1.9, marginBottom: 36, maxWidth: 560 }}>
-                        بروتوكولات تعاون استراتيجية مع مؤسسات وهيئات دولية معتمدة لتعزيز جودة التدريب والاعتماد المهني.
+                        بروتوكولات وعقود تعاون مع معاهد ومراكز دولية وجهات محلية وجامعات، إلى جانب أوامر إسناد من جهات حكومية، لإثراء العملية التدريبية وتبادل الخبرات.
                     </p>
                     <div className="proto-grid">
                         {protocols.map((p, i) => (
