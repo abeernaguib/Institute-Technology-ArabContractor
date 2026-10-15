@@ -3,7 +3,7 @@ import {
     AppBar, Toolbar, Box, IconButton, InputBase,
     Badge, Button, Divider, Typography, Stack,
     List, ListItemButton, ListItemText, useMediaQuery, useTheme,
-    Drawer, Collapse, Paper, ClickAwayListener
+    Drawer, Collapse, Paper, ClickAwayListener, Skeleton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -130,16 +130,26 @@ const Navbar = () => {
     const [openSub, setOpenSub] = useState(null);
     const [openTopic, setOpenTopic] = useState(null);
     const { user } = useUser();
-    const { getToken } = useAuth();
+    const { getToken, isLoaded: authLoaded } = useAuth();
 
     // ── Admin/Manager access — driven by live DB permissions via /api/UserPermissions/me ──
     const [isAdmin, setIsAdmin] = useState(false);
+    const [adminLoading, setAdminLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
 
+        if (!authLoaded) return () => { cancelled = true; };
+
         const loadAdminAccess = async () => {
-            if (!user) { setIsAdmin(false); return; }
+            setAdminLoading(true);
+            if (!user) {
+                if (!cancelled) {
+                    setIsAdmin(false);
+                    setAdminLoading(false);
+                }
+                return;
+            }
             try {
                 let token = null;
                 try { token = await getToken(); } catch (_) { }
@@ -157,12 +167,14 @@ const Navbar = () => {
             } catch (err) {
                 console.error('Failed to check admin access:', err);
                 if (!cancelled) setIsAdmin(false);
+            } finally {
+                if (!cancelled) setAdminLoading(false);
             }
         };
 
         loadAdminAccess();
         return () => { cancelled = true; };
-    }, [user, getToken]);
+    }, [authLoaded, user, getToken]);
 
     const navigate = useNavigate();
     const theme = useTheme();
@@ -485,7 +497,9 @@ const Navbar = () => {
                                     }}>
                                         <List sx={{ p: 1 }}>
                                             {loading
-                                                ? <ListItemButton><ListItemText primary={t('common.loading')} primaryTypographyProps={{ fontSize: 13, fontFamily: '"Noto Kufi Arabic",serif', color: '#666' }} /></ListItemButton>
+                                                ? <Box sx={{ minHeight: 300, p: 1 }}>
+                                                    {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={42} sx={{ mb: 1, borderRadius: 1.5 }} />)}
+                                                </Box>
                                                 : error
                                                     ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontSize: 13, fontFamily: '"Noto Kufi Arabic",serif', color: '#f44336' }} /></ListItemButton>
                                                     : mainCourses.map(cat => (
@@ -519,7 +533,9 @@ const Navbar = () => {
                                     </Box>
                                     <Box sx={{ flex: 1, p: 2.5, bgcolor: 'white', overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' } }}>
                                         {loading
-                                            ? <Box sx={{ textAlign: 'center', py: 4 }}><Typography sx={{ color: '#666', fontFamily: '"Noto Kufi Arabic",serif' }}>{t('common.loading')}</Typography></Box>
+                                            ? <Box sx={{ minHeight: 300, py: 1 }}>
+                                                {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={28} width={`${75 + (i % 2) * 15}%`} sx={{ mb: 2 }} />)}
+                                            </Box>
                                             : error
                                                 ? <Box sx={{ textAlign: 'center', py: 4 }}><Typography sx={{ color: '#f44336', fontFamily: '"Noto Kufi Arabic",serif' }}>{t('common.error')}</Typography></Box>
                                                 : activeCategory ? (
@@ -761,7 +777,7 @@ const Navbar = () => {
                                         ))}
                                     </div>
                                 </div>
-                                {isAdmin && (
+                                {authLoaded && !adminLoading && isAdmin && (
                                     <Link to="/admin" className="admin-nav-btn">
                                         <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
                                         {t('nav.admin')}
@@ -770,12 +786,12 @@ const Navbar = () => {
                             </Stack>
                         )}
 
-                        <SignedIn>
+                        {authLoaded && <SignedIn>
                             <IconButton className="my-courses-nav-btn" component={Link} to="/my-courses" size="small" title={t('nav.myCourses')}
                                 sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
                                 <MenuBookIcon sx={{ fontSize: 22 }} />
                             </IconButton>
-                        </SignedIn>
+                        </SignedIn>}
 
                         <IconButton color="inherit" size="small" component={Link} to="/cart"
                             sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
@@ -785,18 +801,18 @@ const Navbar = () => {
                         </IconButton>
 
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <SignedOut>
+                            {authLoaded && <SignedOut>
                                 <SignInButton mode="modal">
                                     <Button variant="contained" size="small"
                                         sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
                                         {t('nav.login')}
                                     </Button>
                                 </SignInButton>
-                            </SignedOut>
-                            <SignedIn>
+                            </SignedOut>}
+                            {authLoaded && <SignedIn>
                                 <UserButton afterSignOutUrl="/" />
                                 <AuthSync />
-                            </SignedIn>
+                            </SignedIn>}
                         </Box>
                     </Box>
                 </Toolbar>
@@ -820,7 +836,9 @@ const Navbar = () => {
                         <Collapse in={mobileCoursesOpen} timeout="auto" unmountOnExit>
                             <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
                                 {loading
-                                    ? <ListItemButton><ListItemText primary={t('common.loading')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.9rem', color: '#666', textAlign: 'start' }} /></ListItemButton>
+                                    ? <Box sx={{ minHeight: 220, p: 1 }}>
+                                        {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={38} sx={{ mb: 1 }} />)}
+                                    </Box>
                                     : error
                                         ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.9rem', color: '#f44336', textAlign: 'start' }} /></ListItemButton>
                                         : mainCourses.map(course => (
@@ -866,17 +884,17 @@ const Navbar = () => {
                         <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />
 
                         {/* My Courses */}
-                        <SignedIn>
+                        {authLoaded && <SignedIn>
                             <ListItemButton component={Link} to="/my-courses" onClick={toggleDrawer(false)}
                                 sx={{ borderRadius: 1, mb: 0.5, bgcolor: 'rgba(8,101,168,0.05)', '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' } }}>
                                 <MenuBookIcon sx={{ color: '#0865a8', marginInlineEnd: 1, fontSize: 20 }} />
                                 <ListItemText primary={t('nav.myCourses')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
                             </ListItemButton>
                             <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />
-                        </SignedIn>
+                        </SignedIn>}
 
                         {/* Admin */}
-                        {isAdmin && (
+                        {authLoaded && !adminLoading && isAdmin && (
                             <>
                                 <ListItemButton component={Link} to="/Admin" onClick={toggleDrawer(false)}
                                     sx={{ borderRadius: 1, mb: 0.5, bgcolor: '#f57c00', border: '2px solid #f57c00', '&:hover': { bgcolor: '#e65100', borderColor: '#e65100' }, transition: 'all 0.2s' }}>
