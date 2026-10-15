@@ -1,7 +1,16 @@
 ﻿import React, { useState, useEffect } from "react";
 
+// Image helper: tech-01.png, tech-02.png ...
+const img = (n) => `/images/tech-${String(n).padStart(2, '0')}.png`;
+
+// Slideshow range (section 3). Change these two numbers when needed.
+const SLIDE_FIRST = 7;
+const SLIDE_LAST = 14; // update to the last image number when you send the rest
+
 export default function TechnicalEducationAlt() {
     const [modalImage, setModalImage] = useState(null);
+    const [current, setCurrent] = useState(0);
+    const [paused, setPaused] = useState(false);
 
     const openModal = (imageSrc, title) => {
         setModalImage({ src: imageSrc, title });
@@ -13,7 +22,61 @@ export default function TechnicalEducationAlt() {
         document.body.style.overflow = 'auto';
     };
 
-    
+    const introText =
+        'تسهم شركة المقاولون العرب في تطوير منظومة التعليم الفني والتدريب المهني من خلال الشراكات مع المؤسسات التعليمية والجهات الدولية، وتوفير التدريب العملي للطلاب، وتأهيل المعلمين والمدربين، وتطوير الورش والإمكانات التدريبية؛ لإعداد كوادر فنية مؤهلة تلبي احتياجات سوق العمل.';
+
+    const protocolText =
+        'يهدف البروتوكول إلى إعداد جيل جديد من خريجي المدارس الثانوية الصناعية، يمتلك المهارات الفنية والعملية والقدرة على التعامل مع التكنولوجيا الحديثة، بما يسهم في توفير كوادر فنية مؤهلة لتلبية احتياجات الشركة وسوق العمل.';
+
+    const roles = [
+        { icon: '🎓', title: 'التأهيل والرعاية', text: 'اختيار الطلاب وتوفير التدريب العملي والرعاية اللازمة، ومنح الخريجين شهادات خبرة وفقًا للنظم المعتمدة.' },
+        { icon: '👨‍🏫', title: 'تطوير الكوادر التعليمية', text: 'رفع كفاءة المعلمين من خلال برامج تدريبية فنية وإدارية متخصصة.' },
+        { icon: '🛠️', title: 'تطوير البنية التدريبية', text: 'تحديث ورش المدارس وتوفير المعدات والأدوات اللازمة وصيانتها.' }
+    ];
+
+    // Image numbers follow the PDF: صورة 1،2 / 3،4 / 5،6
+    const schools = [
+        {
+            name: 'مدرسة أبو رواش الثانوية الصناعية المشتركة',
+            major: 'فني ديزل ومعدات ثقيلة',
+            count: 40,
+            place: 'مركز التدريب على المهن الميكانيكية والكهربائية بشبرا',
+            images: [img(1), img(2)]
+        },
+        {
+            name: 'مدرسة مدينة نصر الثانوية الصناعية',
+            major: 'فني التشطيبات المعمارية',
+            count: 40,
+            place: 'مركز التدريب الحرفي على مهن التشييد والبناء',
+            images: [img(3), img(4)]
+        },
+        {
+            name: 'مدرسة المعدات الثقيلة الصناعية بالإسماعيلية',
+            major: 'فني ديزل ومعدات ثقيلة',
+            count: 38,
+            place: 'ورش دويتس التابعة لإدارة ورش العمرات بالإسماعيلية',
+            images: [img(5), img(6)]
+        }
+    ];
+
+    const totalStudents = schools.reduce((sum, s) => sum + s.count, 0);
+
+    const intlText = [
+        'في إطار التعاون مع الوكالة الألمانية للتعاون الدولي (GIZ) ومعهد ICON INSTITUT، يساهم المعهد في تنفيذ برامج تدريبية متخصصة لمدربي وزارة التربية والتعليم والتعليم الفني في قطاعي التشييد والبناء والأخشاب والأثاث، وذلك ضمن مشروع الدعم الفني لمبادرة التعليم الفني الشامل في مصر (TCTI).',
+        'ويستهدف هذا التعاون رفع كفاءة المدربين، والمساهمة في تطوير المناهج والبرامج التدريبية القائمة على نظام الجدارات، وتعزيز جودة التعليم الفني والتدريب المهني بما يتوافق مع متطلبات سوق العمل والتطورات التكنولوجية.'
+    ];
+
+    const slides = Array.from({ length: SLIDE_LAST - SLIDE_FIRST + 1 }, (_, i) => img(SLIDE_FIRST + i));
+
+    const next = () => setCurrent((c) => (c + 1) % slides.length);
+    const prev = () => setCurrent((c) => (c - 1 + slides.length) % slides.length);
+
+    // Autoplay
+    useEffect(() => {
+        if (paused || modalImage) return;
+        const t = setInterval(() => setCurrent((c) => (c + 1) % slides.length), 4000);
+        return () => clearInterval(t);
+    }, [paused, modalImage, slides.length]);
 
     return (
         <div className="tech-page-wrapper">
@@ -39,43 +102,6 @@ export default function TechnicalEducationAlt() {
                 .tech-page-wrapper * {
                     font-family: 'Noto Kufi Arabic', serif;
                     box-sizing: border-box;
-                }
-
-                .tech-fixed-bar {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    z-index: 1000;
-                    background-color: var(--bg-light);
-                    border-bottom: 2px solid #e0e0e0;
-                    padding: 0.75rem 1rem;
-                    text-align: center;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                }
-
-                .tech-fixed-bar-content {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 0.5rem;
-                    font-size: 0.95rem;
-                    flex-wrap: wrap;
-                }
-
-                .tech-nav-link {
-                    color: #000;
-                    text-decoration: none;
-                    font-weight: bold;
-                    transition: color var(--transition-speed);
-                }
-
-                .tech-nav-link:hover {
-                    color: var(--secondary-color);
-                }
-
-                .tech-nav-sep {
-                    color: #666;
                 }
 
                 .tech-main-container {
@@ -127,91 +153,220 @@ export default function TechnicalEducationAlt() {
                     margin: 0 auto;
                 }
 
-                .tech-role-card {
-                    padding: 30px;
-                }
-
-                .tech-role-title {
+                .tech-section-title {
                     color: var(--primary-color);
                     font-weight: bold;
-                    margin-bottom: 20px;
-                    font-size: clamp(1.2rem, 3vw, 1.5rem);
+                    font-size: clamp(1.2rem, 3vw, 1.6rem);
+                    margin: 50px 0 10px;
+                    padding-right: 14px;
+                    border-right: 5px solid var(--secondary-color);
                 }
 
-                .tech-role-list {
-                    list-style: none;
-                    padding: 0;
-                    margin: 0;
+                .tech-section-text {
+                    line-height: 2;
+                    font-size: clamp(0.92rem, 1.8vw, 1.02rem);
+                    margin-bottom: 25px;
                 }
 
-                .tech-role-item {
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 12px;
-                    margin-bottom: 15px;
-                    line-height: 1.8;
-                    font-size: clamp(0.9rem, 1.8vw, 1rem);
-                }
-
-                .tech-check-icon {
-                    color: var(--secondary-color);
-                    font-weight: bold;
-                    flex-shrink: 0;
-                    margin-top: 4px;
-                }
-
-                /* ✅ FIXED: Always 2 columns grid */
                 .tech-grid {
                     display: grid;
                     gap: 25px;
                     margin-bottom: 40px;
                 }
 
-                .tech-grid-2 {
-                    grid-template-columns: repeat(2, 1fr);
-                }
+                .tech-grid-3 { grid-template-columns: repeat(3, 1fr); }
 
-                .school-card {
-                    padding: 25px;
-                    border-top: 4px solid var(--primary-color);
-                    height: 100%;
+                .role-card {
+                    padding: 28px 24px;
+                    text-align: center;
+                    border-top: 4px solid var(--secondary-color);
                     margin-bottom: 0;
+                    height: 100%;
                 }
 
-                .school-card:hover {
+                .role-card:hover {
                     transform: translateY(-5px);
-                    box-shadow: 0 8px 24px rgba(8, 101, 168, 0.15);
+                    box-shadow: 0 8px 24px rgba(245, 124, 0, 0.18);
                 }
 
-                .school-card-title {
+                .role-icon { font-size: 2.2rem; margin-bottom: 10px; }
+
+                .role-title {
                     color: var(--primary-color);
                     font-weight: bold;
-                    margin-bottom: 12px;
-                    font-size: clamp(1rem, 2vw, 1.1rem);
-                    line-height: 1.5;
+                    font-size: 1.1rem;
+                    margin-bottom: 10px;
                 }
 
-                .school-card-text {
-                    font-size: clamp(0.85rem, 1.6vw, 0.95rem);
-                    line-height: 1.8;
-                    margin: 0;
+                .role-text { line-height: 1.9; font-size: 0.95rem; margin: 0; }
+
+                .school-block {
+                    margin-bottom: 30px;
+                    border-top: 4px solid var(--primary-color);
                 }
 
-                .image-card {
-                    height: clamp(250px, 40vh, 450px);
+                .school-block:hover { box-shadow: 0 8px 24px rgba(8, 101, 168, 0.15); }
+
+                .school-info { padding: 24px 28px; background: #fafcff; }
+
+                .school-name {
+                    color: var(--primary-color);
+                    font-weight: bold;
+                    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+                    margin-bottom: 16px;
+                }
+
+                .school-rows {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 14px;
+                }
+
+                .school-row {
+                    background: #fff;
+                    border: 1px solid var(--border-color);
+                    border-radius: 12px;
+                    padding: 12px 14px;
+                }
+
+                .school-row-label { font-size: 0.78rem; color: #888; margin-bottom: 4px; }
+                .school-row-value { font-weight: 700; font-size: 0.95rem; line-height: 1.6; }
+
+                .school-imgs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
+
+                .school-img {
+    height: clamp(260px, 38vw, 420px);
+    cursor: pointer;
+    overflow: hidden;
+    background: #eef1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.school-img img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.school-img:hover img { transform: scale(1.03); }
+
+                .total-banner {
+                    background: linear-gradient(135deg, var(--primary-color), #044474);
+                    color: #fff;
+                    border-radius: 18px;
+                    padding: 22px 30px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 18px;
+                    flex-wrap: wrap;
+                    margin-bottom: 40px;
+                }
+
+                .total-banner-num {
+                    font-size: clamp(2rem, 5vw, 2.8rem);
+                    font-weight: 900;
+                    color: var(--secondary-color);
+                    line-height: 1;
+                }
+
+                .total-banner-label { font-size: clamp(1rem, 2.2vw, 1.2rem); font-weight: 700; }
+
+                /* Slideshow */
+                .slideshow {
+                    background: #f5f5f5;
+                    border-radius: 18px;
+                    padding: 20px;
+                    margin-bottom: 40px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                }
+
+                .slide-frame {
+                    position: relative;
+                    width: 100%;
+                    height: clamp(260px, 50vw, 560px);
+                    background: #e9e9e9;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     cursor: pointer;
                 }
 
-                .image-card img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    transition: transform 0.5s ease;
+                .slide-frame img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    display: block;
+                    animation: fadeIn 0.5s ease;
                 }
 
-                .image-card:hover img {
-                    transform: scale(1.05);
+                .slide-btn {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 46px;
+                    height: 46px;
+                    border-radius: 50%;
+                    border: none;
+                    background: rgba(0,0,0,0.5);
+                    color: #fff;
+                    font-size: 1.4rem;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background var(--transition-speed);
+                    z-index: 2;
                 }
+
+                .slide-btn:hover { background: var(--secondary-color); }
+                .slide-btn-next { left: 14px; }
+                .slide-btn-prev { right: 14px; }
+
+                .slide-counter {
+                    position: absolute;
+                    bottom: 12px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0,0,0,0.6);
+                    color: #fff;
+                    padding: 4px 16px;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    direction: ltr;
+                }
+
+                .slide-thumbs {
+                    display: flex;
+                    gap: 10px;
+                    overflow-x: auto;
+                    padding: 14px 0 4px;
+                }
+
+                .slide-thumb {
+    width: 110px;
+    height: 72px;
+    flex-shrink: 0;
+    object-fit: contain;
+    background: #e9e9e9;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: border-color var(--transition-speed), opacity var(--transition-speed);
+    opacity: 0.7;
+}
+
+                .slide-thumb.active { border-color: var(--secondary-color); opacity: 1; }
 
                 .tech-modal-overlay {
                     position: fixed;
@@ -263,9 +418,7 @@ export default function TechnicalEducationAlt() {
                     transition: background var(--transition-speed);
                 }
 
-                .tech-modal-close:hover {
-                    background: var(--primary-color);
-                }
+                .tech-modal-close:hover { background: var(--primary-color); }
 
                 .tech-modal-title {
                     color: white;
@@ -275,58 +428,31 @@ export default function TechnicalEducationAlt() {
                 }
 
                 @media (min-width: 1920px) {
-                    .tech-main-container {
-                        max-width: 1600px;
-                    }
-                    .tech-grid-2 {
-                        gap: 40px;
-                    }
+                    .tech-main-container { max-width: 1600px; }
                 }
 
-                /* ✅ Stack to 1 column on mobile */
+                @media (max-width: 900px) {
+                    .tech-grid-3 { grid-template-columns: 1fr; }
+                    .school-rows { grid-template-columns: 1fr; }
+                }
+
                 @media (max-width: 768px) {
-                    .tech-main-container {
-                        padding-top: 100px;
-                    }
-                    .tech-header-card {
-                        padding: 30px 20px;
-                    }
-                    .tech-grid-2 {
-                        grid-template-columns: 1fr;
-                    }
+                    .tech-main-container { padding-top: 100px; }
+                    .tech-header-card { padding: 30px 20px; }
                 }
 
                 @media (max-width: 480px) {
-                    .tech-main-container {
-                        padding: 90px 15px 40px;
-                    }
-                    .tech-fixed-bar {
-                        padding: 0.5rem;
-                    }
-                    .tech-fixed-bar-content {
-                        font-size: 0.8rem;
-                    }
-                    .tech-modal-close {
-                        top: -45px;
-                        width: 35px;
-                        height: 35px;
-                    }
-                    .image-card {
-                        height: 220px;
-                    }
+                    .tech-main-container { padding: 90px 15px 40px; }
+                    .school-imgs { grid-template-columns: 1fr; }
+                    .slide-btn { width: 38px; height: 38px; }
+                    .tech-modal-close { top: -45px; width: 35px; height: 35px; }
                 }
 
                 @media (max-width: 320px) {
-                    .tech-title {
-                        font-size: 1.3rem;
-                    }
-                    .tech-nav-link {
-                        font-size: 0.75rem;
-                    }
+                    .tech-title { font-size: 1.3rem; }
                 }
             `}</style>
 
-            
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
                 <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
                     <a
@@ -343,67 +469,109 @@ export default function TechnicalEducationAlt() {
             </div>
 
             <main className="tech-main-container">
-                {/* Header Section */}
+                {/* Header */}
                 <section className="tech-card tech-header-card">
                     <h1 className="tech-title">تطوير التعليم الفني</h1>
                     <div className="tech-title-underline"></div>
                     <p className="tech-subtitle">بروتوكول التعاون بين وزارة التربية والتعليم وشركة المقاولون العرب</p>
-                    <p className="tech-description">
-                        الهدف من هذا البروتوكول إنشاء جيل جديد من خريجي المدارس الثانوية الصناعية يتميز بالجدية في العمل وقادر على تحمل المسئولية والتعامل مع التكنولوجيا الحديثة بمواقع العمل المختلفة للشركة من خلال توفير العمالة الفنية المدربة.
-                    </p>
+                    <p className="tech-description">{introText}</p>
                 </section>
 
-                {/* Strategy Section */}
-                <section className="tech-card tech-role-card">
-                    <h3 className="tech-role-title">دور الشركة في ثلاثة محاور</h3>
-                    <ul className="tech-role-list">
-                        <li className="tech-role-item">
-                            <span className="tech-check-icon">✔</span>
-                            <span>المحور الأول يتضمن إختيار أفضل العناصر المتقدمة لهذه المدارس ورعايتهم عملياً وصحياً وأخلاقياً وفي نهاية المرحلة يتم إعطاءه شهادات خبرة للخريجين معتمدة من الشركة.</span>
-                        </li>
-                        <li className="tech-role-item">
-                            <span className="tech-check-icon">✔</span>
-                            <span>المحور الثاني هو رفع كفاءة الكوادر البشرية بالمدارس بعمل دورات تدريبية للمدرسين في التخصصات المختلفة وفي النواحي الإدارية.</span>
-                        </li>
-                        <li className="tech-role-item">
-                            <span className="tech-check-icon">✔</span>
-                            <span>المحور الثالث هو قيام الشركة بتطوير الورش بهذه المدارس وإمدادها بالمعدات والأدوات المطلوبة وصيانتها.</span>
-                        </li>
-                    </ul>
+                {/* 1. Protocol */}
+                <h2 className="tech-section-title">١. بروتوكول التعاون مع وزارة التربية والتعليم والتعليم الفني</h2>
+                <p className="tech-section-text">{protocolText}</p>
+
+                <section className="tech-grid tech-grid-3">
+                    {roles.map((r, idx) => (
+                        <div key={idx} className="tech-card role-card">
+                            <div className="role-icon">{r.icon}</div>
+                            <h3 className="role-title">{r.title}</h3>
+                            <p className="role-text">{r.text}</p>
+                        </div>
+                    ))}
                 </section>
 
-                {/* Schools Grid — ✅ now always 2×2 */}
-                <section className="tech-grid tech-grid-2">
-                    <SchoolCard
-                        title="مدرسة المعدات الثقيلة الصناعية بالإسماعيلية"
-                        text="يتم التدريب الطلاب على ميكانيكا المعدات بورش فرع سيناء يوم السبت من كل أسبوع مع توفير أتوبيس لنقلهم من المدرسة إلى موقع التدريب و العودة بعد انتهاء اليوم التدريبي مع منسق الأمن بالشركة لعدد (20) طالب."
-                    />
-                    <SchoolCard
-                        title="مدرسة أبو رواش الثانوية الصناعية المشتركة"
-                        text="يتم تدريب الطلاب على ميكانيكا المعدات بواقع يومان (الأربعاء و الخميس) من كل أسبوع بالمعهد التكنولوجى - مركز تدريب شبرا من بدء العام الدراسي لعدد (18) طالب."
-                    />
-                    <SchoolCard
-                        title="مدرسة الشاطبي الثانوية الصناعية"
-                        text="يتم تدريب الطلاب بورش العامرية المركزية بالإسكندرية قسم اللحام لعدد (19) طالب."
-                    />
-                    <SchoolCard
-                        title="مدرسة مدينة نصر الثانوية الصناعية"
-                        text="التدريب يوم السبت من كل أسبوع بمركز تدريب شبرا / قسم الكهرباء لعدد (20) طالب."
-                    />
-                </section>
+                {/* 2. Beneficiary schools */}
+                <h2 className="tech-section-title">٢. المدارس المستفيدة من برامج التدريب</h2>
 
-                {/* Images Grid */}
-                <section className="tech-grid tech-grid-2">
-                    <ImageCard
-                        src="/images/tech-02.jpg"
-                        alt="صورة تعليم فني 1"
-                        onClick={() => openModal("/images/tech-02.jpg", "صورة تعليم فني 1")}
-                    />
-                    <ImageCard
-                        src="/images/tech-03.jpg"
-                        alt="صورة تعليم فني 2"
-                        onClick={() => openModal("/images/tech-03.jpg", "صورة تعليم فني 2")}
-                    />
+                {schools.map((s, idx) => (
+                    <section key={idx} className="tech-card school-block">
+                        <div className="school-info">
+                            <h3 className="school-name">{s.name}</h3>
+                            <div className="school-rows">
+                                <div className="school-row">
+                                    <div className="school-row-label">التخصص</div>
+                                    <div className="school-row-value">{s.major}</div>
+                                </div>
+                                <div className="school-row">
+                                    <div className="school-row-label">العدد</div>
+                                    <div className="school-row-value">{s.count} طالبًا</div>
+                                </div>
+                                <div className="school-row">
+                                    <div className="school-row-label">مكان التدريب</div>
+                                    <div className="school-row-value">{s.place}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="school-imgs">
+                            {s.images.map((src, k) => (
+                                <div key={k} className="school-img" onClick={() => openModal(src, s.name)}>
+                                    <img src={src} alt={s.name} />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                ))}
+
+                <div className="total-banner">
+                    <span className="total-banner-label">إجمالي عدد الطلاب</span>
+                    <span className="total-banner-num">{totalStudents}</span>
+                    <span className="total-banner-label">طالب</span>
+                </div>
+
+                {/* 3. International cooperation */}
+                <h2 className="tech-section-title">٣. التعاون الدولي لتطوير التعليم الفني والتدريب المهني</h2>
+                {intlText.map((p, idx) => (
+                    <p key={idx} className="tech-section-text">{p}</p>
+                ))}
+
+                {/* Slideshow */}
+                <section
+                    className="slideshow"
+                    onMouseEnter={() => setPaused(true)}
+                    onMouseLeave={() => setPaused(false)}
+                >
+                    <div
+                        className="slide-frame"
+                        onClick={() => openModal(slides[current], 'التعاون الدولي لتطوير التعليم الفني')}
+                    >
+                        <img key={current} src={slides[current]} alt={`صورة ${current + 1}`} />
+
+                        <button
+                            className="slide-btn slide-btn-prev"
+                            onClick={(e) => { e.stopPropagation(); prev(); }}
+                            aria-label="السابق"
+                        >›</button>
+                        <button
+                            className="slide-btn slide-btn-next"
+                            onClick={(e) => { e.stopPropagation(); next(); }}
+                            aria-label="التالي"
+                        >‹</button>
+
+                        <div className="slide-counter">{current + 1} / {slides.length}</div>
+                    </div>
+
+                    <div className="slide-thumbs">
+                        {slides.map((src, i) => (
+                            <img
+                                key={i}
+                                src={src}
+                                alt={`مصغرة ${i + 1}`}
+                                className={`slide-thumb ${i === current ? 'active' : ''}`}
+                                onClick={() => setCurrent(i)}
+                            />
+                        ))}
+                    </div>
                 </section>
             </main>
 
@@ -416,23 +584,6 @@ export default function TechnicalEducationAlt() {
                     </div>
                 </div>
             )}
-        </div>
-    );
-}
-
-function SchoolCard({ title, text }) {
-    return (
-        <div className="tech-card school-card">
-            <h4 className="school-card-title">{title}</h4>
-            <p className="school-card-text">{text}</p>
-        </div>
-    );
-}
-
-function ImageCard({ src, alt, onClick }) {
-    return (
-        <div className="tech-card image-card" onClick={onClick}>
-            <img src={src} alt={alt} />
         </div>
     );
 }
