@@ -76,23 +76,48 @@ const certificates = [
     { title: 'PMI', text: 'اعتماد معهد إدارة الأعمال (PMI) للإعداد لاجتياز شهادة PMP.', image: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/pmi.jpg' },
     { title: 'Autodesk Training Center', text: 'مركز تدريب معتمد من Autodesk لأحدث برامج الهندسة والتصميم.', image: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/autodeskCert.jpg' },
 ];
+const otherSchools = [
+    {
+        name: 'مدرسة أبو رواش الثانوية الصناعية المشتركة',
+        location: 'مركز التدريب على المهن الميكانيكية والكهربائية بشبرا',
+        IconComp: EngineeringIcon,
+        tag: 'ديزل ومعدات ثقيلة',
+        students: '40',
+        major: 'فني ديزل ومعدات ثقيلة',
+        desc: 'تدريب الطلاب على تخصص فني ديزل ومعدات ثقيلة بمركز التدريب على المهن الميكانيكية والكهربائية بشبرا.',
+    },
+    {
+        name: 'مدرسة مدينة نصر الثانوية الصناعية',
+        location: 'مركز التدريب الحرفي على مهن التشييد والبناء',
+        IconComp: PrecisionManufacturingIcon,
+        tag: 'التشطيبات المعمارية',
+        students: '40',
+        major: 'فني التشطيبات المعمارية',
+        desc: 'تدريب الطلاب على تخصص فني التشطيبات المعمارية بمركز التدريب الحرفي على مهن التشييد والبناء.',
+    },
+    {
+        name: 'مدرسة المعدات الثقيلة الصناعية بالإسماعيلية',
+        location: 'ورش دويتس — إدارة ورش العمرات بالإسماعيلية',
+        IconComp: BuildCircleIcon,
+        tag: 'ديزل ومعدات ثقيلة',
+        students: '38',
+        major: 'فني ديزل ومعدات ثقيلة',
+        desc: 'تدريب الطلاب على تخصص فني ديزل ومعدات ثقيلة بورش دويتس التابعة لإدارة ورش العمرات بالإسماعيلية.',
+    },
+];
+
+const totalSchoolStudents = otherSchools.reduce((sum, s) => sum + Number(s.students), 0);
 
 const makawlenSchool = {
-    name: 'مدرسة المقاولون العرب الفنية',
-    location: 'فروع الشركة',
+    name: 'مدرسة المقاولون العرب الثانوية الفنية للتعليم والتدريب المزدوج',
+    location: 'شبرا الخيمة — القليوبية',
     IconComp: SchoolIcon,
     tag: 'مدرسة فنية',
-    schedule: 'وفق الجدول الدراسي',
+    schedule: 'نظام الثلاث سنوات',
+    totalLabel: `إجمالي الطلاب المستفيدين: ${totalSchoolStudents} طالبًا`,
     desc: 'مدرسة فنية متكاملة تابعة لشركة المقاولون العرب، تُعِدّ جيلًا من الكوادر المهنية المؤهلة في مجالات الهندسة والحرف الصناعية بأعلى معايير الجودة.',
     link: '/Technical_Schools',
 };
-
-const otherSchools = [
-    { name: 'مدرسة المعدات الثقيلة الصناعية بالإسماعيلية', location: 'الإسماعيلية — فرع سيناء', IconComp: PrecisionManufacturingIcon, tag: 'ميكانيكا معدات', students: '20', schedule: 'كل سبت', desc: 'تدريب الطلاب على ميكانيكا المعدات بورش فرع سيناء يوم السبت، مع توفير أتوبيس لنقلهم من المدرسة إلى موقع التدريب والعودة.' },
-    { name: 'مدرسة أبو رواش الثانوية الصناعية المشتركة', location: 'مركز تدريب شبرا', IconComp: EngineeringIcon, tag: 'ميكانيكا معدات', students: '18', schedule: 'الأربعاء والخميس', desc: 'تدريب الطلاب على ميكانيكا المعدات يومين أسبوعيًا بالمعهد التكنولوجي — مركز تدريب شبرا، من بدء العام الدراسي.' },
-    { name: 'مدرسة الشاطبي الثانوية الصناعية', location: 'ورش العامرية — الإسكندرية', IconComp: ElectricBoltIcon, tag: 'قسم اللحام', students: '19', schedule: 'وفق الجدول', desc: 'تدريب الطلاب بورش العامرية المركزية بالإسكندرية، قسم اللحام، تحت إشراف مدربين متخصصين من المعهد التكنولوجي.' },
-    { name: 'مدرسة مدينة نصر الثانوية الصناعية', location: 'مركز تدريب شبرا', IconComp: ElectricBoltIcon, tag: 'قسم الكهرباء', students: '20', schedule: 'كل سبت', desc: 'التدريب يوم السبت من كل أسبوع بمركز تدريب شبرا، قسم الكهرباء، لبناء كوادر متخصصة في المجال الكهربائي الصناعي.' },
-];
 
 const protocols = [
     { name: 'جمعية المحاسبين والمراجعين المصرية', country: 'مصر', type: 'مهني' },
@@ -632,6 +657,7 @@ export default function Home() {
         .school-featured:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(8,101,168,.25);}
         .schools-other-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
         @media(max-width:600px){.schools-other-grid{grid-template-columns:1fr;}}
+        .schools-other-grid > .school-card:last-child:nth-child(odd){grid-column:1/-1;}
         .school-card{border-radius:10px;border:1px solid ${C.g3};background:${C.w};display:flex;flex-direction:column;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s;opacity:0;}
         .school-card:hover{border-color:${C.b};transform:translateY(-5px);box-shadow:0 12px 32px rgba(8,101,168,.12);}
         .sc-meta{font-family:${F};font-size:.68rem;font-weight:700;color:${C.g5};display:flex;align-items:center;gap:5px;}
@@ -1038,7 +1064,7 @@ export default function Home() {
                             <div style={{ padding: '18px 20px 24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                 <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1vw,.88rem)', color: 'rgba(255,255,255,.75)', lineHeight: 1.9, marginBottom: 20, flex: 1 }}>{makawlenSchool.desc}</p>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>
-                                    {[{ Icon: LocationOnIcon, text: makawlenSchool.location }, { Icon: CalendarTodayIcon, text: makawlenSchool.schedule }, { Icon: GroupsIcon, text: 'متعدد التخصصات' }].map(({ Icon, text }, idx) => (
+                                    {[{ Icon: LocationOnIcon, text: makawlenSchool.location }, { Icon: CalendarTodayIcon, text: makawlenSchool.schedule }, { Icon: GroupsIcon, text: makawlenSchool.totalLabel }].map(({ Icon, text }, idx) => (
                                         <span key={idx} style={{ fontFamily: F, fontSize: '.68rem', fontWeight: 700, color: 'rgba(255,255,255,.65)', display: 'flex', alignItems: 'center', gap: 6 }}>
                                             <Icon sx={{ fontSize: 14, color: 'rgba(255,255,255,.45)' }} />{text}
                                         </span>
@@ -1063,7 +1089,7 @@ export default function Home() {
                                         <p style={{ fontFamily: F, fontSize: 'clamp(.7rem,.9vw,.8rem)', color: C.g5, lineHeight: 1.8, marginBottom: 12, flex: 1 }}>{sc.desc}</p>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
                                             <span className="sc-meta"><LocationOnIcon sx={{ fontSize: 13, color: C.b }} />{sc.location}</span>
-                                            <span className="sc-meta"><CalendarTodayIcon sx={{ fontSize: 12, color: C.b }} />{sc.schedule}</span>
+                                            <span className="sc-meta"><EngineeringIcon sx={{ fontSize: 12, color: C.b }} />{sc.major}</span>
                                             <span className="sc-meta"><GroupsIcon sx={{ fontSize: 12, color: C.b }} />{sc.students} طالب</span>
                                         </div>
                                         <Link to="/technical-education" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: F, fontSize: '.72rem', fontWeight: 700, color: C.b, textDecoration: 'none', borderBottom: `1px solid ${C.b}`, paddingBottom: 2, transition: 'gap .2s' }}
