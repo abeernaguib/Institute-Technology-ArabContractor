@@ -261,7 +261,7 @@ const Team = () => {
         {
             name: 'م. محمد صبحي',
             role: 'نائب مدير المعهد للشئون العلمية والتدريب الفني والمهني',
-            image: '/images/المهندس محمد صبحى.jpg', // ⚠️ add his photo here (replaces team2.jpg)
+            image: '/images/mohamedsobhy.jpg', // ⚠️ add his photo here (replaces team2.jpg)
         },
     ];
 
