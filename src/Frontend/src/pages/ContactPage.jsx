@@ -1,32 +1,36 @@
-﻿import React from 'react';
+﻿
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-// ⚠️ Replace the placeholders with the real data for each branch.
-// mapQuery: the place name or address as written on Google Maps (or "lat,lng").
 const branches = [
     {
         id: 'suez-bridge',
         name: 'فرع جسر السويس',
-        address: 'ضعي هنا عنوان فرع جسر السويس',
-        phone: '', // optional, e.g. '+20 2 XXXXXXXX'
-        mapQuery: 'ضعي اسم المكان أو الإحداثيات',
+        address:
+            'شارع جسر السويس، بجوار حديقة بدر - قسم أول السلام - محافظة القاهرة',
+        phone: '',
+        mapQuery:
+            'شارع جسر السويس، بجوار حديقة بدر، القاهرة، مصر',
+        mapUrl:
+            'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d448.2816748071371!2d31.363858321211197!3d30.129179249183274!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1458168674f9cd17%3A0x573b410ceb2fb418!2z2YXYsdmD2LIg2KrYr9ix2YrYqCDYp9mE2YXZgtin2YjZhNmK2YYg2KfZhNi52LHYqCDYqNis2LPYsSDYp9mE2LPZiNmK2LM!5e0!3m2!1sen!2seg!4v1792323191563!5m2!1sen!2seg',
     },
     {
         id: 'shubra',
         name: 'فرع شبرا',
-        address: 'ضعي هنا عنوان فرع شبرا',
-        phone: '', // optional
-        mapQuery: 'ضعي اسم المكان أو الإحداثيات',
+        address:
+            '١٠ شارع ٦ أكتوبر – ترعة الإسماعيلية – شبرا الخيمة - القليوبية',
+        phone: '',
+        mapQuery:
+            '10 شارع 6 أكتوبر، ترعة الإسماعيلية، شبرا الخيمة، القليوبية، مصر',
+        mapUrl:
+            'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3451.3760616667278!2d31.269711987062795!3d30.11205081014445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1458158ff5add285%3A0xf21e535c3564ef46!2z2YXYsdmD2LIg2KrYr9ix2YrYqCDYp9mE2YXYudmH2K8g2KfZhNiq2YPZhtmI2YTYrNmKINio2LTYqNix2Kc!5e0!3m2!1sen!2seg!4v1792323325741!5m2!1sen!2seg',
     },
 ];
 
-const embedUrl = (q) => `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
-const openUrl = (q) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
-
 export default function ContactPage() {
     const { t, i18n } = useTranslation();
-    const isRTL = i18n.language === 'ar';
+    const isRTL = i18n.language.startsWith('ar');
 
     const cards = [
         {
@@ -34,18 +38,36 @@ export default function ContactPage() {
             borderColor: 'border-blue-500',
             iconBg: 'bg-blue-100',
             iconColor: 'text-blue-600',
-            icon: <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />,
-            content: <p className="leading-relaxed text-gray-600">{t('contact2.address')}</p>,
+            icon: (
+                <path
+                    fillRule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clipRule="evenodd"
+                />
+            ),
+            content: (
+                <p className="leading-relaxed text-gray-600">
+                    {t('contact2.address')}
+                </p>
+            ),
         },
         {
             key: 'phone',
             borderColor: 'border-green-500',
             iconBg: 'bg-green-100',
             iconColor: 'text-green-600',
-            icon: <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />,
+            icon: (
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+            ),
             content: (
                 <p className="text-gray-600">
-                    <a href="tel:+20223892120" dir="ltr" className="inline-block transition-colors hover:text-green-600">+20 2 23892120</a>
+                    <a
+                        href="tel:+20223892120"
+                        dir="ltr"
+                        className="inline-block transition-colors hover:text-green-600"
+                    >
+                        +20 2 23892120
+                    </a>
                 </p>
             ),
         },
@@ -54,10 +76,20 @@ export default function ContactPage() {
             borderColor: 'border-purple-500',
             iconBg: 'bg-purple-100',
             iconColor: 'text-purple-600',
-            icon: <><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></>,
+            icon: (
+                <>
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </>
+            ),
             content: (
                 <p className="text-gray-600">
-                    <a href="mailto:icemt@arabcont.com" className="break-all transition-colors hover:text-purple-600">icemt@arabcont.com</a>
+                    <a
+                        href="mailto:icemt@arabcont.com"
+                        className="break-all transition-colors hover:text-purple-600"
+                    >
+                        icemt@arabcont.com
+                    </a>
                 </p>
             ),
         },
@@ -66,55 +98,107 @@ export default function ContactPage() {
             borderColor: 'border-orange-500',
             iconBg: 'bg-orange-100',
             iconColor: 'text-orange-600',
-            icon: <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />,
+            icon: (
+                <path
+                    fillRule="evenodd"
+                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                    clipRule="evenodd"
+                />
+            ),
             content: (
                 <p className="text-gray-600">
-                    <a href="tel:+20223892025" dir="ltr" className="inline-block transition-colors hover:text-orange-600">+20 2 23892025</a>
+                    <a
+                        href="tel:+20223892025"
+                        dir="ltr"
+                        className="inline-block transition-colors hover:text-orange-600"
+                    >
+                        +20 2 23892025
+                    </a>
                 </p>
             ),
         },
     ];
 
     return (
-        <div className="bg-white-50 min-h-screen" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div
+            className="min-h-screen bg-white"
+            dir={isRTL ? 'rtl' : 'ltr'}
+        >
             {/* Breadcrumb */}
-            <div className="fixed left-0 z-50 w-full border-b border-gray-300 bg-[#F5F7E1] px-5 py-2" style={{ top: 70 }}>
+            <div
+                className="fixed left-0 z-50 w-full border-b border-gray-300 bg-[#F5F7E1] px-5 py-2"
+                style={{ top: 70 }}
+            >
                 <div className="text-center">
                     <span className="text-base">
-                        <Link to="/" className="ml-3 text-[#0865a8] font-bold hover:text-[#f57c00] transition-colors">
+                        <Link
+                            to="/"
+                            className="ml-3 font-bold text-[#0865a8] transition-colors hover:text-[#f57c00]"
+                        >
                             {t('nav.home')}
                         </Link>
-                        <span className="text-gray-500 mx-1">-</span>
-                        <span className="mr-3 text-gray-700">{t('contact2.title')}</span>
+                        <span className="mx-1 text-gray-500">-</span>
+                        <span className="mr-3 text-gray-700">
+                            {t('contact2.title')}
+                        </span>
                     </span>
                 </div>
             </div>
 
             <div className="pt-16">
                 {/* Contact Cards */}
-                <section className="from-blue-55 bg-gradient-to-b to-white py-12">
+                <section className="bg-gradient-to-b from-blue-50 to-white py-12">
                     <div className="container mx-auto max-w-6xl px-4">
-                        <h1 className="mb-12 text-center text-3xl font-bold text-gray-800">{t('contact2.sectionTitle')}</h1>
+                        <h1 className="mb-12 text-center text-3xl font-bold text-gray-800">
+                            {t('contact2.sectionTitle')}
+                        </h1>
+
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                            {cards.map(({ key, borderColor, iconBg, iconColor, icon, content }) => (
-                                <div key={key} className={`rounded-lg border-t-4 ${borderColor} bg-white p-6 text-center shadow-lg transition-shadow duration-300 hover:shadow-xl`}>
-                                    <div className="mb-4 flex justify-center">
-                                        <div className={`flex h-16 w-16 items-center justify-center rounded-full ${iconBg}`}>
-                                            <svg className={`h-8 w-8 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">{icon}</svg>
+                            {cards.map(
+                                ({
+                                    key,
+                                    borderColor,
+                                    iconBg,
+                                    iconColor,
+                                    icon,
+                                    content,
+                                }) => (
+                                    <div
+                                        key={key}
+                                        className={`rounded-lg border-t-4 ${borderColor} bg-white p-6 text-center shadow-lg transition-shadow duration-300 hover:shadow-xl`}
+                                    >
+                                        <div className="mb-4 flex justify-center">
+                                            <div
+                                                className={`flex h-16 w-16 items-center justify-center rounded-full ${iconBg}`}
+                                            >
+                                                <svg
+                                                    className={`h-8 w-8 ${iconColor}`}
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    {icon}
+                                                </svg>
+                                            </div>
                                         </div>
+
+                                        <h3 className="mb-3 text-xl font-semibold text-gray-800">
+                                            {t(`contact2.${key}`)}
+                                        </h3>
+                                        {content}
                                     </div>
-                                    <h3 className="mb-3 text-xl font-semibold text-gray-800">{t(`contact2.${key}`)}</h3>
-                                    {content}
-                                </div>
-                            ))}
+                                )
+                            )}
                         </div>
                     </div>
                 </section>
 
-                {/* Main map (existing) */}
+                {/* Main Map - Existing Map */}
                 <section className="bg-white py-12">
                     <div className="container mx-auto max-w-6xl px-4">
-                        <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">{t('contact2.mapTitle')}</h2>
+                        <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">
+                            {t('contact2.mapTitle')}
+                        </h2>
+
                         <div className="overflow-hidden rounded-lg shadow-xl">
                             <iframe
                                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1726.693694379521!2d31.307966656640538!3d30.054428425055146!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14583effe7c41675%3A0x4135ec1bd4322411!2z2KfZhNmF2YLYp9mI2YTZiNmGINin2YTYudix2KggLSDYp9mE2YXYudmH2K8g2KfZhNiq2YPZhdmI2YTZiNis2Yog2YTZh9mG2K_Ys9ipINin2YTYqti02YrZitivINmI2KfZhNll2K_Yp9ix2Kk!5e0!3m2!1sen!2seg!4v1598525338596!5m2!1sen!2seg"
@@ -133,48 +217,72 @@ export default function ContactPage() {
                 <section className="bg-gray-50 py-12">
                     <div className="container mx-auto max-w-6xl px-4">
                         <h2 className="mb-10 text-center text-3xl font-bold text-gray-800">
-                            {t('contact2.branchesTitle', { defaultValue: 'فروعنا' })}
+                            {t('contact2.branchesTitle', {
+                                defaultValue: 'فروعنا',
+                            })}
                         </h2>
+
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                             {branches.map((b) => (
-                                <div key={b.id} className="overflow-hidden rounded-lg border-t-4 border-[#f57c00] bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl">
+                                <div
+                                    key={b.id}
+                                    className="overflow-hidden rounded-lg border-t-4 border-[#f57c00] bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl"
+                                >
                                     <div className="p-6">
-                                        <h3 className="mb-3 text-xl font-bold text-[#0865a8]">{b.name}</h3>
+                                        <h3 className="mb-3 text-xl font-bold text-[#0865a8]">
+                                            {b.name}
+                                        </h3>
 
                                         <div className="mb-2 flex items-start gap-2 text-gray-600">
-                                            <svg className="mt-1 h-5 w-5 flex-shrink-0 text-[#f57c00]" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                            <svg
+                                                className="mt-1 h-5 w-5 flex-shrink-0 text-[#f57c00]"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                                    clipRule="evenodd"
+                                                />
                                             </svg>
-                                            <p className="leading-relaxed">{b.address}</p>
+                                            <p className="leading-relaxed">
+                                                {b.address}
+                                            </p>
                                         </div>
 
                                         {b.phone && (
                                             <div className="mb-2 flex items-center gap-2 text-gray-600">
-                                                <svg className="h-5 w-5 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg
+                                                    className="h-5 w-5 flex-shrink-0 text-green-600"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
                                                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                                 </svg>
-                                                <a href={`tel:${b.phone.replace(/\s/g, '')}`} dir="ltr" className="transition-colors hover:text-green-600">{b.phone}</a>
+                                                <a
+                                                    href={`tel:${b.phone.replace(/\s/g, '')}`}
+                                                    dir="ltr"
+                                                    className="transition-colors hover:text-green-600"
+                                                >
+                                                    {b.phone}
+                                                </a>
                                             </div>
                                         )}
 
-                                        <a
-                                            href={openUrl(b.mapQuery)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="mt-3 inline-flex items-center gap-2 rounded-md bg-[#0865a8] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#f57c00]"
-                                        >
-                                            {t('contact2.openInMaps', { defaultValue: 'فتح في خرائط جوجل' })}
-                                        </a>
+                                        
                                     </div>
 
                                     <iframe
-                                        src={embedUrl(b.mapQuery)}
+                                        src={b.mapUrl}
                                         width="100%"
                                         height="300"
-                                        style={{ border: 0, display: 'block' }}
+                                        style={{
+                                            border: 0,
+                                            display: 'block',
+                                        }}
                                         allowFullScreen
                                         loading="lazy"
-                                        referrerPolicy="no-referrer-when-downgrade"
+                                        referrerPolicy="strict-origin-when-cross-origin"
                                         title={b.name}
                                     />
                                 </div>
