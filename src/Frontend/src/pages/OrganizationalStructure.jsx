@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearchPlus, FaTimes, FaDownload, FaUserTie, FaSitemap } from 'react-icons/fa';
-import orgChart from '../assets/00الهيكل.png'; // adjust the path/extension to your folder
+import orgChart from '../assets/hykl.png'; // adjust the path/extension to your folder
 import './overview.css';
 import './organizational-structure.css';
 
