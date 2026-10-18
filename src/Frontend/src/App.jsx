@@ -18,6 +18,21 @@ function App() {
         document.documentElement.lang = i18n.language;
     }, [i18n.language]);
 
+    // Reveal the page once React has mounted and the styles are applied.
+    // Until then #root is hidden (see index.html) so the unstyled prerendered HTML never shows.
+    useEffect(() => {
+        const root = document.getElementById('root');
+        const reveal = () =>
+            requestAnimationFrame(() => root?.classList.add('app-ready'));
+
+        // wait for the fonts, but never longer than 1.5s
+        const fontsReady = document.fonts?.ready ?? Promise.resolve();
+        Promise.race([
+            fontsReady,
+            new Promise((resolve) => setTimeout(resolve, 1500)),
+        ]).then(reveal);
+    }, []);
+
     return (
         <>
             {/* Navbar stays eager — it's above the fold on every page */}
