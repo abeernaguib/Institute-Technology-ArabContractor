@@ -527,9 +527,14 @@ export default function ICMETTests() {
                     ))}
                 </div>
 
-                {/* Objectives + image */}
                 <section className="content-section">
-                    <div className="content-grid">
+                    {/* Top Full-Width Image */}
+                    <div className="main-banner-image" onClick={() => setSelectedImg('/images/t1.jpeg')}>
+                        <img src="/images/t1.jpeg" alt="Testing facilities" />
+                    </div>
+
+                    {/* Content Container spanning full width */}
+                    <div className="content-container">
                         <div className="content-text">
                             <div className="list-container">
                                 <ul className="custom-list">
@@ -544,17 +549,15 @@ export default function ICMETTests() {
                                 </ul>
                             </div>
                         </div>
-                        <div className="content-image" onClick={() => setSelectedImg('/images/test-01.jpg')}>
-                            <img src="/images/test-01.jpg" alt="Testing facilities" />
-                        </div>
                     </div>
 
+                    {/* Bottom Image Grid */}
                     <div className="image-grid">
-                        <div className="content-image" onClick={() => setSelectedImg('/images/test-02.jpg')}>
-                            <img src="/images/test-02.jpg" alt="Testing environment" />
+                        <div className="content-image" onClick={() => setSelectedImg('/images/t2.jpg')}>
+                            <img src="/images/t2.jpg" alt="Testing environment" />
                         </div>
-                        <div className="content-image" onClick={() => setSelectedImg('/images/test-03.jpg')}>
-                            <img src="/images/test-03.jpg" alt="Testing sessions" />
+                        <div className="content-image" onClick={() => setSelectedImg('/images/t3.jpg')}>
+                            <img src="/images/t3.jpg" alt="Testing sessions" />
                         </div>
                     </div>
                 </section>
