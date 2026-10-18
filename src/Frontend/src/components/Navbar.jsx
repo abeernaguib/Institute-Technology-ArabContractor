@@ -11,7 +11,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import logo from '../assets/black.webp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -271,6 +271,19 @@ const Navbar = () => {
     const { user } = useUser();
     const { getToken, isLoaded: authLoaded } = useAuth();
 
+    // ── Desktop programs menu: open/close is controlled by state (hover, click, route change, Escape) ──
+    const [coursesMenuOpen, setCoursesMenuOpen] = useState(false);
+    const closeTimer = useRef(null);
+
+    const openCoursesMenu = () => {
+        clearTimeout(closeTimer.current);
+        setCoursesMenuOpen(true);
+    };
+    const closeCoursesMenu = (delay = 120) => {
+        clearTimeout(closeTimer.current);
+        closeTimer.current = setTimeout(() => setCoursesMenuOpen(false), delay);
+    };
+
     // ── Admin/Manager access — driven by live DB permissions via /api/UserPermissions/me ──
     const [isAdmin, setIsAdmin] = useState(false);
     const [adminLoading, setAdminLoading] = useState(true);
@@ -316,10 +329,18 @@ const Navbar = () => {
     }, [authLoaded, user, getToken]);
 
     const navigate = useNavigate();
+    const location = useLocation();
     const theme = useTheme();
     // noSsr: read the real screen size on the very first render (no desktop-menu flash on phones)
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'), { noSsr: true });
     const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
+
+    // Close the programs menu on every page change and drop keyboard focus from inside it
+    useEffect(() => {
+        setCoursesMenuOpen(false);
+        const el = document.activeElement;
+        if (el && el.closest && el.closest('.courses-dropdown-wrapper')) el.blur();
+    }, [location.pathname]);
 
     const updateCartCount = () => {
         try {
@@ -341,7 +362,10 @@ const Navbar = () => {
         } catch { setRecentSearches([]); }
     }, []);
 
-    useEffect(() => () => clearTimeout(hoverTimer.current), []);
+    useEffect(() => () => {
+        clearTimeout(hoverTimer.current);
+        clearTimeout(closeTimer.current);
+    }, []);
 
     const saveRecentSearch = useCallback((term) => {
         if (!term.trim()) return;
@@ -417,7 +441,7 @@ const Navbar = () => {
     const menuNodes = useMemo(() => buildMenuNodes(mainCourses), [mainCourses]);
     const activeNode = menuNodes.find(n => n.id === selectedCatId) || menuNodes[0];
 
-     //One group card inside the desktop mega menu(same look with or without sub - items)
+    // One group card inside the desktop mega menu (same look with or without sub-items)
     const renderGroup = (child, idx) => {
         const hasKids = child.children?.length > 0;
         const Title = child.link ? Link : 'div';
@@ -570,9 +594,18 @@ const Navbar = () => {
                     top: -30px; left: 0; right: 0;
                     height: 30px;
                 }
-                .courses-dropdown-wrapper:hover .courses-dropdown-menu,
-                .courses-dropdown-wrapper:focus-within .courses-dropdown-menu {
-                    opacity: 1; visibility: visible;
+
+                /* Open state is controlled by React (hover / click / route change / Escape) */
+                .courses-dropdown-wrapper.is-open .courses-dropdown-menu {
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateX(-50%) translateY(0);
+                }
+
+                /* Keyboard users (Tab key) can still open it; mouse clicks no longer keep it open */
+                .courses-dropdown-wrapper:has(:focus-visible) .courses-dropdown-menu {
+                    opacity: 1;
+                    visibility: visible;
                     transform: translateX(-50%) translateY(0);
                 }
 
@@ -605,10 +638,10 @@ const Navbar = () => {
                     border-bottom: 1px solid #f0f0f0;
                 }
                 .mega-group-head--solo {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
+                    border-bottom: none;
+                    margin-bottom: 0;
+                    padding-bottom: 0;
+                }
                 .mega-group-title {
                     display: flex; align-items: flex-start; gap: 8px;
                     color: #0865a8; font-weight: 700; font-size: 0.86rem; line-height: 1.6;
@@ -767,12 +800,26 @@ const Navbar = () => {
                                     </div>
                                 </div>
 
-                                {/* 2. الخطة التدريبية — redesigned mega menu */}
-                                <div className="courses-dropdown-wrapper">
+                                {/* 2. الخطة التدريبية — redesigned mega menu (open/close controlled by state) */}
+                                <div
+                                    className={`courses-dropdown-wrapper${coursesMenuOpen ? ' is-open' : ''}`}
+                                    onMouseEnter={openCoursesMenu}
+                                    onMouseLeave={() => closeCoursesMenu()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Escape') {
+                                            setCoursesMenuOpen(false);
+                                            const el = document.activeElement;
+                                            if (el && e.currentTarget.contains(el)) el.blur();
+                                        }
+                                    }}
+                                >
                                     <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>
                                         {trainingPlanLabel}
                                     </Button>
-                                    <div className="courses-dropdown-menu">
+                                    <div
+                                        className="courses-dropdown-menu"
+                                        onClick={(e) => { if (e.target.closest('a')) setCoursesMenuOpen(false); }}
+                                    >
                                         <Box sx={{ borderRadius: '10px', overflow: 'hidden' }} dir="rtl">
                                             <Box sx={{ display: 'flex', height: 'min(560px, calc(100vh - 150px))' }}>
 
