@@ -268,11 +268,10 @@ export default function TechnicalEducationAlt() {
                     justify-content: center;
                 }
 
+                /* School photos: fill the box, keep proportions */
                 .school-img img {
-                    max-width: 100%;
-                    max-height: 100%;
-                    width: auto;
-                    height: auto;
+                    width: 100%;
+                    height: 100%;
                     object-fit: contain;
                     display: block;
                     transition: transform 0.5s ease;
@@ -314,7 +313,7 @@ export default function TechnicalEducationAlt() {
                 .slide-frame {
                     position: relative;
                     width: 100%;
-                    height: clamp(260px, 50vw, 560px);
+                    height: clamp(280px, 55vw, 650px);
                     background: #e9e9e9;
                     border-radius: 12px;
                     overflow: hidden;
@@ -324,12 +323,11 @@ export default function TechnicalEducationAlt() {
                     cursor: pointer;
                 }
 
+                /* Slideshow photo: fill the frame, keep proportions */
                 .slide-frame img {
-                    max-width: 100%;
-                    max-height: 100%;
-                    width: auto;
-                    height: auto;
-                    object-fit: contain;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;   /* use "cover" to fill the whole frame (crops edges) */
                     display: block;
                     animation: fadeIn 0.5s ease;
                 }
@@ -417,8 +415,9 @@ export default function TechnicalEducationAlt() {
                 }
 
                 .tech-modal-image {
-                    max-width: 100%;
-                    max-height: 80vh;
+                    width: 90vw;
+                    max-width: 1400px;
+                    height: 80vh;
                     border-radius: 8px;
                     object-fit: contain;
                     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
@@ -461,27 +460,27 @@ export default function TechnicalEducationAlt() {
                 }
 
                 @media (max-width: 768px) {
-    .tech-main-container { padding-top: 100px; }
-    .tech-header-card { padding: 30px 20px; }
+                    .tech-main-container { padding-top: 100px; }
+                    .tech-header-card { padding: 30px 20px; }
 
-    /* Stack the school images under each other */
-    .school-imgs {
-        flex-direction: column;
-        gap: 12px;
-        padding-bottom: 12px;
-    }
+                    /* Stack the school images under each other */
+                    .school-imgs {
+                        flex-direction: column;
+                        gap: 12px;
+                        padding-bottom: 12px;
+                    }
 
-    .school-imgs .school-img {
-        width: 100%;
-    }
-}
+                    .school-imgs .school-img {
+                        width: 100%;
+                    }
+                }
 
-@media (max-width: 480px) {
-    .tech-main-container { padding: 90px 15px 40px; }
+                @media (max-width: 480px) {
+                    .tech-main-container { padding: 90px 15px 40px; }
 
-    .slide-btn { width: 38px; height: 38px; }
-    .tech-modal-close { top: -45px; width: 35px; height: 35px; }
-}
+                    .slide-btn { width: 38px; height: 38px; }
+                    .tech-modal-close { top: -45px; width: 35px; height: 35px; }
+                }
 
                 @media (max-width: 320px) {
                     .tech-title { font-size: 1.3rem; }
