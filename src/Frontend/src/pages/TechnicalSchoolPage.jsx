@@ -25,7 +25,7 @@ export default function TechnicalSchoolPage() {
 
     // Images are named 1.png ... 13.png (no captions)
     const images = Array.from({ length: 13 }, (_, i) => ({
-        src: `/images/${i + 1}.png`
+        src: `/images/t3lem/${i + 1}.jpg`
     }));
 
     const [currentImage, setCurrentImage] = useState(0);
