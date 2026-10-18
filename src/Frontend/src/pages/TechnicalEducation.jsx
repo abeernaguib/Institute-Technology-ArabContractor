@@ -461,18 +461,27 @@ export default function TechnicalEducationAlt() {
                 }
 
                 @media (max-width: 768px) {
-                    .tech-main-container { padding-top: 100px; }
-                    .tech-header-card { padding: 30px 20px; }
-                }
+    .tech-main-container { padding-top: 100px; }
+    .tech-header-card { padding: 30px 20px; }
 
-                @media (max-width: 480px) {
-                    .tech-main-container { padding: 90px 15px 40px; }
+    /* Stack the school images under each other */
+    .school-imgs {
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 12px;
+    }
 
-                    .school-imgs .school-img { width: 100%; }
+    .school-imgs .school-img {
+        width: 100%;
+    }
+}
 
-                    .slide-btn { width: 38px; height: 38px; }
-                    .tech-modal-close { top: -45px; width: 35px; height: 35px; }
-                }
+@media (max-width: 480px) {
+    .tech-main-container { padding: 90px 15px 40px; }
+
+    .slide-btn { width: 38px; height: 38px; }
+    .tech-modal-close { top: -45px; width: 35px; height: 35px; }
+}
 
                 @media (max-width: 320px) {
                     .tech-title { font-size: 1.3rem; }

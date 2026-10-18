@@ -299,6 +299,20 @@ export default function ICMETTests() {
 
                 .content-image:hover img { transform: scale(1.02); }
 
+                /* Same size for every image inside the grid */
+                .image-grid .content-image {
+                    aspect-ratio: 4 / 3;
+                }
+
+                .image-grid .content-image img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;      /* fills the box, crops the edges a little */
+                    object-position: center;
+                    display: block;
+                    transition: transform 0.3s ease;
+                }
+
                 .list-container {
                     background: white;
                     padding: 1.2rem;
