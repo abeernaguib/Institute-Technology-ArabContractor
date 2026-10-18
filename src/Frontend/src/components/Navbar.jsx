@@ -182,6 +182,21 @@ const buildMenuNodes = (cats) => cats.map(cat => {
 const countLeaves = (node) =>
     node.children?.length ? node.children.reduce((s, c) => s + countLeaves(c), 0) : 1;
 
+// total number of nodes inside a node (used to estimate its height)
+const nodeWeight = (n) =>
+    1 + (n.children?.reduce((s, c) => s + nodeWeight(c), 0) || 0);
+
+// Split groups into columns: each next group goes into the currently shortest column
+const distributeToColumns = (items, cols = 2) => {
+    const columns = Array.from({ length: cols }, () => ({ h: 0, items: [] }));
+    items.forEach((item, idx) => {
+        const target = columns.reduce((a, b) => (b.h < a.h ? b : a));
+        target.items.push({ item, idx });
+        target.h += nodeWeight(item) + 2; // +2 = group header and padding
+    });
+    return columns.map((c) => c.items);
+};
+
 // Desktop dropdown link (handles PDFs opening in a new tab)
 const DropdownLink = ({ item }) => {
     const pdf = isPdfPath(item.path);
@@ -219,6 +234,11 @@ const Navbar = () => {
     useEffect(() => {
         i18n.changeLanguage('ar');
     }, [i18n]);
+
+    // Keep the real navbar hidden until the component has mounted and its styles are applied.
+    // This removes the "unstyled navbar flash" (huge icons, plain text) on page load.
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
 
     const trainingPlanLabel = t('nav.trainingPlan', { defaultValue: 'الدورات التدريبية' });
     const mediaLabel = t('nav.media', { defaultValue: 'الإعلام والميديا' });
@@ -297,8 +317,9 @@ const Navbar = () => {
 
     const navigate = useNavigate();
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-    const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    // noSsr: read the real screen size on the very first render (no desktop-menu flash on phones)
+    const isMobile = useMediaQuery(theme.breakpoints.down('lg'), { noSsr: true });
+    const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
 
     const updateCartCount = () => {
         try {
@@ -395,6 +416,29 @@ const Navbar = () => {
     // Uniform tree for the programs menu
     const menuNodes = useMemo(() => buildMenuNodes(mainCourses), [mainCourses]);
     const activeNode = menuNodes.find(n => n.id === selectedCatId) || menuNodes[0];
+
+     //One group card inside the desktop mega menu(same look with or without sub - items)
+    const renderGroup = (child, idx) => {
+        const hasKids = child.children?.length > 0;
+        const Title = child.link ? Link : 'div';
+
+        return (
+            <div className="mega-group" key={child.key}>
+                <div className={`mega-group-head${hasKids ? '' : ' mega-group-head--solo'}`}>
+                    <Title
+                        {...(child.link ? { to: child.link } : {})}
+                        className="mega-group-title">
+                        <span className="mega-num">{idx + 1}</span>
+                        <span>{child.title}</span>
+                    </Title>
+                    {hasKids && child.link && (
+                        <Link to={child.link} className="mega-viewall">عرض الكل</Link>
+                    )}
+                </div>
+                {hasKids && <TreeLinks nodes={child.children} />}
+            </div>
+        );
+    };
 
     // Desktop: small delay on hover so a diagonal mouse move doesn't switch category by accident
     const hoverSelect = (id) => {
@@ -531,11 +575,19 @@ const Navbar = () => {
                     opacity: 1; visibility: visible;
                     transform: translateX(-50%) translateY(0);
                 }
+
+                /* Two independent columns: a long group no longer pushes the next group out of view */
                 .mega-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    display: flex;
                     gap: 14px;
-                    align-items: start;
+                    align-items: flex-start;
+                }
+                .mega-col {
+                    flex: 1 1 0;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 14px;
                 }
                 .mega-group {
                     border: 1px solid #eef0f2;
@@ -552,6 +604,11 @@ const Navbar = () => {
                     margin-bottom: 6px;
                     border-bottom: 1px solid #f0f0f0;
                 }
+                .mega-group-head--solo {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
                 .mega-group-title {
                     display: flex; align-items: flex-start; gap: 8px;
                     color: #0865a8; font-weight: 700; font-size: 0.86rem; line-height: 1.6;
@@ -648,410 +705,404 @@ const Navbar = () => {
                 }
             `}</style>
 
-            <AppBar
-                position="fixed" elevation={4}
-                dir="rtl"
-                sx={{ bgcolor: 'white', color: '#000', py: 0.5, top: 0, zIndex: 1100, height: 70 }}
-            >
-                <Toolbar sx={{ justifyContent: 'space-between', display: 'flex', px: { xs: 1, md: 4 } }}>
+            {/* Plain white bar shown only until the real navbar is ready (uses inline styles, so it never looks unstyled) */}
+            {!mounted && (
+                <div
+                    aria-hidden="true"
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, height: 70,
+                        background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.15)', zIndex: 1100,
+                    }}
+                />
+            )}
 
-                    {/* ── LOGO ── */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                        {isMobile && (
-                            <IconButton onClick={toggleDrawer(true)} sx={{ color: '#0865a8', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' } }}>
-                                <MenuIcon />
-                            </IconButton>
-                        )}
-                        <Stack direction="row" alignItems="center" component={Link} to="/"
-                            sx={{ textDecoration: 'none', color: 'inherit', flexShrink: 0 }}>
-                            <Box component="img" src={logo} alt="ICEMT Logo"
-                                sx={{ height: 62, width: 'auto', minWidth: 62, flexShrink: 0 }} />
-                            {!isSmallMobile && (
-                                <Box sx={{ mx: 1 }}>
-                                    <Typography variant="body2" sx={{
-                                        fontWeight: 'bold', color: '#0865a8', fontSize: '0.8rem',
-                                        whiteSpace: 'nowrap', fontFamily: FONT,
-                                    }}>
-                                        المقاولون العرب
-                                    </Typography>
-                                    <Typography variant="caption" sx={{
-                                        color: '#000', display: { xs: 'none', md: 'block' },
-                                        fontFamily: FONT,
-                                    }}>
-                                        المعهد التكنولوجى لهندسة التشييد والإدارة
-                                    </Typography>
-                                </Box>
+            {/* Real navbar: stays in the HTML (good for SEO) but is invisible until mounted */}
+            <div style={{ visibility: mounted ? 'visible' : 'hidden' }}>
+                <AppBar
+                    position="fixed" elevation={4}
+                    dir="rtl"
+                    sx={{ bgcolor: 'white', color: '#000', py: 0.5, top: 0, zIndex: 1100, height: 70 }}
+                >
+                    <Toolbar sx={{ justifyContent: 'space-between', display: 'flex', px: { xs: 1, md: 4 } }}>
+
+                        {/* ── LOGO ── */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                            {isMobile && (
+                                <IconButton onClick={toggleDrawer(true)} sx={{ color: '#0865a8', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' } }}>
+                                    <MenuIcon />
+                                </IconButton>
                             )}
-                        </Stack>
-                    </Box>
+                            <Stack direction="row" alignItems="center" component={Link} to="/"
+                                sx={{ textDecoration: 'none', color: 'inherit', flexShrink: 0 }}>
+                                <Box component="img" src={logo} alt="ICEMT Logo"
+                                    sx={{ height: 62, width: 'auto', minWidth: 62, flexShrink: 0 }} />
+                                {!isSmallMobile && (
+                                    <Box sx={{ mx: 1 }}>
+                                        <Typography variant="body2" sx={{
+                                            fontWeight: 'bold', color: '#0865a8', fontSize: '0.8rem',
+                                            whiteSpace: 'nowrap', fontFamily: FONT,
+                                        }}>
+                                            المقاولون العرب
+                                        </Typography>
+                                        <Typography variant="caption" sx={{
+                                            color: '#000', display: { xs: 'none', md: 'block' },
+                                            fontFamily: FONT,
+                                        }}>
+                                            المعهد التكنولوجى لهندسة التشييد والإدارة
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Box>
 
-                    {/* ── DESKTOP: Main menu (ordered) ── */}
-                    {!isMobile && (
-                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
+                        {/* ── DESKTOP: Main menu (ordered) ── */}
+                        {!isMobile && (
+                            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
 
-                            {/* 1. عن المعهد */}
-                            <div className="about-dropdown-wrapper">
-                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{t('nav.about')}</Button>
-                                <div className="about-dropdown-menu">
-                                    {aboutLinks.map(item => <DropdownLink key={item.ar} item={item} />)}
+                                {/* 1. عن المعهد */}
+                                <div className="about-dropdown-wrapper">
+                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{t('nav.about')}</Button>
+                                    <div className="about-dropdown-menu">
+                                        {aboutLinks.map(item => <DropdownLink key={item.ar} item={item} />)}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* 2. الخطة التدريبية — redesigned mega menu */}
-                            <div className="courses-dropdown-wrapper">
-                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>
-                                    {trainingPlanLabel}
-                                </Button>
-                                <div className="courses-dropdown-menu">
-                                    <Box sx={{ borderRadius: '10px', overflow: 'hidden' }} dir="rtl">
-                                        <Box sx={{ display: 'flex', height: '460px' }}>
+                                {/* 2. الخطة التدريبية — redesigned mega menu */}
+                                <div className="courses-dropdown-wrapper">
+                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>
+                                        {trainingPlanLabel}
+                                    </Button>
+                                    <div className="courses-dropdown-menu">
+                                        <Box sx={{ borderRadius: '10px', overflow: 'hidden' }} dir="rtl">
+                                            <Box sx={{ display: 'flex', height: 'min(560px, calc(100vh - 150px))' }}>
 
-                                            {/* Right: categories */}
-                                            <Box sx={{
-                                                width: '270px', flexShrink: 0,
-                                                borderInlineEnd: '1px solid #e0e0e0',
-                                                bgcolor: '#fafafa', overflowY: 'auto',
-                                                '&::-webkit-scrollbar': { width: '6px' },
-                                                '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' },
-                                            }}>
-                                                <List sx={{ p: 1 }}>
+                                                {/* Right: categories */}
+                                                <Box sx={{
+                                                    width: '270px', flexShrink: 0,
+                                                    borderInlineEnd: '1px solid #e0e0e0',
+                                                    bgcolor: '#fafafa', overflowY: 'auto',
+                                                    '&::-webkit-scrollbar': { width: '6px' },
+                                                    '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' },
+                                                }}>
+                                                    <List sx={{ p: 1 }}>
+                                                        {loading
+                                                            ? <Box sx={{ minHeight: 300, p: 1 }}>
+                                                                {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} variant="rounded" height={42} sx={{ mb: 1, borderRadius: 1.5 }} />)}
+                                                            </Box>
+                                                            : error
+                                                                ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontSize: 13, fontFamily: FONT, color: '#f44336' }} /></ListItemButton>
+                                                                : menuNodes.map(node => {
+                                                                    const selected = activeNode?.id === node.id;
+                                                                    return (
+                                                                        <ListItemButton key={node.key}
+                                                                            onMouseEnter={() => hoverSelect(node.id)}
+                                                                            onMouseLeave={cancelHover}
+                                                                            onFocus={() => setSelectedCatId(node.id)}
+                                                                            onClick={() => setSelectedCatId(node.id)}
+                                                                            selected={selected}
+                                                                            component={node.leaf ? Link : 'div'}
+                                                                            to={node.leaf ? node.link : undefined}
+                                                                            sx={{
+                                                                                py: 1.2, px: 1.5, mb: 0.5, borderRadius: 1.5, transition: 'all 0.2s', position: 'relative',
+                                                                                '&.Mui-selected': {
+                                                                                    bgcolor: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                                                                    '&::before': {
+                                                                                        content: '""', position: 'absolute',
+                                                                                        insetInlineEnd: 0,
+                                                                                        top: '50%', transform: 'translateY(-50%)',
+                                                                                        width: '4px', height: '60%',
+                                                                                        bgcolor: '#f57c00', borderRadius: '2px',
+                                                                                    },
+                                                                                },
+                                                                                '&:hover': { bgcolor: selected ? 'white' : 'rgba(8,101,168,0.05)' },
+                                                                            }}>
+                                                                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                                                                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: selected ? '#f57c00' : '#0865a8', flexShrink: 0 }} />
+                                                                                <ListItemText
+                                                                                    primary={node.title}
+                                                                                    sx={{ m: 0 }}
+                                                                                    primaryTypographyProps={{ fontSize: 13, fontFamily: FONT, fontWeight: selected ? 'bold' : '500', color: selected ? '#0865a8' : '#333', lineHeight: 1.5 }} />
+                                                                                {!node.leaf && <span className="mega-count">{countLeaves(node)}</span>}
+                                                                            </Box>
+                                                                        </ListItemButton>
+                                                                    );
+                                                                })
+                                                        }
+                                                    </List>
+                                                </Box>
+
+                                                {/* Left: programs of the selected category */}
+                                                <Box sx={{ flex: 1, minWidth: 0, p: 2.5, bgcolor: 'white', overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' } }}>
                                                     {loading
-                                                        ? <Box sx={{ minHeight: 300, p: 1 }}>
-                                                            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} variant="rounded" height={42} sx={{ mb: 1, borderRadius: 1.5 }} />)}
+                                                        ? <Box sx={{ minHeight: 300, py: 1 }}>
+                                                            {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={28} width={`${75 + (i % 2) * 15}%`} sx={{ mb: 2 }} />)}
                                                         </Box>
                                                         : error
-                                                            ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontSize: 13, fontFamily: FONT, color: '#f44336' }} /></ListItemButton>
-                                                            : menuNodes.map(node => {
-                                                                const selected = activeNode?.id === node.id;
-                                                                return (
-                                                                    <ListItemButton key={node.key}
-                                                                        onMouseEnter={() => hoverSelect(node.id)}
-                                                                        onMouseLeave={cancelHover}
-                                                                        onFocus={() => setSelectedCatId(node.id)}
-                                                                        onClick={() => setSelectedCatId(node.id)}
-                                                                        selected={selected}
-                                                                        component={node.leaf ? Link : 'div'}
-                                                                        to={node.leaf ? node.link : undefined}
-                                                                        sx={{
-                                                                            py: 1.2, px: 1.5, mb: 0.5, borderRadius: 1.5, transition: 'all 0.2s', position: 'relative',
-                                                                            '&.Mui-selected': {
-                                                                                bgcolor: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                                                                '&::before': {
-                                                                                    content: '""', position: 'absolute',
-                                                                                    insetInlineEnd: 0,
-                                                                                    top: '50%', transform: 'translateY(-50%)',
-                                                                                    width: '4px', height: '60%',
-                                                                                    bgcolor: '#f57c00', borderRadius: '2px',
-                                                                                },
-                                                                            },
-                                                                            '&:hover': { bgcolor: selected ? 'white' : 'rgba(8,101,168,0.05)' },
-                                                                        }}>
-                                                                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
-                                                                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: selected ? '#f57c00' : '#0865a8', flexShrink: 0 }} />
-                                                                            <ListItemText
-                                                                                primary={node.title}
-                                                                                sx={{ m: 0 }}
-                                                                                primaryTypographyProps={{ fontSize: 13, fontFamily: FONT, fontWeight: selected ? 'bold' : '500', color: selected ? '#0865a8' : '#333', lineHeight: 1.5 }} />
-                                                                            {!node.leaf && <span className="mega-count">{countLeaves(node)}</span>}
+                                                            ? <Box sx={{ textAlign: 'center', py: 4 }}><Typography sx={{ color: '#f44336', fontFamily: FONT }}>{t('common.error')}</Typography></Box>
+                                                            : activeNode ? (
+                                                                <>
+                                                                    <Box sx={{ mb: 2, pb: 1.5, borderBottom: '2px solid #f57c00', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                                                            <Box sx={{ width: 4, height: 20, bgcolor: '#f57c00', borderRadius: 1, flexShrink: 0 }} />
+                                                                            <Typography sx={{ color: '#0865a8', fontWeight: 'bold', fontFamily: FONT, fontSize: '1rem', lineHeight: 1.5 }}>{activeNode.title}</Typography>
                                                                         </Box>
-                                                                    </ListItemButton>
-                                                                );
-                                                            })
-                                                    }
-                                                </List>
-                                            </Box>
-
-                                            {/* Left: programs of the selected category */}
-                                            <Box sx={{ flex: 1, minWidth: 0, p: 2.5, bgcolor: 'white', overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' } }}>
-                                                {loading
-                                                    ? <Box sx={{ minHeight: 300, py: 1 }}>
-                                                        {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={28} width={`${75 + (i % 2) * 15}%`} sx={{ mb: 2 }} />)}
-                                                    </Box>
-                                                    : error
-                                                        ? <Box sx={{ textAlign: 'center', py: 4 }}><Typography sx={{ color: '#f44336', fontFamily: FONT }}>{t('common.error')}</Typography></Box>
-                                                        : activeNode ? (
-                                                            <>
-                                                                <Box sx={{ mb: 2, pb: 1.5, borderBottom: '2px solid #f57c00', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-                                                                        <Box sx={{ width: 4, height: 20, bgcolor: '#f57c00', borderRadius: 1, flexShrink: 0 }} />
-                                                                        <Typography sx={{ color: '#0865a8', fontWeight: 'bold', fontFamily: FONT, fontSize: '1rem', lineHeight: 1.5 }}>{activeNode.title}</Typography>
-                                                                    </Box>
-                                                                    {activeNode.link && (
-                                                                        <Link to={activeNode.link} className="mega-viewall">عرض الكل ←</Link>
-                                                                    )}
-                                                                </Box>
-
-                                                                {activeNode.leaf ? (
-                                                                    <Box sx={{ textAlign: 'center', py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                                                                        <Typography sx={{ color: '#666', fontFamily: FONT, fontSize: '0.9rem', mb: 1 }}>{t('courses.clickToView')}</Typography>
-                                                                        <Button component={Link} to={activeNode.link} variant="contained"
-                                                                            sx={{ bgcolor: '#0865a8', color: 'white', fontFamily: FONT, px: 4, py: 1, borderRadius: 2, textTransform: 'none', '&:hover': { bgcolor: '#f57c00' } }}>
-                                                                            {t('courses.details')}
-                                                                        </Button>
-                                                                    </Box>
-                                                                ) : (
-                                                                    <div className="mega-grid">
-                                                                        {(activeNode.children || []).map((child, idx) =>
-                                                                            child.children?.length ? (
-                                                                                <div className="mega-group" key={child.key}>
-                                                                                    <div className="mega-group-head">
-                                                                                        {child.link ? (
-                                                                                            <Link to={child.link} className="mega-group-title">
-                                                                                                <span className="mega-num">{idx + 1}</span>
-                                                                                                <span>{child.title}</span>
-                                                                                            </Link>
-                                                                                        ) : (
-                                                                                            <div className="mega-group-title">
-                                                                                                <span className="mega-num">{idx + 1}</span>
-                                                                                                <span>{child.title}</span>
-                                                                                            </div>
-                                                                                        )}
-                                                                                        {child.link && <Link to={child.link} className="mega-viewall">عرض الكل</Link>}
-                                                                                    </div>
-                                                                                    <TreeLinks nodes={child.children} />
-                                                                                </div>
-                                                                            ) : (
-                                                                                <div className="mega-group" key={child.key} style={{ padding: '4px 0' }}>
-                                                                                    <TreeLinks nodes={[child]} />
-                                                                                </div>
-                                                                            )
+                                                                        {activeNode.link && (
+                                                                            <Link to={activeNode.link} className="mega-viewall">عرض الكل ←</Link>
                                                                         )}
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        ) : null
-                                                }
-                                            </Box>
-                                        </Box>
+                                                                    </Box>
 
-                                        {/* Footer */}
-                                        {rootSlug && (
-                                            <Box sx={{ borderTop: '1px solid #e0e0e0', bgcolor: '#f7f9fb', px: 2.5, py: 1.2, display: 'flex', justifyContent: 'center' }}>
-                                                <Link to={`/courses/${rootSlug}`} className="mega-viewall" style={{ fontSize: '0.82rem' }}>
-                                                    عرض جميع البرامج التدريبية ←
-                                                </Link>
-                                            </Box>
-                                        )}
-                                    </Box>
-                                </div>
-                            </div>
-
-                            {/* 3. الخدمات */}
-                            <div className="services-dropdown-wrapper">
-                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{t('nav.services')}</Button>
-                                <div className="services-dropdown-menu">
-                                    {serviceLinks.map(item => <DropdownLink key={item.path} item={item} />)}
-                                </div>
-                            </div>
-
-                            {/* 4. المكتبة */}
-                            <Button color="inherit" component={Link} to="/library" sx={navBtnSx}>{t('nav.library')}</Button>
-
-                            {/* 5. الإعلام والميديا */}
-                            <div className="media-dropdown-wrapper">
-                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{mediaLabel}</Button>
-                                <div className="media-dropdown-menu">
-                                    {mediaLinks.map(item => <DropdownLink key={item.path} item={item} />)}
-                                </div>
-                            </div>
-
-                            {/* 6. تواصل معنا */}
-                            <Button color="inherit" component={Link} to="/contact" sx={navBtnSx}>{contactLabel}</Button>
-                        </Stack>
-                    )}
-
-                    {/* ── SEARCH BAR ── */}
-                    <ClickAwayListener onClickAway={() => { setSearchFocused(false); setActiveSuggestionIndex(-1); }}>
-                        <Box ref={searchBoxRef} sx={{
-                            display: 'flex', alignItems: 'center', flexGrow: 0, flexShrink: 1, justifyContent: 'center',
-                            width: { xs: 'auto', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
-                            maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
-                            mx: { xs: 0.5, sm: 1, md: 2 }, position: 'relative',
-                            minWidth: { xs: '120px', sm: '250px', lg: '220px' },
-                        }}>
-                            <Box component="form" onSubmit={handleSearchSubmit} role="search" sx={{
-                                bgcolor: searchFocused ? '#ffffff' : '#f1f3f4',
-                                borderRadius: searchFocused && dropdownVisible ? '24px 24px 0 0' : 9,
-                                display: 'flex', alignItems: 'center', px: 2, py: 0.8, width: '100%',
-                                transition: 'all 0.2s',
-                                border: searchFocused ? '1px solid #0865a8' : '1px solid transparent',
-                                boxShadow: searchFocused ? '0 0 0 2px rgba(8,101,168,0.1)' : 'none',
-                                borderBottom: searchFocused && dropdownVisible ? '1px solid #e0e0e0' : undefined,
-                            }}>
-                                <IconButton type="submit" disabled={!searchValue.trim()}
-                                    sx={{ p: 0.5, '&:hover': { bgcolor: 'transparent' }, '&.Mui-disabled': { opacity: 0.4 }, order: 3 }}
-                                    aria-label={t('courses.search')}>
-                                    <SearchIcon sx={{ color: '#0865a8', fontSize: { xs: 18, md: 22 } }} />
-                                </IconButton>
-                                <InputBase
-                                    inputRef={searchInputRef}
-                                    name="q"
-                                    value={searchValue}
-                                    onChange={e => { setSearchValue(e.target.value); setActiveSuggestionIndex(-1); }}
-                                    onFocus={() => { setSearchFocused(true); loadAllCourses(); }}
-                                    onKeyDown={handleSearchKeyDown}
-                                    placeholder={t('courses.search')}
-                                    autoComplete="off"
-                                    inputProps={{ 'aria-label': t('courses.search'), 'aria-autocomplete': 'both', 'aria-haspopup': 'true', 'aria-expanded': dropdownVisible, role: 'combobox' }}
-                                    sx={{
-                                        color: '#000', flexGrow: 1,
-                                        fontFamily: FONT,
-                                        fontSize: { xs: '0.8rem', md: '0.95rem' },
-                                        px: 1,
-                                        '& input': { textAlign: 'start' },
-                                    }}
-                                />
-                                {searchValue && (
-                                    <IconButton size="small"
-                                        onClick={() => { setSearchValue(''); setSuggestions([]); setActiveSuggestionIndex(-1); searchInputRef.current?.focus(); }}
-                                        sx={{ p: 0.5 }} aria-label={t('common.cancel')}>
-                                        <CloseIcon sx={{ fontSize: 16, color: '#888' }} />
-                                    </IconButton>
-                                )}
-                            </Box>
-
-                            {dropdownVisible && (
-                                <Paper elevation={6} sx={{
-                                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300,
-                                    borderRadius: '0 0 12px 12px', border: '1px solid #0865a8', borderTop: 'none',
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.14)', overflow: 'hidden', bgcolor: 'white',
-                                    maxHeight: '420px', overflowY: 'auto',
-                                    '&::-webkit-scrollbar': { width: '5px' },
-                                    '&::-webkit-scrollbar-thumb': { bgcolor: '#d0d0d0', borderRadius: '3px' },
-                                }}>
-                                    {suggestions.length === 0 && !searchValue.trim() && recentSearches.length > 0 && (
-                                        <>
-                                            <Box sx={{ px: 2, pt: 1.5, pb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                <HistoryIcon sx={{ fontSize: 13, color: '#aaa' }} />
-                                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', fontFamily: FONT, fontWeight: 'bold', letterSpacing: 0.6 }}>{t('search.recentSearches')}</Typography>
-                                            </Box>
-                                            {recentSearches.map((term, i) => (
-                                                <Box key={term}
-                                                    onMouseDown={() => { saveRecentSearch(term); setSearchValue(term); setSearchFocused(false); const matched = allCourses.filter(c => c.title.toLowerCase().includes(term.toLowerCase()) || c.description.toLowerCase().includes(term.toLowerCase())); navigate(`/search?q=${encodeURIComponent(term)}`, { state: { results: matched, query: term } }); }}
-                                                    onMouseEnter={() => setActiveSuggestionIndex(i)}
-                                                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 0.9, cursor: 'pointer', bgcolor: activeSuggestionIndex === i ? 'rgba(8,101,168,0.06)' : 'transparent', '&:hover': { bgcolor: 'rgba(8,101,168,0.06)' }, transition: 'background 0.15s' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                        <HistoryIcon sx={{ fontSize: 16, color: '#bbb', flexShrink: 0 }} />
-                                                        <Typography sx={{ fontFamily: FONT, fontSize: '0.87rem', color: '#333' }}>{term}</Typography>
-                                                    </Box>
-                                                    <IconButton size="small" onMouseDown={e => removeRecentSearch(term, e)} sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#f57c00' } }} aria-label={t('common.delete')}>
-                                                        <CloseIcon sx={{ fontSize: 12 }} />
-                                                    </IconButton>
+                                                                    {activeNode.leaf ? (
+                                                                        <Box sx={{ textAlign: 'center', py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                                                            <Typography sx={{ color: '#666', fontFamily: FONT, fontSize: '0.9rem', mb: 1 }}>{t('courses.clickToView')}</Typography>
+                                                                            <Button component={Link} to={activeNode.link} variant="contained"
+                                                                                sx={{ bgcolor: '#0865a8', color: 'white', fontFamily: FONT, px: 4, py: 1, borderRadius: 2, textTransform: 'none', '&:hover': { bgcolor: '#f57c00' } }}>
+                                                                                {t('courses.details')}
+                                                                            </Button>
+                                                                        </Box>
+                                                                    ) : (
+                                                                        <div className="mega-grid">
+                                                                            {distributeToColumns(activeNode.children || [], 2).map((col, ci) => (
+                                                                                <div className="mega-col" key={ci}>
+                                                                                    {col.map(({ item, idx }) => renderGroup(item, idx))}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            ) : null
+                                                    }
                                                 </Box>
-                                            ))}
-                                            <Box sx={{ height: '1px', bgcolor: '#f5f5f5', mx: 2 }} />
-                                        </>
-                                    )}
-                                    {coursesLoading && !coursesLoaded && searchValue.trim() && (
-                                        <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: FONT, fontSize: '0.82rem' }}>{t('search.loadingCourses')}</Typography></Box>
-                                    )}
-                                    {suggestions.length > 0 && (
-                                        <>
-                                            <Box sx={{ px: 2, pt: 1.5, pb: 0.8, display: 'flex', alignItems: 'center', gap: 0.8, borderBottom: '1px solid #f5f5f5' }}>
-                                                <Box sx={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                    <SearchIcon sx={{ fontSize: 10, color: 'white' }} />
-                                                </Box>
-                                                <Typography sx={{ fontSize: '0.7rem', color: '#999', fontFamily: FONT, fontWeight: 'bold', letterSpacing: 0.5 }}>{t('search.matchingCourses', { count: suggestions.length })}</Typography>
                                             </Box>
-                                            {suggestions.map((course, i) => {
-                                                const title = course.title || '';
-                                                const q = searchValue.toLowerCase();
-                                                const matchIdx = title.toLowerCase().indexOf(q);
-                                                return (
-                                                    <Box key={course.id}
-                                                        onMouseDown={e => { e.preventDefault(); saveRecentSearch(title); setSearchValue(''); setSuggestions([]); setSearchFocused(false); setActiveSuggestionIndex(-1); navigate(`/course/${course.slug}`); }}
-                                                        onMouseEnter={() => setActiveSuggestionIndex(i)}
-                                                        sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1, cursor: 'pointer', bgcolor: activeSuggestionIndex === i ? 'rgba(8,101,168,0.05)' : 'transparent', '&:hover': { bgcolor: 'rgba(8,101,168,0.05)' }, transition: 'background 0.15s', borderBottom: i < suggestions.length - 1 ? '1px solid #fafafa' : 'none' }}>
-                                                        <Box sx={{ width: 52, height: 52, flexShrink: 0, borderRadius: '10px', overflow: 'hidden', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 8px rgba(8,101,168,0.25)' }}>
-                                                            {course.image
-                                                                ? <Box component="img" src={course.image} alt={title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                : <Box sx={{ bgcolor: 'rgba(255,255,255,0.15)', borderRadius: '50%', p: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                    <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                                                </Box>
-                                                            }
-                                                        </Box>
-                                                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                                            <Typography sx={{ fontFamily: FONT, fontSize: '0.88rem', fontWeight: '600', color: '#1a1a1a', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                                {matchIdx === -1 || !searchValue ? title : (
-                                                                    <>{title.slice(0, matchIdx)}<Box component="span" sx={{ fontWeight: 'bold', color: '#0865a8', borderBottom: '1px solid rgba(8,101,168,0.3)' }}>{title.slice(matchIdx, matchIdx + searchValue.length)}</Box>{title.slice(matchIdx + searchValue.length)}</>
-                                                                )}
-                                                            </Typography>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, mt: 0.4 }}>
-                                                                <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(8,101,168,0.09)', px: 0.8, py: 0.2, borderRadius: '4px', flexShrink: 0 }}>
-                                                                    <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.courseTag')}</Typography>
-                                                                </Box>
-                                                                {(course.category || course.place) && (
-                                                                    <Typography sx={{ fontFamily: FONT, fontSize: '0.72rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                                        {course.category || course.place}
-                                                                    </Typography>
-                                                                )}
-                                                            </Box>
-                                                        </Box>
-                                                        <Box sx={{ opacity: activeSuggestionIndex === i ? 1 : 0, transition: 'opacity 0.15s', color: '#0865a8', flexShrink: 0 }}>
-                                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                                                            </svg>
-                                                        </Box>
-                                                    </Box>
-                                                );
-                                            })}
-                                        </>
-                                    )}
-                                    {!coursesLoading && coursesLoaded && searchValue.trim() && suggestions.length === 0 && (
-                                        <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: FONT, fontSize: '0.82rem' }}>{t('search.noResults', { query: searchValue })}</Typography></Box>
-                                    )}
-                                    {searchValue.trim() && (
-                                        <Box onMouseDown={e => { e.preventDefault(); executeSearch(searchValue); }}
-                                            sx={{ px: 2, py: 1, borderTop: '1px solid #f0f0f0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(8,101,168,0.02)', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' }, transition: 'background 0.15s' }}>
-                                            <SearchIcon sx={{ fontSize: 15, color: '#0865a8' }} />
-                                            <Typography sx={{ fontFamily: FONT, fontSize: '0.82rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.showAllResults', { query: searchValue })}</Typography>
-                                        </Box>
-                                    )}
-                                </Paper>
-                            )}
-                        </Box>
-                    </ClickAwayListener>
 
-                    {/* ── RIGHT-SIDE CONTROLS ── */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 }, flexShrink: 0 }}>
-                        {!isMobile && authLoaded && !adminLoading && isAdmin && (
-                            <Link to="/admin" className="admin-nav-btn">
-                                <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
-                                {t('nav.admin')}
-                            </Link>
+                                            {/* Footer */}
+                                            {rootSlug && (
+                                                <Box sx={{ borderTop: '1px solid #e0e0e0', bgcolor: '#f7f9fb', px: 2.5, py: 1.2, display: 'flex', justifyContent: 'center' }}>
+                                                    <Link to={`/courses/${rootSlug}`} className="mega-viewall" style={{ fontSize: '0.82rem' }}>
+                                                        عرض جميع البرامج التدريبية ←
+                                                    </Link>
+                                                </Box>
+                                            )}
+                                        </Box>
+                                    </div>
+                                </div>
+
+                                {/* 3. الخدمات */}
+                                <div className="services-dropdown-wrapper">
+                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{t('nav.services')}</Button>
+                                    <div className="services-dropdown-menu">
+                                        {serviceLinks.map(item => <DropdownLink key={item.path} item={item} />)}
+                                    </div>
+                                </div>
+
+                                {/* 4. المكتبة */}
+                                <Button color="inherit" component={Link} to="/library" sx={navBtnSx}>{t('nav.library')}</Button>
+
+                                {/* 5. الإعلام والميديا */}
+                                <div className="media-dropdown-wrapper">
+                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{mediaLabel}</Button>
+                                    <div className="media-dropdown-menu">
+                                        {mediaLinks.map(item => <DropdownLink key={item.path} item={item} />)}
+                                    </div>
+                                </div>
+
+                                {/* 6. تواصل معنا */}
+                                <Button color="inherit" component={Link} to="/contact" sx={navBtnSx}>{contactLabel}</Button>
+                            </Stack>
                         )}
 
-                        {authLoaded && <SignedIn>
-                            <IconButton className="my-courses-nav-btn" component={Link} to="/my-courses" size="small" title={t('nav.myCourses')}
-                                sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
-                                <MenuBookIcon sx={{ fontSize: 22 }} />
-                            </IconButton>
-                        </SignedIn>}
+                        {/* ── SEARCH BAR ── */}
+                        <ClickAwayListener onClickAway={() => { setSearchFocused(false); setActiveSuggestionIndex(-1); }}>
+                            <Box ref={searchBoxRef} sx={{
+                                display: 'flex', alignItems: 'center', flexGrow: 0, flexShrink: 1, justifyContent: 'center',
+                                width: { xs: 'auto', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
+                                maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
+                                mx: { xs: 0.5, sm: 1, md: 2 }, position: 'relative',
+                                minWidth: { xs: '120px', sm: '250px', lg: '220px' },
+                            }}>
+                                <Box component="form" onSubmit={handleSearchSubmit} role="search" sx={{
+                                    bgcolor: searchFocused ? '#ffffff' : '#f1f3f4',
+                                    borderRadius: searchFocused && dropdownVisible ? '24px 24px 0 0' : 9,
+                                    display: 'flex', alignItems: 'center', px: 2, py: 0.8, width: '100%',
+                                    transition: 'all 0.2s',
+                                    border: searchFocused ? '1px solid #0865a8' : '1px solid transparent',
+                                    boxShadow: searchFocused ? '0 0 0 2px rgba(8,101,168,0.1)' : 'none',
+                                    borderBottom: searchFocused && dropdownVisible ? '1px solid #e0e0e0' : undefined,
+                                }}>
+                                    <IconButton type="submit" disabled={!searchValue.trim()}
+                                        sx={{ p: 0.5, '&:hover': { bgcolor: 'transparent' }, '&.Mui-disabled': { opacity: 0.4 }, order: 3 }}
+                                        aria-label={t('courses.search')}>
+                                        <SearchIcon sx={{ color: '#0865a8', fontSize: { xs: 18, md: 22 } }} />
+                                    </IconButton>
+                                    <InputBase
+                                        inputRef={searchInputRef}
+                                        name="q"
+                                        value={searchValue}
+                                        onChange={e => { setSearchValue(e.target.value); setActiveSuggestionIndex(-1); }}
+                                        onFocus={() => { setSearchFocused(true); loadAllCourses(); }}
+                                        onKeyDown={handleSearchKeyDown}
+                                        placeholder={t('courses.search')}
+                                        autoComplete="off"
+                                        inputProps={{ 'aria-label': t('courses.search'), 'aria-autocomplete': 'both', 'aria-haspopup': 'true', 'aria-expanded': dropdownVisible, role: 'combobox' }}
+                                        sx={{
+                                            color: '#000', flexGrow: 1,
+                                            fontFamily: FONT,
+                                            fontSize: { xs: '0.8rem', md: '0.95rem' },
+                                            px: 1,
+                                            '& input': { textAlign: 'start' },
+                                        }}
+                                    />
+                                    {searchValue && (
+                                        <IconButton size="small"
+                                            onClick={() => { setSearchValue(''); setSuggestions([]); setActiveSuggestionIndex(-1); searchInputRef.current?.focus(); }}
+                                            sx={{ p: 0.5 }} aria-label={t('common.cancel')}>
+                                            <CloseIcon sx={{ fontSize: 16, color: '#888' }} />
+                                        </IconButton>
+                                    )}
+                                </Box>
 
-                        <IconButton color="inherit" size="small" component={Link} to="/cart"
-                            sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
-                            <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: '#f57c00', color: 'white', fontSize: '0.7rem', height: '18px', minWidth: '18px', padding: '0 4px', fontFamily: FONT } }}>
-                                <ShoppingCartIcon sx={{ fontSize: 22 }} />
-                            </Badge>
-                        </IconButton>
+                                {dropdownVisible && (
+                                    <Paper elevation={6} sx={{
+                                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300,
+                                        borderRadius: '0 0 12px 12px', border: '1px solid #0865a8', borderTop: 'none',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.14)', overflow: 'hidden', bgcolor: 'white',
+                                        maxHeight: '420px', overflowY: 'auto',
+                                        '&::-webkit-scrollbar': { width: '5px' },
+                                        '&::-webkit-scrollbar-thumb': { bgcolor: '#d0d0d0', borderRadius: '3px' },
+                                    }}>
+                                        {suggestions.length === 0 && !searchValue.trim() && recentSearches.length > 0 && (
+                                            <>
+                                                <Box sx={{ px: 2, pt: 1.5, pb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <HistoryIcon sx={{ fontSize: 13, color: '#aaa' }} />
+                                                    <Typography sx={{ fontSize: '0.7rem', color: '#aaa', fontFamily: FONT, fontWeight: 'bold', letterSpacing: 0.6 }}>{t('search.recentSearches')}</Typography>
+                                                </Box>
+                                                {recentSearches.map((term, i) => (
+                                                    <Box key={term}
+                                                        onMouseDown={() => { saveRecentSearch(term); setSearchValue(term); setSearchFocused(false); const matched = allCourses.filter(c => c.title.toLowerCase().includes(term.toLowerCase()) || c.description.toLowerCase().includes(term.toLowerCase())); navigate(`/search?q=${encodeURIComponent(term)}`, { state: { results: matched, query: term } }); }}
+                                                        onMouseEnter={() => setActiveSuggestionIndex(i)}
+                                                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 0.9, cursor: 'pointer', bgcolor: activeSuggestionIndex === i ? 'rgba(8,101,168,0.06)' : 'transparent', '&:hover': { bgcolor: 'rgba(8,101,168,0.06)' }, transition: 'background 0.15s' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                            <HistoryIcon sx={{ fontSize: 16, color: '#bbb', flexShrink: 0 }} />
+                                                            <Typography sx={{ fontFamily: FONT, fontSize: '0.87rem', color: '#333' }}>{term}</Typography>
+                                                        </Box>
+                                                        <IconButton size="small" onMouseDown={e => removeRecentSearch(term, e)} sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#f57c00' } }} aria-label={t('common.delete')}>
+                                                            <CloseIcon sx={{ fontSize: 12 }} />
+                                                        </IconButton>
+                                                    </Box>
+                                                ))}
+                                                <Box sx={{ height: '1px', bgcolor: '#f5f5f5', mx: 2 }} />
+                                            </>
+                                        )}
+                                        {coursesLoading && !coursesLoaded && searchValue.trim() && (
+                                            <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: FONT, fontSize: '0.82rem' }}>{t('search.loadingCourses')}</Typography></Box>
+                                        )}
+                                        {suggestions.length > 0 && (
+                                            <>
+                                                <Box sx={{ px: 2, pt: 1.5, pb: 0.8, display: 'flex', alignItems: 'center', gap: 0.8, borderBottom: '1px solid #f5f5f5' }}>
+                                                    <Box sx={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                        <SearchIcon sx={{ fontSize: 10, color: 'white' }} />
+                                                    </Box>
+                                                    <Typography sx={{ fontSize: '0.7rem', color: '#999', fontFamily: FONT, fontWeight: 'bold', letterSpacing: 0.5 }}>{t('search.matchingCourses', { count: suggestions.length })}</Typography>
+                                                </Box>
+                                                {suggestions.map((course, i) => {
+                                                    const title = course.title || '';
+                                                    const q = searchValue.toLowerCase();
+                                                    const matchIdx = title.toLowerCase().indexOf(q);
+                                                    return (
+                                                        <Box key={course.id}
+                                                            onMouseDown={e => { e.preventDefault(); saveRecentSearch(title); setSearchValue(''); setSuggestions([]); setSearchFocused(false); setActiveSuggestionIndex(-1); navigate(`/course/${course.slug}`); }}
+                                                            onMouseEnter={() => setActiveSuggestionIndex(i)}
+                                                            sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1, cursor: 'pointer', bgcolor: activeSuggestionIndex === i ? 'rgba(8,101,168,0.05)' : 'transparent', '&:hover': { bgcolor: 'rgba(8,101,168,0.05)' }, transition: 'background 0.15s', borderBottom: i < suggestions.length - 1 ? '1px solid #fafafa' : 'none' }}>
+                                                            <Box sx={{ width: 52, height: 52, flexShrink: 0, borderRadius: '10px', overflow: 'hidden', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 8px rgba(8,101,168,0.25)' }}>
+                                                                {course.image
+                                                                    ? <Box component="img" src={course.image} alt={title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                    : <Box sx={{ bgcolor: 'rgba(255,255,255,0.15)', borderRadius: '50%', p: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                        <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                                                    </Box>
+                                                                }
+                                                            </Box>
+                                                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                                                <Typography sx={{ fontFamily: FONT, fontSize: '0.88rem', fontWeight: '600', color: '#1a1a1a', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                    {matchIdx === -1 || !searchValue ? title : (
+                                                                        <>{title.slice(0, matchIdx)}<Box component="span" sx={{ fontWeight: 'bold', color: '#0865a8', borderBottom: '1px solid rgba(8,101,168,0.3)' }}>{title.slice(matchIdx, matchIdx + searchValue.length)}</Box>{title.slice(matchIdx + searchValue.length)}</>
+                                                                    )}
+                                                                </Typography>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, mt: 0.4 }}>
+                                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(8,101,168,0.09)', px: 0.8, py: 0.2, borderRadius: '4px', flexShrink: 0 }}>
+                                                                        <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.courseTag')}</Typography>
+                                                                    </Box>
+                                                                    {(course.category || course.place) && (
+                                                                        <Typography sx={{ fontFamily: FONT, fontSize: '0.72rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                            {course.category || course.place}
+                                                                        </Typography>
+                                                                    )}
+                                                                </Box>
+                                                            </Box>
+                                                            <Box sx={{ opacity: activeSuggestionIndex === i ? 1 : 0, transition: 'opacity 0.15s', color: '#0865a8', flexShrink: 0 }}>
+                                                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                                                                </svg>
+                                                            </Box>
+                                                        </Box>
+                                                    );
+                                                })}
+                                            </>
+                                        )}
+                                        {!coursesLoading && coursesLoaded && searchValue.trim() && suggestions.length === 0 && (
+                                            <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: FONT, fontSize: '0.82rem' }}>{t('search.noResults', { query: searchValue })}</Typography></Box>
+                                        )}
+                                        {searchValue.trim() && (
+                                            <Box onMouseDown={e => { e.preventDefault(); executeSearch(searchValue); }}
+                                                sx={{ px: 2, py: 1, borderTop: '1px solid #f0f0f0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(8,101,168,0.02)', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' }, transition: 'background 0.15s' }}>
+                                                <SearchIcon sx={{ fontSize: 15, color: '#0865a8' }} />
+                                                <Typography sx={{ fontFamily: FONT, fontSize: '0.82rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.showAllResults', { query: searchValue })}</Typography>
+                                            </Box>
+                                        )}
+                                    </Paper>
+                                )}
+                            </Box>
+                        </ClickAwayListener>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {authLoaded && <SignedOut>
-                                <SignInButton mode="modal">
-                                    <Button variant="contained" size="small"
-                                        sx={{ fontFamily: FONT, fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
-                                        {t('nav.login')}
-                                    </Button>
-                                </SignInButton>
-                            </SignedOut>}
+                        {/* ── RIGHT-SIDE CONTROLS ── */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 }, flexShrink: 0 }}>
+                            {!isMobile && authLoaded && !adminLoading && isAdmin && (
+                                <Link to="/admin" className="admin-nav-btn">
+                                    <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
+                                    {t('nav.admin')}
+                                </Link>
+                            )}
+
                             {authLoaded && <SignedIn>
-                                <UserButton afterSignOutUrl="/" />
-                                <AuthSync />
+                                <IconButton className="my-courses-nav-btn" component={Link} to="/my-courses" size="small" title={t('nav.myCourses')}
+                                    sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
+                                    <MenuBookIcon sx={{ fontSize: 22 }} />
+                                </IconButton>
                             </SignedIn>}
+
+                            <IconButton color="inherit" size="small" component={Link} to="/cart"
+                                sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
+                                <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: '#f57c00', color: 'white', fontSize: '0.7rem', height: '18px', minWidth: '18px', padding: '0 4px', fontFamily: FONT } }}>
+                                    <ShoppingCartIcon sx={{ fontSize: 22 }} />
+                                </Badge>
+                            </IconButton>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                {authLoaded && <SignedOut>
+                                    <SignInButton mode="modal">
+                                        <Button variant="contained" size="small"
+                                            sx={{ fontFamily: FONT, fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
+                                            {t('nav.login')}
+                                        </Button>
+                                    </SignInButton>
+                                </SignedOut>}
+                                {authLoaded && <SignedIn>
+                                    <UserButton afterSignOutUrl="/" />
+                                    <AuthSync />
+                                </SignedIn>}
+                            </Box>
                         </Box>
-                    </Box>
-                </Toolbar>
-            </AppBar>
+                    </Toolbar>
+                </AppBar>
+            </div>
 
             {/* ── MOBILE DRAWER ── */}
             <Drawer
