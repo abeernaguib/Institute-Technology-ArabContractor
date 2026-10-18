@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './galary.css';
 
 const albums = [
-    { id: 'album11', title: 'مركز جسر السويس', imageUrl: '/images/pic11a1.jpg', photosCount: 24, photoPrefix: 'pic11a', category: 'training' },
-    { id: 'album12', title: 'مركز شبرا', imageUrl: '/images/pic12a1.jpg', photosCount: 11, photoPrefix: 'pic12a', category: 'training' },
+    { id: 'album11', title: 'مركز التدريب الحرفى على مهن التشييد و البناء', imageUrl: '/images/pic11a1.jpg', photosCount: 24, photoPrefix: 'pic11a', category: 'training' },
+    { id: 'album12', title: 'مركز التدريب على المهن الميكانيكية و الكهربائية', imageUrl: '/images/pic12a1.jpg', photosCount: 11, photoPrefix: 'pic12a', category: 'training' },
     { id: 'albumZ', title: 'CEA المجموعة الرابعة', imageUrl: '/images/PicCEA1.jpg', photosCount: 11, photoPrefix: 'PicCEA', category: 'training' },
     { id: 'album15', title: 'معهد تدريب المهندسين العسكريين', imageUrl: '/images/Askry1.jpg', photosCount: 17, photoPrefix: 'Askry', category: 'training' },
     { id: 'album17', title: 'فرع الاسكندرية_17_3_2019_PMPبرنامج', imageUrl: '/images/pic17a1.jpg', photosCount: 14, photoPrefix: 'pic17a', category: 'training' },
