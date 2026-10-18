@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     AppBar, Toolbar, Box, IconButton, InputBase,
     Badge, Button, Divider, Typography, Stack,
@@ -14,8 +14,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/black.webp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import HistoryIcon from '@mui/icons-material/History';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser, useAuth } from '@clerk/clerk-react';
@@ -25,6 +25,47 @@ import { useTranslation } from 'react-i18next';
 const RECENT_SEARCHES_KEY = 'recentSearches';
 const MAX_RECENT_SEARCHES = 5;
 const API_BASE = 'https://icemt.arabcont.com/api';
+const FONT = '"Noto Kufi Arabic",serif';
+
+// ── Menu data ──────────────────────────────────────────────
+// 1) عن المعهد
+const aboutLinks = [
+    { ar: 'نبذة عامة والخدمات', path: '/overview' },
+    { ar: 'الرؤية والأهداف', path: '/mission' },
+    { ar: 'الخطة الاستراتيجية', path: '/pdf/StrategicPlan_2024_2030.pdf' },
+    { ar: 'الهيكل التنظيمي', path: '/organizational-structure' },
+    { ar: 'الشهادات والاعتمادات', path: '/certifications' },
+    { ar: 'فريق العمل', path: '/team' },
+    { ar: 'قائمة المحاضرين', path: '/instructors' },
+    { ar: 'الخطة التدريبية السنوية', path: '/pdf/ICEMT_Plan_Training.pdf' },
+    { ar: 'البروتوكولات والإتفاقيات', path: '/protocols' },
+    { ar: 'عملاؤنا', path: '/customers' },
+];
+
+// 3) الخدمات
+const serviceLinks = [
+    { ar: 'التدريب الحرفى', path: '/vocational-training' },
+    { ar: 'التعليم الفنى', path: '/technical-education' },
+    { ar: 'التدريب عن بعد', path: '/online-training' },
+    { ar: 'الإختبارات', path: '/tests' },
+    { ar: 'مجلس قادة المستقبل', path: '/future-leaders' },
+];
+
+// 5) الإعلام والميديا
+const mediaLinks = [
+    { ar: 'مكتبة الصور والفيديوهات', path: '/gallery' },
+    { ar: 'الأخبار', path: '/news' },
+    { ar: 'الأرشيف', path: '/archive' },
+];
+
+const label = (item) => item.ar;
+const isPdfPath = (p) => p.endsWith('.pdf');
+
+const navBtnSx = {
+    px: 1.2, whiteSpace: 'nowrap', fontFamily: FONT,
+    color: '#000', fontSize: '0.85rem',
+    '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' },
+};
 
 // ── Module-level shared helpers (cached across renders and page navigations) ──
 const generateSlug = (title = '') =>
@@ -98,20 +139,99 @@ const getAllCoursesOnce = () => {
     return coursesPromise;
 };
 
+// ── Programs menu: build one uniform tree (used by desktop AND mobile) ──
+const topicsToNodes = (topics = []) => topics.map(tp => ({
+    key: `t${tp.id}`,
+    title: tp.name,
+    link: tp.link,
+    children: tp.subTopics?.length
+        ? tp.subTopics.map(st => ({
+            key: `st${st.id}`,
+            title: st.name,
+            link: st.link,
+            children: st.subSubTopics?.length
+                ? st.subSubTopics.map(sst => ({ key: `sst${sst.id}`, title: sst.name, link: sst.link }))
+                : undefined,
+        }))
+        : undefined,
+}));
+
+const buildMenuNodes = (cats) => cats.map(cat => {
+    const node = {
+        key: `c${cat.id}`,
+        id: cat.id,
+        title: cat.title,
+        link: cat.link || (cat.slug ? `/courses/${cat.slug}` : undefined),
+        leaf: !cat.sub,
+    };
+    if (cat.sub) {
+        const flat = cat.sub.length === 1 && cat.sub[0].id === cat.id + 1000;
+        node.children = flat
+            ? topicsToNodes(cat.sub[0].topics)
+            : cat.sub.map(sub => ({
+                key: `s${sub.id}`,
+                title: sub.title,
+                link: sub.link,
+                children: sub.topics?.length ? topicsToNodes(sub.topics) : undefined,
+            }));
+    }
+    return node;
+});
+
+// number of end programs inside a node
+const countLeaves = (node) =>
+    node.children?.length ? node.children.reduce((s, c) => s + countLeaves(c), 0) : 1;
+
+// Desktop dropdown link (handles PDFs opening in a new tab)
+const DropdownLink = ({ item }) => {
+    const pdf = isPdfPath(item.path);
+    return (
+        <Link
+            to={!pdf ? item.path : '#'}
+            onClick={pdf ? e => { e.preventDefault(); window.open(item.path, '_blank'); } : undefined}
+            className="dropdown-menu-item">
+            {label(item)}
+        </Link>
+    );
+};
+
+// Recursive list of links used inside the desktop mega menu (shows EVERY level, full names)
+const TreeLinks = ({ nodes, depth = 0 }) => nodes.map(n => {
+    const Comp = n.link ? Link : 'div';
+    return (
+        <React.Fragment key={n.key}>
+            <Comp
+                {...(n.link ? { to: n.link } : {})}
+                className="mega-link"
+                style={{ paddingInlineStart: 8 + depth * 14, fontSize: depth ? '0.76rem' : '0.8rem' }}>
+                <span className="mega-bullet" style={depth ? { opacity: 0.55 } : undefined} />
+                <span>{n.title}</span>
+            </Comp>
+            {n.children?.length > 0 && <TreeLinks nodes={n.children} depth={depth + 1} />}
+        </React.Fragment>
+    );
+});
+
 const Navbar = () => {
     const { t, i18n } = useTranslation();
-    const isRTL = true; // Arabic-only site now
 
     // Force Arabic on mount (in case i18n was previously set to 'en' via localStorage, etc.)
     useEffect(() => {
         i18n.changeLanguage('ar');
     }, [i18n]);
 
+    const trainingPlanLabel = t('nav.trainingPlan', { defaultValue: 'الدورات التدريبية' });
+    const mediaLabel = t('nav.media', { defaultValue: 'الإعلام والميديا' });
+    const contactLabel = t('nav.contact', { defaultValue: 'تواصل معنا' });
+
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [mobileCoursesOpen, setMobileCoursesOpen] = useState(false);
+    const [mobileView, setMobileView] = useState('main');      // 'main' | 'courses'
+    const [drillStack, setDrillStack] = useState([]);           // mobile drill-down path
     const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
     const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+    const [mobileMediaOpen, setMobileMediaOpen] = useState(false);
     const [mainCourses, setMainCourses] = useState([]);
+    const [rootSlug, setRootSlug] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cartCount, setCartCount] = useState(0);
@@ -126,9 +246,8 @@ const Navbar = () => {
     const searchInputRef = useRef(null);
     const searchBoxRef = useRef(null);
     const suggestionDebounce = useRef(null);
+    const hoverTimer = useRef(null);
     const [selectedCatId, setSelectedCatId] = useState(null);
-    const [openSub, setOpenSub] = useState(null);
-    const [openTopic, setOpenTopic] = useState(null);
     const { user } = useUser();
     const { getToken, isLoaded: authLoaded } = useAuth();
 
@@ -181,30 +300,6 @@ const Navbar = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const aboutLinks = [
-        { ar: 'نبذة عامة والخدمات', en: 'Overview', path: '/overview' },
-        { ar: 'الرؤية والأهداف', en: 'Vision & Goals', path: '/mission' },
-        { ar: 'الشهادات والاعتمادات', en: 'Certifications', path: '/certifications' },
-        { ar: 'فريق العمل', en: 'Our Team', path: '/team' },
-        { ar: 'قائمة المحاضرين', en: 'Instructors', path: '/instructors' },
-        { ar: 'التدريب الأونلاين', en: 'Online Training', path: '/online-training' },
-        { ar: 'برنامج اعداد مهندس مكتب فني', en: 'CEA Program', path: '/cea-program' },
-        { ar: 'الخطة التدريبية', en: 'Training Plan', path: '/pdf/ICEMT_Plan_Training.pdf' },
-        { ar: 'التقرير الشهرى', en: 'Monthly Report', path: '/pdf/ICEMT_Monthly_Activity.pdf' },
-        { ar: 'مكتبة الصور والفيديوهات', en: 'Photo & Video Gallery', path: '/gallery' },
-        { ar: 'البروتوكولات والإتفاقيات', en: 'Protocols & Agreements', path: '/protocols' },
-        { ar: 'عملاؤنا', en: 'Our Clients', path: '/customers' },
-    ];
-
-    const serviceLinks = [
-        { ar: 'التدريب الحرفى', en: 'Vocational Training', path: '/vocational-training' },
-        { ar: 'التعليم الفنى', en: 'Technical Education', path: '/technical-education' },
-        { ar: 'الإختبارات', en: 'Tests', path: '/tests' },
-        { ar: 'مجلس قادة المستقبل', en: 'Future Leaders Council', path: '/future-leaders' },
-    ];
-
-    const label = (item) => item.ar;
-
     const updateCartCount = () => {
         try {
             const s = localStorage.getItem('cartItems');
@@ -224,6 +319,8 @@ const Navbar = () => {
             if (s) setRecentSearches(JSON.parse(s));
         } catch { setRecentSearches([]); }
     }, []);
+
+    useEffect(() => () => clearTimeout(hoverTimer.current), []);
 
     const saveRecentSearch = useCallback((term) => {
         if (!term.trim()) return;
@@ -250,6 +347,7 @@ const Navbar = () => {
                 const data = await fetchTreeOnce();
                 const transformed = transformCategories(data);
                 setMainCourses(transformed);
+                setRootSlug(Array.isArray(data) ? (data[0]?.slug || null) : null);
                 if (transformed.length > 0) setSelectedCatId(transformed[0].id);
                 setError(null);
             } catch (err) {
@@ -272,7 +370,7 @@ const Navbar = () => {
                     item.sub = [{ id: cat.id + 1000, title: cat.title, topics: cat.children.map(c => ({ id: c.id, name: c.title, link: `/courses/${c.slug}` })) }];
                 } else {
                     item.sub = cat.children.map(sub => {
-                        const s = { id: sub.id, title: sub.title };
+                        const s = { id: sub.id, title: sub.title, link: sub.slug ? `/courses/${sub.slug}` : undefined };
                         if (sub.children?.length) {
                             s.topics = sub.children.map(tp => {
                                 const r = { id: tp.id, name: tp.title, link: `/courses/${tp.slug}` };
@@ -292,6 +390,25 @@ const Navbar = () => {
             } else { item.link = `/courses/${cat.slug}`; }
             return item;
         });
+    };
+
+    // Uniform tree for the programs menu
+    const menuNodes = useMemo(() => buildMenuNodes(mainCourses), [mainCourses]);
+    const activeNode = menuNodes.find(n => n.id === selectedCatId) || menuNodes[0];
+
+    // Desktop: small delay on hover so a diagonal mouse move doesn't switch category by accident
+    const hoverSelect = (id) => {
+        clearTimeout(hoverTimer.current);
+        hoverTimer.current = setTimeout(() => setSelectedCatId(id), 120);
+    };
+    const cancelHover = () => clearTimeout(hoverTimer.current);
+
+    // Mobile drill-down
+    const currentNode = drillStack[drillStack.length - 1] || null;
+    const currentList = currentNode ? (currentNode.children || []) : menuNodes;
+    const drillBack = () => {
+        if (drillStack.length) setDrillStack(s => s.slice(0, -1));
+        else setMobileView('main');
     };
 
     // Lazy: only runs when the user focuses the search box (cached + 4 parallel requests max)
@@ -321,7 +438,6 @@ const Navbar = () => {
         return () => { if (suggestionDebounce.current) clearTimeout(suggestionDebounce.current); };
     }, [searchValue, allCourses]);
 
-    const activeCategory = mainCourses.find(c => c.id === selectedCatId) || mainCourses[0];
     const toggleDrawer = (open) => () => setMobileOpen(open);
     const dropdownVisible = searchFocused && (suggestions.length > 0 || (recentSearches.length > 0 && !searchValue.trim()) || (coursesLoading && !coursesLoaded));
     const dropdownItems = searchValue.trim() ? suggestions : recentSearches;
@@ -356,36 +472,125 @@ const Navbar = () => {
         else if (e.key === 'Escape') { setSearchFocused(false); setActiveSuggestionIndex(-1); searchInputRef.current?.blur(); }
     };
 
+    // Shared styles for mobile menu items
+    const mobileHeaderSx = (open) => ({
+        bgcolor: open ? 'rgba(8,101,168,0.08)' : 'transparent',
+        borderRadius: 1, mb: 0.5,
+        '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' },
+        justifyContent: 'space-between',
+    });
+    const mobileHeaderTextProps = {
+        fontFamily: FONT, fontWeight: 'bold', color: '#0865a8', textAlign: 'start',
+    };
+    const mobileSubTextProps = {
+        fontFamily: FONT, fontSize: '0.85rem', textAlign: 'start',
+    };
+    const mobileDivider = <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />;
+
     return (
         <>
             <style>{`
                 .courses-dropdown-wrapper,
                 .about-dropdown-wrapper,
-                .services-dropdown-wrapper {
+                .services-dropdown-wrapper,
+                .media-dropdown-wrapper {
                     position: relative;
                     display: inline-block;
                 }
-                .courses-dropdown-menu {
+
+                /* ── Programs mega menu ── */
+                .courses-dropdown-wrapper::after {      /* invisible bridge so hover isn't lost */
+                    content: '';
                     position: absolute;
-                    top: 100%;
+                    top: 100%; left: 0; right: 0;
+                    height: 26px;
+                }
+                .courses-dropdown-menu {
+                    position: fixed;
+                    top: 70px;
                     left: 50%;
                     transform: translateX(-50%) translateY(-10px);
-                    width: 750px;
+                    width: min(980px, 94vw);
                     background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+                    border-radius: 10px;
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.16);
                     border: 1px solid #e0e0e0;
-                    overflow: hidden;
                     opacity: 0;
                     visibility: hidden;
-                    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+                    transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
                     z-index: 1300;
                 }
-                .courses-dropdown-wrapper:hover .courses-dropdown-menu {
+                .courses-dropdown-menu::before {
+                    content: '';
+                    position: absolute;
+                    top: -30px; left: 0; right: 0;
+                    height: 30px;
+                }
+                .courses-dropdown-wrapper:hover .courses-dropdown-menu,
+                .courses-dropdown-wrapper:focus-within .courses-dropdown-menu {
                     opacity: 1; visibility: visible;
                     transform: translateX(-50%) translateY(0);
                 }
-                .about-dropdown-menu, .services-dropdown-menu {
+                .mega-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 14px;
+                    align-items: start;
+                }
+                .mega-group {
+                    border: 1px solid #eef0f2;
+                    border-radius: 10px;
+                    padding: 10px 8px 8px;
+                    background: #fff;
+                }
+                .mega-group-head {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 8px;
+                    padding: 0 8px 8px;
+                    margin-bottom: 6px;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+                .mega-group-title {
+                    display: flex; align-items: flex-start; gap: 8px;
+                    color: #0865a8; font-weight: 700; font-size: 0.86rem; line-height: 1.6;
+                    text-decoration: none; font-family: ${FONT};
+                }
+                a.mega-group-title:hover { color: #f57c00; }
+                .mega-num {
+                    flex: 0 0 22px; width: 22px; height: 22px; border-radius: 50%;
+                    background: #f0f7ff; color: #0865a8; font-size: 11px; font-weight: 700;
+                    display: flex; align-items: center; justify-content: center; margin-top: 2px;
+                }
+                .mega-link {
+                    display: flex; align-items: flex-start; gap: 8px;
+                    padding: 5px 8px; border-radius: 6px;
+                    text-decoration: none; color: #444; line-height: 1.7;
+                    font-family: ${FONT};
+                    transition: background 0.15s, color 0.15s;
+                }
+                .mega-link:hover { background: rgba(245,124,0,0.08); color: #f57c00; }
+                .mega-bullet {
+                    flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+                    background: #0865a8; margin-top: 10px; transition: background 0.15s;
+                }
+                .mega-link:hover .mega-bullet { background: #f57c00; }
+                .mega-viewall {
+                    font-size: 0.72rem; color: #f57c00; font-weight: 700;
+                    text-decoration: none; white-space: nowrap; font-family: ${FONT};
+                }
+                .mega-viewall:hover { text-decoration: underline; }
+                .mega-count {
+                    min-width: 24px; height: 20px; padding: 0 7px; border-radius: 10px;
+                    background: rgba(8,101,168,0.1); color: #0865a8;
+                    font-size: 0.7rem; font-weight: 700; font-family: ${FONT};
+                    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+                }
+
+                .about-dropdown-menu,
+                .services-dropdown-menu,
+                .media-dropdown-menu {
                     position: absolute;
                     top: 100%;
                     min-width: 220px;
@@ -402,7 +607,8 @@ const Navbar = () => {
                     inset-inline-end: auto;
                 }
                 .about-dropdown-wrapper:hover .about-dropdown-menu,
-                .services-dropdown-wrapper:hover .services-dropdown-menu {
+                .services-dropdown-wrapper:hover .services-dropdown-menu,
+                .media-dropdown-wrapper:hover .media-dropdown-menu {
                     opacity: 1; visibility: visible; transform: translateY(0);
                 }
                 .dropdown-menu-item {
@@ -464,13 +670,13 @@ const Navbar = () => {
                                 <Box sx={{ mx: 1 }}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 'bold', color: '#0865a8', fontSize: '0.8rem',
-                                        whiteSpace: 'nowrap', fontFamily: '"Noto Kufi Arabic",serif',
+                                        whiteSpace: 'nowrap', fontFamily: FONT,
                                     }}>
                                         المقاولون العرب
                                     </Typography>
                                     <Typography variant="caption" sx={{
                                         color: '#000', display: { xs: 'none', md: 'block' },
-                                        fontFamily: '"Noto Kufi Arabic",serif',
+                                        fontFamily: FONT,
                                     }}>
                                         المعهد التكنولوجى لهندسة التشييد والإدارة
                                     </Typography>
@@ -479,125 +685,189 @@ const Navbar = () => {
                         </Stack>
                     </Box>
 
-                    {/* ── DESKTOP: Courses dropdown ── */}
+                    {/* ── DESKTOP: Main menu (ordered) ── */}
                     {!isMobile && (
-                        <div className="courses-dropdown-wrapper">
-                            <Button color="inherit" endIcon={<KeyboardArrowDownIcon />}
-                                sx={{ px: 2, mx: 1, whiteSpace: 'nowrap', fontFamily: '"Noto Kufi Arabic",serif', color: '#000', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' } }}>
-                                {t('nav.courses')}
-                            </Button>
-                            <div className="courses-dropdown-menu">
-                                <Box sx={{ display: 'flex', height: '420px' }} dir="rtl">
-                                    <Box sx={{
-                                        width: '280px',
-                                        borderInlineEnd: '1px solid #e0e0e0',
-                                        bgcolor: '#fafafa', overflowY: 'auto',
-                                        '&::-webkit-scrollbar': { width: '6px' },
-                                        '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' },
-                                    }}>
-                                        <List sx={{ p: 1 }}>
-                                            {loading
-                                                ? <Box sx={{ minHeight: 300, p: 1 }}>
-                                                    {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={42} sx={{ mb: 1, borderRadius: 1.5 }} />)}
-                                                </Box>
-                                                : error
-                                                    ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontSize: 13, fontFamily: '"Noto Kufi Arabic",serif', color: '#f44336' }} /></ListItemButton>
-                                                    : mainCourses.map(cat => (
-                                                        <ListItemButton key={cat.id}
-                                                            onMouseEnter={() => setSelectedCatId(cat.id)}
-                                                            selected={selectedCatId === cat.id}
-                                                            component={cat.link ? Link : 'div'}
-                                                            to={cat.link || undefined}
-                                                            sx={{
-                                                                py: 1.5, px: 2, mb: 0.5, borderRadius: 1.5, transition: 'all 0.2s', position: 'relative',
-                                                                '&.Mui-selected': {
-                                                                    bgcolor: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                                                    '&::before': {
-                                                                        content: '""', position: 'absolute',
-                                                                        insetInlineEnd: 0,
-                                                                        top: '50%', transform: 'translateY(-50%)',
-                                                                        width: '4px', height: '60%',
-                                                                        bgcolor: '#f57c00', borderRadius: '2px',
-                                                                    },
-                                                                },
-                                                                '&:hover': { bgcolor: selectedCatId === cat.id ? 'white' : 'rgba(8,101,168,0.05)' },
-                                                            }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
-                                                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: selectedCatId === cat.id ? '#f57c00' : '#0865a8', flexShrink: 0 }} />
-                                                                <ListItemText primary={cat.title} primaryTypographyProps={{ fontSize: 13, fontFamily: '"Noto Kufi Arabic",serif', fontWeight: selectedCatId === cat.id ? 'bold' : '500', color: selectedCatId === cat.id ? '#0865a8' : '#333', lineHeight: 1.4 }} />
-                                                            </Box>
-                                                        </ListItemButton>
-                                                    ))
-                                            }
-                                        </List>
-                                    </Box>
-                                    <Box sx={{ flex: 1, p: 2.5, bgcolor: 'white', overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' } }}>
-                                        {loading
-                                            ? <Box sx={{ minHeight: 300, py: 1 }}>
-                                                {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={28} width={`${75 + (i % 2) * 15}%`} sx={{ mb: 2 }} />)}
-                                            </Box>
-                                            : error
-                                                ? <Box sx={{ textAlign: 'center', py: 4 }}><Typography sx={{ color: '#f44336', fontFamily: '"Noto Kufi Arabic",serif' }}>{t('common.error')}</Typography></Box>
-                                                : activeCategory ? (
-                                                    <>
-                                                        <Box sx={{ mb: 2.5, pb: 1.5, borderBottom: '2px solid #f57c00', display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Box sx={{ width: 4, height: 20, bgcolor: '#f57c00', borderRadius: 1 }} />
-                                                            <Typography sx={{ color: '#0865a8', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic",serif', fontSize: '1rem' }}>{activeCategory.title}</Typography>
-                                                        </Box>
-                                                        {activeCategory.link && !activeCategory.sub && (
-                                                            <Box sx={{ textAlign: 'center', py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                                                                <Typography sx={{ color: '#666', fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.9rem', mb: 1 }}>{t('courses.clickToView')}</Typography>
-                                                                <Button component={Link} to={activeCategory.link} variant="contained"
-                                                                    sx={{ bgcolor: '#0865a8', color: 'white', fontFamily: '"Noto Kufi Arabic",serif', px: 4, py: 1, borderRadius: 2, textTransform: 'none', '&:hover': { bgcolor: '#f57c00' } }}>
-                                                                    {t('courses.details')}
-                                                                </Button>
-                                                            </Box>
-                                                        )}
-                                                        {activeCategory.sub && (
-                                                            <Box>
-                                                                {activeCategory.sub.map((sub, idx) => (
-                                                                    <Box key={sub.id} sx={{ mb: 2.5, pb: 2, borderBottom: idx < activeCategory.sub.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
-                                                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1 }}>
-                                                                            <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: '#f0f7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                                                <Typography sx={{ fontSize: 11, fontWeight: 'bold', color: '#0865a8', fontFamily: '"Noto Kufi Arabic",serif' }}>{idx + 1}</Typography>
-                                                                            </Box>
-                                                                            <Typography sx={{ fontWeight: 'bold', color: '#0865a8', fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.9rem' }}>{sub.title}</Typography>
-                                                                        </Box>
-                                                                        {sub.topics && (
-                                                                            <Box sx={{ paddingInlineStart: 4 }}>
-                                                                                {sub.topics.map(topic => (
-                                                                                    <Link key={topic.id} to={topic.link} style={{ textDecoration: 'none' }}>
-                                                                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, py: 0.8, px: 1.5, mb: 0.5, borderRadius: 1, cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(245,124,0,0.08)', transform: 'translateX(-4px)', '& .topic-bullet': { bgcolor: '#f57c00' } } }}>
-                                                                                            <Box className="topic-bullet" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#0865a8', mt: 0.8, flexShrink: 0, transition: 'all 0.2s' }} />
-                                                                                            <Typography sx={{ fontSize: '0.8rem', fontFamily: '"Noto Kufi Arabic",serif', color: '#444', lineHeight: 1.6 }}>
-                                                                                                {topic.name.length > 50 ? topic.name.substring(0, 50) + '...' : topic.name}
-                                                                                            </Typography>
-                                                                                        </Box>
-                                                                                    </Link>
-                                                                                ))}
-                                                                            </Box>
-                                                                        )}
-                                                                    </Box>
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                    </>
-                                                ) : null
-                                        }
-                                    </Box>
-                                </Box>
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
+
+                            {/* 1. عن المعهد */}
+                            <div className="about-dropdown-wrapper">
+                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{t('nav.about')}</Button>
+                                <div className="about-dropdown-menu">
+                                    {aboutLinks.map(item => <DropdownLink key={item.ar} item={item} />)}
+                                </div>
                             </div>
-                        </div>
+
+                            {/* 2. الخطة التدريبية — redesigned mega menu */}
+                            <div className="courses-dropdown-wrapper">
+                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>
+                                    {trainingPlanLabel}
+                                </Button>
+                                <div className="courses-dropdown-menu">
+                                    <Box sx={{ borderRadius: '10px', overflow: 'hidden' }} dir="rtl">
+                                        <Box sx={{ display: 'flex', height: '460px' }}>
+
+                                            {/* Right: categories */}
+                                            <Box sx={{
+                                                width: '270px', flexShrink: 0,
+                                                borderInlineEnd: '1px solid #e0e0e0',
+                                                bgcolor: '#fafafa', overflowY: 'auto',
+                                                '&::-webkit-scrollbar': { width: '6px' },
+                                                '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' },
+                                            }}>
+                                                <List sx={{ p: 1 }}>
+                                                    {loading
+                                                        ? <Box sx={{ minHeight: 300, p: 1 }}>
+                                                            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} variant="rounded" height={42} sx={{ mb: 1, borderRadius: 1.5 }} />)}
+                                                        </Box>
+                                                        : error
+                                                            ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontSize: 13, fontFamily: FONT, color: '#f44336' }} /></ListItemButton>
+                                                            : menuNodes.map(node => {
+                                                                const selected = activeNode?.id === node.id;
+                                                                return (
+                                                                    <ListItemButton key={node.key}
+                                                                        onMouseEnter={() => hoverSelect(node.id)}
+                                                                        onMouseLeave={cancelHover}
+                                                                        onFocus={() => setSelectedCatId(node.id)}
+                                                                        onClick={() => setSelectedCatId(node.id)}
+                                                                        selected={selected}
+                                                                        component={node.leaf ? Link : 'div'}
+                                                                        to={node.leaf ? node.link : undefined}
+                                                                        sx={{
+                                                                            py: 1.2, px: 1.5, mb: 0.5, borderRadius: 1.5, transition: 'all 0.2s', position: 'relative',
+                                                                            '&.Mui-selected': {
+                                                                                bgcolor: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                                                                '&::before': {
+                                                                                    content: '""', position: 'absolute',
+                                                                                    insetInlineEnd: 0,
+                                                                                    top: '50%', transform: 'translateY(-50%)',
+                                                                                    width: '4px', height: '60%',
+                                                                                    bgcolor: '#f57c00', borderRadius: '2px',
+                                                                                },
+                                                                            },
+                                                                            '&:hover': { bgcolor: selected ? 'white' : 'rgba(8,101,168,0.05)' },
+                                                                        }}>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                                                                            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: selected ? '#f57c00' : '#0865a8', flexShrink: 0 }} />
+                                                                            <ListItemText
+                                                                                primary={node.title}
+                                                                                sx={{ m: 0 }}
+                                                                                primaryTypographyProps={{ fontSize: 13, fontFamily: FONT, fontWeight: selected ? 'bold' : '500', color: selected ? '#0865a8' : '#333', lineHeight: 1.5 }} />
+                                                                            {!node.leaf && <span className="mega-count">{countLeaves(node)}</span>}
+                                                                        </Box>
+                                                                    </ListItemButton>
+                                                                );
+                                                            })
+                                                    }
+                                                </List>
+                                            </Box>
+
+                                            {/* Left: programs of the selected category */}
+                                            <Box sx={{ flex: 1, minWidth: 0, p: 2.5, bgcolor: 'white', overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#d0d0d0', borderRadius: '3px' } }}>
+                                                {loading
+                                                    ? <Box sx={{ minHeight: 300, py: 1 }}>
+                                                        {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={28} width={`${75 + (i % 2) * 15}%`} sx={{ mb: 2 }} />)}
+                                                    </Box>
+                                                    : error
+                                                        ? <Box sx={{ textAlign: 'center', py: 4 }}><Typography sx={{ color: '#f44336', fontFamily: FONT }}>{t('common.error')}</Typography></Box>
+                                                        : activeNode ? (
+                                                            <>
+                                                                <Box sx={{ mb: 2, pb: 1.5, borderBottom: '2px solid #f57c00', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                                                        <Box sx={{ width: 4, height: 20, bgcolor: '#f57c00', borderRadius: 1, flexShrink: 0 }} />
+                                                                        <Typography sx={{ color: '#0865a8', fontWeight: 'bold', fontFamily: FONT, fontSize: '1rem', lineHeight: 1.5 }}>{activeNode.title}</Typography>
+                                                                    </Box>
+                                                                    {activeNode.link && (
+                                                                        <Link to={activeNode.link} className="mega-viewall">عرض الكل ←</Link>
+                                                                    )}
+                                                                </Box>
+
+                                                                {activeNode.leaf ? (
+                                                                    <Box sx={{ textAlign: 'center', py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                                                        <Typography sx={{ color: '#666', fontFamily: FONT, fontSize: '0.9rem', mb: 1 }}>{t('courses.clickToView')}</Typography>
+                                                                        <Button component={Link} to={activeNode.link} variant="contained"
+                                                                            sx={{ bgcolor: '#0865a8', color: 'white', fontFamily: FONT, px: 4, py: 1, borderRadius: 2, textTransform: 'none', '&:hover': { bgcolor: '#f57c00' } }}>
+                                                                            {t('courses.details')}
+                                                                        </Button>
+                                                                    </Box>
+                                                                ) : (
+                                                                    <div className="mega-grid">
+                                                                        {(activeNode.children || []).map((child, idx) =>
+                                                                            child.children?.length ? (
+                                                                                <div className="mega-group" key={child.key}>
+                                                                                    <div className="mega-group-head">
+                                                                                        {child.link ? (
+                                                                                            <Link to={child.link} className="mega-group-title">
+                                                                                                <span className="mega-num">{idx + 1}</span>
+                                                                                                <span>{child.title}</span>
+                                                                                            </Link>
+                                                                                        ) : (
+                                                                                            <div className="mega-group-title">
+                                                                                                <span className="mega-num">{idx + 1}</span>
+                                                                                                <span>{child.title}</span>
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {child.link && <Link to={child.link} className="mega-viewall">عرض الكل</Link>}
+                                                                                    </div>
+                                                                                    <TreeLinks nodes={child.children} />
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="mega-group" key={child.key} style={{ padding: '4px 0' }}>
+                                                                                    <TreeLinks nodes={[child]} />
+                                                                                </div>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        ) : null
+                                                }
+                                            </Box>
+                                        </Box>
+
+                                        {/* Footer */}
+                                        {rootSlug && (
+                                            <Box sx={{ borderTop: '1px solid #e0e0e0', bgcolor: '#f7f9fb', px: 2.5, py: 1.2, display: 'flex', justifyContent: 'center' }}>
+                                                <Link to={`/courses/${rootSlug}`} className="mega-viewall" style={{ fontSize: '0.82rem' }}>
+                                                    عرض جميع البرامج التدريبية ←
+                                                </Link>
+                                            </Box>
+                                        )}
+                                    </Box>
+                                </div>
+                            </div>
+
+                            {/* 3. الخدمات */}
+                            <div className="services-dropdown-wrapper">
+                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{t('nav.services')}</Button>
+                                <div className="services-dropdown-menu">
+                                    {serviceLinks.map(item => <DropdownLink key={item.path} item={item} />)}
+                                </div>
+                            </div>
+
+                            {/* 4. المكتبة */}
+                            <Button color="inherit" component={Link} to="/library" sx={navBtnSx}>{t('nav.library')}</Button>
+
+                            {/* 5. الإعلام والميديا */}
+                            <div className="media-dropdown-wrapper">
+                                <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>{mediaLabel}</Button>
+                                <div className="media-dropdown-menu">
+                                    {mediaLinks.map(item => <DropdownLink key={item.path} item={item} />)}
+                                </div>
+                            </div>
+
+                            {/* 6. تواصل معنا */}
+                            <Button color="inherit" component={Link} to="/contact" sx={navBtnSx}>{contactLabel}</Button>
+                        </Stack>
                     )}
 
                     {/* ── SEARCH BAR ── */}
                     <ClickAwayListener onClickAway={() => { setSearchFocused(false); setActiveSuggestionIndex(-1); }}>
                         <Box ref={searchBoxRef} sx={{
                             display: 'flex', alignItems: 'center', flexGrow: 0, flexShrink: 1, justifyContent: 'center',
-                            width: { xs: 'auto', sm: '350px', md: '450px', lg: '550px' },
-                            maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '450px', lg: '550px' },
+                            width: { xs: 'auto', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
+                            maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
                             mx: { xs: 0.5, sm: 1, md: 2 }, position: 'relative',
-                            minWidth: { xs: '120px', sm: '250px' },
+                            minWidth: { xs: '120px', sm: '250px', lg: '220px' },
                         }}>
                             <Box component="form" onSubmit={handleSearchSubmit} role="search" sx={{
                                 bgcolor: searchFocused ? '#ffffff' : '#f1f3f4',
@@ -625,7 +895,7 @@ const Navbar = () => {
                                     inputProps={{ 'aria-label': t('courses.search'), 'aria-autocomplete': 'both', 'aria-haspopup': 'true', 'aria-expanded': dropdownVisible, role: 'combobox' }}
                                     sx={{
                                         color: '#000', flexGrow: 1,
-                                        fontFamily: '"Noto Kufi Arabic",serif',
+                                        fontFamily: FONT,
                                         fontSize: { xs: '0.8rem', md: '0.95rem' },
                                         px: 1,
                                         '& input': { textAlign: 'start' },
@@ -653,7 +923,7 @@ const Navbar = () => {
                                         <>
                                             <Box sx={{ px: 2, pt: 1.5, pb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                 <HistoryIcon sx={{ fontSize: 13, color: '#aaa' }} />
-                                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', letterSpacing: 0.6 }}>{t('search.recentSearches')}</Typography>
+                                                <Typography sx={{ fontSize: '0.7rem', color: '#aaa', fontFamily: FONT, fontWeight: 'bold', letterSpacing: 0.6 }}>{t('search.recentSearches')}</Typography>
                                             </Box>
                                             {recentSearches.map((term, i) => (
                                                 <Box key={term}
@@ -662,7 +932,7 @@ const Navbar = () => {
                                                     sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 0.9, cursor: 'pointer', bgcolor: activeSuggestionIndex === i ? 'rgba(8,101,168,0.06)' : 'transparent', '&:hover': { bgcolor: 'rgba(8,101,168,0.06)' }, transition: 'background 0.15s' }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                         <HistoryIcon sx={{ fontSize: 16, color: '#bbb', flexShrink: 0 }} />
-                                                        <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.87rem', color: '#333' }}>{term}</Typography>
+                                                        <Typography sx={{ fontFamily: FONT, fontSize: '0.87rem', color: '#333' }}>{term}</Typography>
                                                     </Box>
                                                     <IconButton size="small" onMouseDown={e => removeRecentSearch(term, e)} sx={{ p: 0.3, color: '#ccc', '&:hover': { color: '#f57c00' } }} aria-label={t('common.delete')}>
                                                         <CloseIcon sx={{ fontSize: 12 }} />
@@ -673,7 +943,7 @@ const Navbar = () => {
                                         </>
                                     )}
                                     {coursesLoading && !coursesLoaded && searchValue.trim() && (
-                                        <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.82rem' }}>{t('search.loadingCourses')}</Typography></Box>
+                                        <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: FONT, fontSize: '0.82rem' }}>{t('search.loadingCourses')}</Typography></Box>
                                     )}
                                     {suggestions.length > 0 && (
                                         <>
@@ -681,7 +951,7 @@ const Navbar = () => {
                                                 <Box sx={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                     <SearchIcon sx={{ fontSize: 10, color: 'white' }} />
                                                 </Box>
-                                                <Typography sx={{ fontSize: '0.7rem', color: '#999', fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', letterSpacing: 0.5 }}>{t('search.matchingCourses', { count: suggestions.length })}</Typography>
+                                                <Typography sx={{ fontSize: '0.7rem', color: '#999', fontFamily: FONT, fontWeight: 'bold', letterSpacing: 0.5 }}>{t('search.matchingCourses', { count: suggestions.length })}</Typography>
                                             </Box>
                                             {suggestions.map((course, i) => {
                                                 const title = course.title || '';
@@ -701,17 +971,17 @@ const Navbar = () => {
                                                             }
                                                         </Box>
                                                         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                                            <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.88rem', fontWeight: '600', color: '#1a1a1a', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                            <Typography sx={{ fontFamily: FONT, fontSize: '0.88rem', fontWeight: '600', color: '#1a1a1a', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                 {matchIdx === -1 || !searchValue ? title : (
                                                                     <>{title.slice(0, matchIdx)}<Box component="span" sx={{ fontWeight: 'bold', color: '#0865a8', borderBottom: '1px solid rgba(8,101,168,0.3)' }}>{title.slice(matchIdx, matchIdx + searchValue.length)}</Box>{title.slice(matchIdx + searchValue.length)}</>
                                                                 )}
                                                             </Typography>
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, mt: 0.4 }}>
                                                                 <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'rgba(8,101,168,0.09)', px: 0.8, py: 0.2, borderRadius: '4px', flexShrink: 0 }}>
-                                                                    <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.68rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.courseTag')}</Typography>
+                                                                    <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.courseTag')}</Typography>
                                                                 </Box>
                                                                 {(course.category || course.place) && (
-                                                                    <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.72rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                    <Typography sx={{ fontFamily: FONT, fontSize: '0.72rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                         {course.category || course.place}
                                                                     </Typography>
                                                                 )}
@@ -728,13 +998,13 @@ const Navbar = () => {
                                         </>
                                     )}
                                     {!coursesLoading && coursesLoaded && searchValue.trim() && suggestions.length === 0 && (
-                                        <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.82rem' }}>{t('search.noResults', { query: searchValue })}</Typography></Box>
+                                        <Box sx={{ px: 2, py: 2, textAlign: 'center' }}><Typography sx={{ color: '#aaa', fontFamily: FONT, fontSize: '0.82rem' }}>{t('search.noResults', { query: searchValue })}</Typography></Box>
                                     )}
                                     {searchValue.trim() && (
                                         <Box onMouseDown={e => { e.preventDefault(); executeSearch(searchValue); }}
                                             sx={{ px: 2, py: 1, borderTop: '1px solid #f0f0f0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(8,101,168,0.02)', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' }, transition: 'background 0.15s' }}>
                                             <SearchIcon sx={{ fontSize: 15, color: '#0865a8' }} />
-                                            <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.82rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.showAllResults', { query: searchValue })}</Typography>
+                                            <Typography sx={{ fontFamily: FONT, fontSize: '0.82rem', color: '#0865a8', fontWeight: 'bold' }}>{t('search.showAllResults', { query: searchValue })}</Typography>
                                         </Box>
                                     )}
                                 </Paper>
@@ -744,46 +1014,11 @@ const Navbar = () => {
 
                     {/* ── RIGHT-SIDE CONTROLS ── */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 }, flexShrink: 0 }}>
-                        {!isMobile && (
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                <div className="about-dropdown-wrapper">
-                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />}
-                                        sx={{ px: 1.5, fontFamily: '"Noto Kufi Arabic",serif', color: '#000', fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' } }}>
-                                        {t('nav.about')}
-                                    </Button>
-                                    <div className="about-dropdown-menu">
-                                        {aboutLinks.map(item => {
-                                            const isPdf = item.path.endsWith('.pdf');
-                                            return (
-                                                <Link key={item.ar} to={!isPdf ? item.path : '#'}
-                                                    onClick={isPdf ? e => { e.preventDefault(); window.open(item.path, '_blank'); } : undefined}
-                                                    className="dropdown-menu-item">
-                                                    {label(item)}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                                <Button color="inherit" component={Link} to="/news" sx={{ px: 1.5, fontFamily: '"Noto Kufi Arabic",serif', color: '#000', fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' } }}>{t('nav.news')}</Button>
-                                <Button color="inherit" component={Link} to="/library" sx={{ px: 1.5, fontFamily: '"Noto Kufi Arabic",serif', color: '#000', fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' } }}>{t('nav.library')}</Button>
-                                <div className="services-dropdown-wrapper">
-                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />}
-                                        sx={{ px: 1.5, fontFamily: '"Noto Kufi Arabic",serif', color: '#000', fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' } }}>
-                                        {t('nav.services')}
-                                    </Button>
-                                    <div className="services-dropdown-menu">
-                                        {serviceLinks.map((item, idx) => (
-                                            <Link key={idx} to={item.path} className="dropdown-menu-item">{label(item)}</Link>
-                                        ))}
-                                    </div>
-                                </div>
-                                {authLoaded && !adminLoading && isAdmin && (
-                                    <Link to="/admin" className="admin-nav-btn">
-                                        <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
-                                        {t('nav.admin')}
-                                    </Link>
-                                )}
-                            </Stack>
+                        {!isMobile && authLoaded && !adminLoading && isAdmin && (
+                            <Link to="/admin" className="admin-nav-btn">
+                                <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
+                                {t('nav.admin')}
+                            </Link>
                         )}
 
                         {authLoaded && <SignedIn>
@@ -795,7 +1030,7 @@ const Navbar = () => {
 
                         <IconButton color="inherit" size="small" component={Link} to="/cart"
                             sx={{ position: 'relative', transition: 'all 0.2s', color: '#0865a8', '&:hover': { backgroundColor: 'rgba(8,101,168,0.08)', transform: 'scale(1.05)' } }}>
-                            <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: '#f57c00', color: 'white', fontSize: '0.7rem', height: '18px', minWidth: '18px', padding: '0 4px', fontFamily: '"Noto Kufi Arabic",serif' } }}>
+                            <Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: '#f57c00', color: 'white', fontSize: '0.7rem', height: '18px', minWidth: '18px', padding: '0 4px', fontFamily: FONT } }}>
                                 <ShoppingCartIcon sx={{ fontSize: 22 }} />
                             </Badge>
                         </IconButton>
@@ -804,7 +1039,7 @@ const Navbar = () => {
                             {authLoaded && <SignedOut>
                                 <SignInButton mode="modal">
                                     <Button variant="contained" size="small"
-                                        sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
+                                        sx={{ fontFamily: FONT, fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
                                         {t('nav.login')}
                                     </Button>
                                 </SignInButton>
@@ -819,143 +1054,173 @@ const Navbar = () => {
             </AppBar>
 
             {/* ── MOBILE DRAWER ── */}
-            <Drawer anchor="right" open={mobileOpen} onClose={toggleDrawer(false)}>
-                <Box sx={{ width: 300, p: 2, bgcolor: 'white', height: '100%' }} dir="rtl">
+            <Drawer
+                anchor="right"
+                open={mobileOpen}
+                onClose={toggleDrawer(false)}
+                SlideProps={{ onExited: () => { setMobileView('main'); setDrillStack([]); } }}
+            >
+                <Box sx={{ width: 300, p: 2, bgcolor: 'white', height: '100%', overflowY: 'auto' }} dir="rtl">
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pb: 2, borderBottom: '2px solid #0865a8' }}>
-                        <Typography variant="h6" sx={{ fontFamily: '"Noto Kufi Arabic",serif', color: '#0865a8', fontWeight: 'bold' }}>{t('nav.menu')}</Typography>
+                        <Typography variant="h6" sx={{ fontFamily: FONT, color: '#0865a8', fontWeight: 'bold' }}>{t('nav.menu')}</Typography>
                         <IconButton onClick={toggleDrawer(false)} sx={{ color: '#f57c00', '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}><CloseIcon /></IconButton>
                     </Box>
 
-                    <List>
-                        {/* Training Courses */}
-                        <ListItemButton onClick={() => setMobileCoursesOpen(!mobileCoursesOpen)}
-                            sx={{ bgcolor: mobileCoursesOpen ? 'rgba(8,101,168,0.08)' : 'transparent', borderRadius: 1, mb: 0.5, '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' }, justifyContent: 'space-between' }}>
-                            <ListItemText primary={t('nav.courses')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
-                            {mobileCoursesOpen ? <ExpandMoreIcon sx={{ color: '#0865a8' }} /> : <ChevronRightIcon sx={{ color: '#0865a8' }} />}
-                        </ListItemButton>
-                        <Collapse in={mobileCoursesOpen} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
+                    {mobileView === 'courses' ? (
+                        /* ═══ Programs drill-down ═══ */
+                        <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                                <IconButton onClick={drillBack} aria-label="رجوع" sx={{ color: '#0865a8', bgcolor: 'rgba(8,101,168,0.08)' }}>
+                                    <ChevronRightIcon />
+                                </IconButton>
+                                <Typography sx={{ flex: 1, fontFamily: FONT, fontWeight: 'bold', color: '#0865a8', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                                    {currentNode ? currentNode.title : trainingPlanLabel}
+                                </Typography>
+                            </Box>
+
+                            {(currentNode?.link || (!currentNode && rootSlug)) && (
+                                <Button
+                                    component={Link}
+                                    to={currentNode ? currentNode.link : `/courses/${rootSlug}`}
+                                    onClick={toggleDrawer(false)}
+                                    fullWidth variant="contained"
+                                    sx={{ mb: 1.5, bgcolor: '#f57c00', color: '#fff', fontFamily: FONT, fontWeight: 'bold', fontSize: '0.8rem', borderRadius: 2, boxShadow: 'none', '&:hover': { bgcolor: '#e65100', boxShadow: 'none' } }}>
+                                    {currentNode ? 'عرض كل البرامج في هذا القسم' : 'عرض جميع البرامج التدريبية'}
+                                </Button>
+                            )}
+
+                            <List disablePadding>
                                 {loading
                                     ? <Box sx={{ minHeight: 220, p: 1 }}>
-                                        {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={38} sx={{ mb: 1 }} />)}
+                                        {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="rounded" height={44} sx={{ mb: 1 }} />)}
                                     </Box>
                                     : error
-                                        ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.9rem', color: '#f44336', textAlign: 'start' }} /></ListItemButton>
-                                        : mainCourses.map(course => (
-                                            <React.Fragment key={course.id}>
-                                                <ListItemButton
-                                                    onClick={() => { if (course.link) { navigate(course.link); toggleDrawer(false)(); } else if (course.sub) { setOpenSub(openSub === course.id ? null : course.id); } }}
-                                                    sx={{ bgcolor: 'rgba(0,0,0,0.02)', mb: 0.5, borderRadius: 1, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' }, justifyContent: 'space-between' }}>
-                                                    <ListItemText primary={course.title} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.9rem', textAlign: 'start' }} />
-                                                    {course.sub && (openSub === course.id ? <ExpandMoreIcon fontSize="small" sx={{ color: '#f57c00' }} /> : <ChevronRightIcon fontSize="small" sx={{ color: '#0865a8' }} />)}
+                                        ? <ListItemButton><ListItemText primary={t('common.error')} primaryTypographyProps={{ fontFamily: FONT, fontSize: '0.9rem', color: '#f44336', textAlign: 'start' }} /></ListItemButton>
+                                        : currentList.map(node => {
+                                            const hasKids = node.children?.length > 0;
+                                            return hasKids ? (
+                                                <ListItemButton key={node.key}
+                                                    onClick={() => setDrillStack(s => [...s, node])}
+                                                    sx={{ mb: 0.5, borderRadius: 1, bgcolor: 'rgba(0,0,0,0.02)', borderInlineStart: '3px solid #0865a8', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' }, justifyContent: 'space-between', gap: 1 }}>
+                                                    <ListItemText primary={node.title} primaryTypographyProps={{ fontFamily: FONT, fontSize: '0.86rem', fontWeight: 'bold', color: '#0865a8', textAlign: 'start', lineHeight: 1.7 }} />
+                                                    <span className="mega-count">{countLeaves(node)}</span>
+                                                    <ChevronLeftIcon fontSize="small" sx={{ color: '#0865a8' }} />
                                                 </ListItemButton>
-                                                {course.sub && (
-                                                    <Collapse in={openSub === course.id} timeout="auto" unmountOnExit>
-                                                        <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
-                                                            {course.sub.map(subItem => (
-                                                                <React.Fragment key={subItem.id}>
-                                                                    <ListItemButton
-                                                                        onClick={() => subItem.topics && setOpenTopic(openTopic === subItem.id ? null : subItem.id)}
-                                                                        sx={{ borderInlineStart: '3px solid #0865a8', '&:hover': { bgcolor: 'rgba(8,101,168,0.08)' }, justifyContent: 'space-between' }}>
-                                                                        <ListItemText primary={subItem.title} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.85rem', color: '#0865a8', fontWeight: 'bold', textAlign: 'start' }} />
-                                                                        {subItem.topics && (openTopic === subItem.id ? <ExpandMoreIcon fontSize="small" sx={{ color: '#f57c00' }} /> : <ChevronRightIcon fontSize="small" sx={{ color: '#0865a8' }} />)}
-                                                                    </ListItemButton>
-                                                                    {subItem.topics && (
-                                                                        <Collapse in={openTopic === subItem.id} timeout="auto" unmountOnExit>
-                                                                            <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
-                                                                                {subItem.topics.map(topic => (
-                                                                                    <ListItemButton key={topic.id} component={Link} to={topic.link || '#'} onClick={toggleDrawer(false)} sx={{ '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
-                                                                                        <ListItemText primary={topic.name} primaryTypographyProps={{ fontSize: '0.8rem', color: '#000', fontFamily: '"Noto Kufi Arabic",serif', textAlign: 'start' }} />
-                                                                                    </ListItemButton>
-                                                                                ))}
-                                                                            </List>
-                                                                        </Collapse>
-                                                                    )}
-                                                                </React.Fragment>
-                                                            ))}
-                                                        </List>
-                                                    </Collapse>
-                                                )}
-                                            </React.Fragment>
-                                        ))
+                                            ) : (
+                                                <ListItemButton key={node.key}
+                                                    component={node.link ? Link : 'div'}
+                                                    to={node.link || undefined}
+                                                    onClick={node.link ? toggleDrawer(false) : undefined}
+                                                    sx={{ mb: 0.5, borderRadius: 1, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
+                                                    <ListItemText primary={node.title} primaryTypographyProps={{ fontFamily: FONT, fontSize: '0.82rem', color: '#000', textAlign: 'start', lineHeight: 1.7 }} />
+                                                </ListItemButton>
+                                            );
+                                        })
                                 }
                             </List>
-                        </Collapse>
-                        <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />
-
-                        {/* My Courses */}
-                        {authLoaded && <SignedIn>
-                            <ListItemButton component={Link} to="/my-courses" onClick={toggleDrawer(false)}
-                                sx={{ borderRadius: 1, mb: 0.5, bgcolor: 'rgba(8,101,168,0.05)', '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' } }}>
-                                <MenuBookIcon sx={{ color: '#0865a8', marginInlineEnd: 1, fontSize: 20 }} />
-                                <ListItemText primary={t('nav.myCourses')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
+                        </Box>
+                    ) : (
+                        /* ═══ Main menu ═══ */
+                        <List>
+                            {/* 1. عن المعهد */}
+                            <ListItemButton onClick={() => setMobileAboutOpen(!mobileAboutOpen)} sx={mobileHeaderSx(mobileAboutOpen)}>
+                                <ListItemText primary={t('nav.about')} primaryTypographyProps={mobileHeaderTextProps} />
+                                {mobileAboutOpen ? <ExpandMoreIcon sx={{ color: '#0865a8' }} /> : <ChevronRightIcon sx={{ color: '#0865a8' }} />}
                             </ListItemButton>
-                            <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />
-                        </SignedIn>}
+                            <Collapse in={mobileAboutOpen} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
+                                    {aboutLinks.map(item => {
+                                        const pdf = isPdfPath(item.path);
+                                        return (
+                                            <ListItemButton key={item.ar}
+                                                component={pdf ? 'a' : Link}
+                                                to={!pdf ? item.path : undefined}
+                                                href={pdf ? item.path : undefined}
+                                                target={pdf ? '_blank' : undefined}
+                                                rel={pdf ? 'noopener noreferrer' : undefined}
+                                                onClick={!pdf ? toggleDrawer(false) : undefined}
+                                                sx={{ '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
+                                                <ListItemText primary={label(item)} primaryTypographyProps={mobileSubTextProps} />
+                                            </ListItemButton>
+                                        );
+                                    })}
+                                </List>
+                            </Collapse>
+                            {mobileDivider}
 
-                        {/* Admin */}
-                        {authLoaded && !adminLoading && isAdmin && (
-                            <>
-                                <ListItemButton component={Link} to="/Admin" onClick={toggleDrawer(false)}
-                                    sx={{ borderRadius: 1, mb: 0.5, bgcolor: '#f57c00', border: '2px solid #f57c00', '&:hover': { bgcolor: '#e65100', borderColor: '#e65100' }, transition: 'all 0.2s' }}>
-                                    <AdminPanelSettingsIcon sx={{ color: '#fff', marginInlineEnd: 1, fontSize: 20 }} />
-                                    <ListItemText primary={t('nav.adminPanel')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#fff', textAlign: 'start' }} />
-                                </ListItemButton>
-                                <Divider sx={{ my: 2, bgcolor: '#f57c00', height: 2 }} />
-                            </>
-                        )}
+                            {/* 2. الخطة التدريبية → opens the drill-down view */}
+                            <ListItemButton onClick={() => { setDrillStack([]); setMobileView('courses'); }} sx={mobileHeaderSx(false)}>
+                                <ListItemText primary={trainingPlanLabel} primaryTypographyProps={mobileHeaderTextProps} />
+                                <ChevronLeftIcon sx={{ color: '#0865a8' }} />
+                            </ListItemButton>
+                            {mobileDivider}
 
-                        {/* About */}
-                        <ListItemButton onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
-                            sx={{ bgcolor: mobileAboutOpen ? 'rgba(8,101,168,0.08)' : 'transparent', borderRadius: 1, mb: 0.5, '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' }, justifyContent: 'space-between' }}>
-                            <ListItemText primary={t('nav.about')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
-                            {mobileAboutOpen ? <ExpandMoreIcon sx={{ color: '#0865a8' }} /> : <ChevronRightIcon sx={{ color: '#0865a8' }} />}
-                        </ListItemButton>
-                        <Collapse in={mobileAboutOpen} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
-                                {aboutLinks.map(item => {
-                                    const isPdf = item.path.endsWith('.pdf');
-                                    return (
-                                        <ListItemButton key={item.ar}
-                                            component={isPdf ? 'a' : Link}
-                                            to={!isPdf ? item.path : undefined}
-                                            href={isPdf ? item.path : undefined}
-                                            target={isPdf ? '_blank' : undefined}
-                                            rel={isPdf ? 'noopener noreferrer' : undefined}
-                                            onClick={!isPdf ? toggleDrawer(false) : undefined}
-                                            sx={{ '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
-                                            <ListItemText primary={label(item)} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.85rem', textAlign: 'start' }} />
+                            {/* 3. الخدمات */}
+                            <ListItemButton onClick={() => setMobileServicesOpen(!mobileServicesOpen)} sx={mobileHeaderSx(mobileServicesOpen)}>
+                                <ListItemText primary={t('nav.services')} primaryTypographyProps={mobileHeaderTextProps} />
+                                {mobileServicesOpen ? <ExpandMoreIcon sx={{ color: '#0865a8' }} /> : <ChevronRightIcon sx={{ color: '#0865a8' }} />}
+                            </ListItemButton>
+                            <Collapse in={mobileServicesOpen} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
+                                    {serviceLinks.map(item => (
+                                        <ListItemButton key={item.path} component={Link} to={item.path} onClick={toggleDrawer(false)} sx={{ '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
+                                            <ListItemText primary={label(item)} primaryTypographyProps={mobileSubTextProps} />
                                         </ListItemButton>
-                                    );
-                                })}
-                            </List>
-                        </Collapse>
-                        <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />
+                                    ))}
+                                </List>
+                            </Collapse>
+                            {mobileDivider}
 
-                        {/* Services */}
-                        <ListItemButton onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
-                            sx={{ bgcolor: mobileServicesOpen ? 'rgba(8,101,168,0.08)' : 'transparent', borderRadius: 1, mb: 0.5, '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' }, justifyContent: 'space-between' }}>
-                            <ListItemText primary={t('nav.services')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
-                            {mobileServicesOpen ? <ExpandMoreIcon sx={{ color: '#0865a8' }} /> : <ChevronRightIcon sx={{ color: '#0865a8' }} />}
-                        </ListItemButton>
-                        <Collapse in={mobileServicesOpen} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
-                                {serviceLinks.map((item, idx) => (
-                                    <ListItemButton key={idx} component={Link} to={item.path} onClick={toggleDrawer(false)} sx={{ '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
-                                        <ListItemText primary={label(item)} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.85rem', textAlign: 'start' }} />
+                            {/* 4. المكتبة */}
+                            <ListItemButton component={Link} to="/library" onClick={toggleDrawer(false)} sx={{ borderRadius: 1, mb: 0.5, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
+                                <ListItemText primary={t('nav.library')} primaryTypographyProps={mobileHeaderTextProps} />
+                            </ListItemButton>
+                            {mobileDivider}
+
+                            {/* 5. الإعلام والميديا */}
+                            <ListItemButton onClick={() => setMobileMediaOpen(!mobileMediaOpen)} sx={mobileHeaderSx(mobileMediaOpen)}>
+                                <ListItemText primary={mediaLabel} primaryTypographyProps={mobileHeaderTextProps} />
+                                {mobileMediaOpen ? <ExpandMoreIcon sx={{ color: '#0865a8' }} /> : <ChevronRightIcon sx={{ color: '#0865a8' }} />}
+                            </ListItemButton>
+                            <Collapse in={mobileMediaOpen} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding sx={{ paddingInlineStart: 2 }}>
+                                    {mediaLinks.map(item => (
+                                        <ListItemButton key={item.path} component={Link} to={item.path} onClick={toggleDrawer(false)} sx={{ '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
+                                            <ListItemText primary={label(item)} primaryTypographyProps={mobileSubTextProps} />
+                                        </ListItemButton>
+                                    ))}
+                                </List>
+                            </Collapse>
+                            {mobileDivider}
+
+                            {/* 6. تواصل معنا */}
+                            <ListItemButton component={Link} to="/contact" onClick={toggleDrawer(false)} sx={{ borderRadius: 1, mb: 0.5, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
+                                <ListItemText primary={contactLabel} primaryTypographyProps={mobileHeaderTextProps} />
+                            </ListItemButton>
+
+                            {/* My Courses */}
+                            {authLoaded && <SignedIn>
+                                {mobileDivider}
+                                <ListItemButton component={Link} to="/my-courses" onClick={toggleDrawer(false)}
+                                    sx={{ borderRadius: 1, mb: 0.5, bgcolor: 'rgba(8,101,168,0.05)', '&:hover': { bgcolor: 'rgba(8,101,168,0.12)' } }}>
+                                    <MenuBookIcon sx={{ color: '#0865a8', marginInlineEnd: 1, fontSize: 20 }} />
+                                    <ListItemText primary={t('nav.myCourses')} primaryTypographyProps={mobileHeaderTextProps} />
+                                </ListItemButton>
+                            </SignedIn>}
+
+                            {/* Admin */}
+                            {authLoaded && !adminLoading && isAdmin && (
+                                <>
+                                    <Divider sx={{ my: 2, bgcolor: '#f57c00', height: 2 }} />
+                                    <ListItemButton component={Link} to="/admin" onClick={toggleDrawer(false)}
+                                        sx={{ borderRadius: 1, mb: 0.5, bgcolor: '#f57c00', border: '2px solid #f57c00', '&:hover': { bgcolor: '#e65100', borderColor: '#e65100' }, transition: 'all 0.2s' }}>
+                                        <AdminPanelSettingsIcon sx={{ color: '#fff', marginInlineEnd: 1, fontSize: 20 }} />
+                                        <ListItemText primary={t('nav.adminPanel')} primaryTypographyProps={{ fontFamily: FONT, fontWeight: 'bold', color: '#fff', textAlign: 'start' }} />
                                     </ListItemButton>
-                                ))}
-                            </List>
-                        </Collapse>
-                        <Divider sx={{ my: 2, bgcolor: '#0865a8', height: 2 }} />
-
-                        <ListItemButton component={Link} to="/news" onClick={toggleDrawer(false)} sx={{ borderRadius: 1, mb: 0.5, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
-                            <ListItemText primary={t('nav.news')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
-                        </ListItemButton>
-                        <ListItemButton component={Link} to="/library" onClick={toggleDrawer(false)} sx={{ borderRadius: 1, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
-                            <ListItemText primary={t('nav.library')} primaryTypographyProps={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8', textAlign: 'start' }} />
-                        </ListItemButton>
-                    </List>
+                                </>
+                            )}
+                        </List>
+                    )}
                 </Box>
             </Drawer>
 

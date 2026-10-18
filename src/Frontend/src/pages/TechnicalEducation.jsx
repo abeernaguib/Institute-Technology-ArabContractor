@@ -55,7 +55,7 @@ export default function TechnicalEducationAlt() {
             major: 'فني ديزل ومعدات ثقيلة',
             count: 38,
             place: 'ورش دويتس التابعة لإدارة ورش العمرات بالإسماعيلية',
-            images: [img(5), img(6)]
+            images: [ img(6)]
         }
     ];
 
@@ -232,8 +232,16 @@ export default function TechnicalEducationAlt() {
                 .school-row-label { font-size: 0.78rem; color: #888; margin-bottom: 4px; }
                 .school-row-value { font-weight: 700; font-size: 0.95rem; line-height: 1.6; }
 
-                .school-imgs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
+.school-imgs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.school-imgs .school-img {
+    width: 70%;
+    height: clamp(260px, 38vw, 420px);
+}
                 .school-img {
     height: clamp(260px, 38vw, 420px);
     cursor: pointer;
@@ -443,8 +451,9 @@ export default function TechnicalEducationAlt() {
 
                 @media (max-width: 480px) {
                     .tech-main-container { padding: 90px 15px 40px; }
-                    .school-imgs { grid-template-columns: 1fr; }
-                    .slide-btn { width: 38px; height: 38px; }
+.school-imgs .school-img {
+    width: 100%;
+}                    .slide-btn { width: 38px; height: 38px; }
                     .tech-modal-close { top: -45px; width: 35px; height: 35px; }
                 }
 

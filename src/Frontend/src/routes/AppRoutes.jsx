@@ -7,6 +7,7 @@ import RouteSeo from '../seo/RouteSeo'; // NEW
 const Home = lazy(() => import('../pages/Home'));
 const Overview = lazy(() => import('../pages/overview'));
 const Vision_goals = lazy(() => import('../pages/vision_and_goals/vision_goals'));
+const OrganizationalStructure = lazy(() => import('../pages/OrganizationalStructure')); // NEW
 const News = lazy(() => import('../pages/News'));
 const NewsDetails = lazy(() => import('../pages/newsDetails.jsx'));
 const CoursesPage = lazy(() => import('../pages/CoursesPage'));
@@ -74,6 +75,7 @@ const AppRoutes = () => {
                     <Route index element={<Home />} />
                     <Route path="/overview" element={<Overview />} />
                     <Route path="/mission" element={<Vision_goals />} />
+                    <Route path="/organizational-structure" element={<OrganizationalStructure />} /> {/* NEW */}
                     <Route path="/news" element={<News />} />
                     <Route path="/news/:id" element={<NewsDetails />} />
                     <Route path="/courses/:slug" element={<CoursesPage />} />

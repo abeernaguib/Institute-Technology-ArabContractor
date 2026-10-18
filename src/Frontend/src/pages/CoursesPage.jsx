@@ -11,17 +11,17 @@ const styles = {
     breadcrumbLink: { marginLeft: '12px', color: '#0865a8', textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer', fontWeight: '500', borderBottom: '2px solid transparent', paddingBottom: '2px' },
     breadcrumbSeparator: { color: '#000000', margin: '0 8px', opacity: 0.4 },
     breadcrumbCurrent: { marginRight: '12px', color: '#000000', fontWeight: '600' },
-    mainContainer: { maxWidth: '1400px', margin: '0 auto', marginTop: '110px', padding: '30px 20px 50px', boxSizing: 'border-box', backgroundColor: '#ffffff' },
+    mainContainer: { maxWidth: '1600px', margin: '0 auto', marginTop: '110px', padding: '30px 20px 50px', boxSizing: 'border-box', backgroundColor: '#ffffff' },
     pageHeader: { textAlign: 'center', marginBottom: '40px', padding: '30px 20px', backgroundColor: '#ffffff', borderRadius: '12px' },
     h1: { fontSize: '36px', fontWeight: 'bold', color: '#000000', marginBottom: '12px', fontFamily: '"Noto Kufi Arabic", serif', position: 'relative', display: 'inline-block' },
     h1Underline: { content: '""', position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', width: '100px', height: '3px', background: 'linear-gradient(90deg, #0865a8 0%, #f57c00 100%)', borderRadius: '2px' },
     subtitle: { fontSize: '18px', color: '#000000', fontFamily: '"Noto Kufi Arabic", serif', marginTop: '20px', opacity: 0.7 },
     loadingContainer: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '500px', fontSize: '20px', color: '#0865a8', fontFamily: '"Noto Kufi Arabic", serif' },
     errorContainer: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '500px', fontSize: '20px', color: '#f57c00', flexDirection: 'column', gap: '24px', fontFamily: '"Noto Kufi Arabic", serif' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px', padding: '10px 0' },
-    card: { display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: '16px', backgroundColor: '#ffffff', border: '2px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'default', position: 'relative' },
+    grid: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '28px', padding: '10px 0', scrollMarginTop: '170px' },
+    card: { minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: '16px', backgroundColor: '#ffffff', border: '2px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'default', position: 'relative' },
     cardHover: { transform: 'translateY(-8px)', boxShadow: '0 12px 24px rgba(0,0,0,0.12)', borderColor: '#0865a8' },
-    cardHeader: { position: 'relative', height: '160px', overflow: 'hidden', background: 'linear-gradient(135deg, #0865a8 0%, #f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    cardHeader: { position: 'relative', height: '190px', overflow: 'hidden', background: 'linear-gradient(135deg, #0865a8 0%, #f57c00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
     cardHeaderFree: { background: 'linear-gradient(135deg, #1a7a3c 0%, #27ae60 100%)' },
     cardHeaderOwned: { background: 'linear-gradient(135deg, #4a4a8a 0%, #7b5ea7 100%)' },
     cardHeaderOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(8,101,168,0.9) 0%, rgba(245,124,0,0.9) 100%)', opacity: 0, transition: 'opacity 0.3s ease' },
@@ -37,7 +37,7 @@ const styles = {
     infoRow: { display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '14px', color: '#000000', marginBottom: '10px', fontFamily: '"Noto Kufi Arabic", serif', padding: '6px 10px', backgroundColor: '#f9f9f9', borderRadius: '6px', borderRight: '3px solid #0865a8' },
     infoIcon: { width: '18px', height: '18px', flexShrink: 0, color: '#0865a8', marginTop: '2px' },
     clampText: { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4', flex: 1 },
-    description: { fontSize: '14px', lineHeight: '1.6', color: '#000000', opacity: 0.7, marginBottom: '16px', fontFamily: '"Noto Kufi Arabic", serif' },
+    description: { flex: 1, fontSize: '15px', lineHeight: '1.6', color: '#000000', opacity: 0.7, marginBottom: '16px', fontFamily: '"Noto Kufi Arabic", serif' },
     priceSection: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderTop: '2px solid #f0f0f0', marginBottom: '12px' },
     priceContainer: { display: 'flex', flexDirection: 'column', gap: '4px' },
     currentPrice: { fontSize: '24px', fontWeight: 'bold', color: '#f57c00', fontFamily: '"Noto Kufi Arabic", serif' },
@@ -109,31 +109,39 @@ const styles = {
     certModalFooter: { display: 'flex', gap: '12px', padding: '16px 24px', borderTop: '1.5px solid #f0e6ff', justifyContent: 'center' },
     certModalDownloadBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', background: 'linear-gradient(135deg, #7c3aed 0%, #9f67f5 100%)', color: '#fff', borderRadius: '10px', fontSize: '14px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif', textDecoration: 'none', boxShadow: '0 4px 12px rgba(124,58,237,0.35)' },
     certModalCancelBtn: { padding: '11px 28px', backgroundColor: '#f5f5f5', color: '#555', border: '1.5px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif', cursor: 'pointer' },
-    cardBody: { padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 },
-    courseTitle: { fontSize: '18px', fontWeight: 'bold', color: '#000000', marginBottom: '14px', fontFamily: '"Noto Kufi Arabic", serif', lineHeight: '1.4' },
+    cardBody: { padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 },
+    courseTitle: { fontSize: '20px', fontWeight: 'bold', color: '#000000', marginBottom: '14px', fontFamily: '"Noto Kufi Arabic", serif', lineHeight: '1.4' },
+
+    // ── Pagination ──
+    pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '40px' },
+    pageBtn: { minWidth: '42px', height: '42px', padding: '0 14px', borderRadius: '10px', border: '2px solid #e0e0e0', backgroundColor: '#ffffff', color: '#0865a8', fontWeight: 'bold', fontSize: '15px', fontFamily: '"Noto Kufi Arabic", serif', cursor: 'pointer', transition: 'all 0.2s ease' },
+    pageBtnActive: { background: 'linear-gradient(135deg, #0865a8 0%, #f57c00 100%)', color: '#ffffff', borderColor: 'transparent', boxShadow: '0 3px 10px rgba(8,101,168,0.25)' },
+    pageBtnDisabled: { opacity: 0.4, cursor: 'not-allowed' },
+    pageDots: { color: '#999999', padding: '0 4px', fontFamily: '"Noto Kufi Arabic", serif' },
 };
 
 const mediaQueryStyles = `
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .grid { margin-left: auto !important; margin-right: auto !important; justify-items: center !important; }
+    .grid { margin-left: auto !important; margin-right: auto !important; }
+    .course-card { flex: 0 0 calc((100% - 84px) / 4); max-width: calc((100% - 84px) / 4); }
     @media (max-width: 768px) {
         .main-container { margin-top: 100px !important; padding: 20px 16px 40px !important; }
-        .grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .grid { gap: 20px !important; }
+        .course-card { flex: 0 0 100%; max-width: 100%; }
         .overview-bar { padding: 10px 16px !important; }
         .card-header { height: 140px !important; }
         .card-body { padding: 16px !important; }
         .toast { right: 10px !important; left: 10px !important; max-width: calc(100% - 20px) !important; }
     }
     @media (min-width: 769px) and (max-width: 1024px) {
-        .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 22px !important; }
+        .grid { gap: 22px !important; }
+        .course-card { flex: 0 0 calc((100% - 22px) / 2); max-width: calc((100% - 22px) / 2); }
     }
-    @media (min-width: 1025px) {
-        .grid { grid-template-columns: repeat(3, 1fr) !important; gap: 22px !important; }
-    }
-    @media (min-width: 1921px) {
-        .grid { grid-template-columns: repeat(4, 1fr) !important; gap: 28px !important; }
+    @media (min-width: 1025px) and (max-width: 1279px) {
+        .grid { gap: 22px !important; }
+        .course-card { flex: 0 0 calc((100% - 44px) / 3); max-width: calc((100% - 44px) / 3); }
     }
 `;
 
@@ -468,6 +476,10 @@ const CoursesPage = () => {
     const [certsLoading, setCertsLoading] = useState({});
     const [previewCert, setPreviewCert] = useState(null);
 
+    // ── Pagination ──
+    const COURSES_PER_PAGE = 12;
+    const [currentPage, setCurrentPage] = useState(1);
+
     const [courseModes, setCourseModes] = useState({});
     const getCourseMode = (id) => courseModes[id] || 'onsite';
     const handleModeChange = (id, mode) => setCourseModes(prev => ({ ...prev, [id]: mode }));
@@ -491,13 +503,11 @@ const CoursesPage = () => {
         } catch { setOwnedCourseIds(new Set()); setOwnedEnrollments([]); }
     }, [isSignedIn, safeGetToken]);
 
-    // ── FIXED: certificate fetch now falls back to the full certificates list ──
+    // ── Certificate fetch falls back to the full certificates list ──
     // /course/my-courses does not return a userId field from this backend, so
     // the two-segment /Admin/certificates/{userId}/{planworkId} route can almost
-    // never be reached from here. Previously this function just returned early
-    // when no userId was found, meaning certificates never loaded on this page
-    // at all. Now it falls back to GET /Admin/certificates (the full list) and
-    // filters by planworkId client-side — the same pattern already used
+    // never be reached from here. Fall back to GET /Admin/certificates (the full
+    // list) and filter by planworkId client-side — the same pattern already used
     // successfully on the course-details page.
     const fetchCertForCourse = useCallback(async (planworkId) => {
         if (!isSignedIn) return;
@@ -512,8 +522,6 @@ const CoursesPage = () => {
 
             let raw = null;
 
-            // Only attempted if we actually have a usable internal userId
-            // (kept for forward-compatibility; normally skipped today).
             if (internalUserId) {
                 try {
                     const res = await fetch(
@@ -527,8 +535,6 @@ const CoursesPage = () => {
                 } catch { /* fall through */ }
             }
 
-            // Fallback — this is the path that actually runs in practice:
-            // GET the full certificates list and filter by planworkId ourselves.
             if (!raw) {
                 try {
                     const res = await fetch(`${API_BASE}/Admin/certificates`, {
@@ -592,7 +598,8 @@ const CoursesPage = () => {
         })();
     }, [slug]);
 
-
+    // Each category starts on page 1
+    useEffect(() => { setCurrentPage(1); }, [slug]);
 
     const handleEnroll = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); navigate('/sign-in'); return; }
@@ -688,6 +695,51 @@ const CoursesPage = () => {
 
     const courses = programData?.courses || [];
 
+    // ── Pagination logic ──
+    const totalPages = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
+    const page = Math.min(currentPage, totalPages);
+    const visibleCourses = courses.slice((page - 1) * COURSES_PER_PAGE, page * COURSES_PER_PAGE);
+
+    const goToPage = (p) => {
+        if (p < 1 || p > totalPages || p === page) return;
+        setCurrentPage(p);
+        document.getElementById('courses-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+        if (totalPages <= 7 || i === 1 || i === totalPages || Math.abs(i - page) <= 1) pageNumbers.push(i);
+        else if (pageNumbers[pageNumbers.length - 1] !== '…') pageNumbers.push('…');
+    }
+
+    const paginationBar = totalPages > 1 ? (
+        <nav style={styles.pagination} aria-label="ترقيم الصفحات">
+            <button
+                style={{ ...styles.pageBtn, ...(page === 1 ? styles.pageBtnDisabled : {}) }}
+                disabled={page === 1}
+                onClick={() => goToPage(page - 1)}>
+                السابق
+            </button>
+            {pageNumbers.map((n, i) => n === '…'
+                ? <span key={`dots-${i}`} style={styles.pageDots}>…</span>
+                : (
+                    <button
+                        key={n}
+                        style={{ ...styles.pageBtn, ...(n === page ? styles.pageBtnActive : {}) }}
+                        aria-current={n === page ? 'page' : undefined}
+                        onClick={() => goToPage(n)}>
+                        {n}
+                    </button>
+                ))}
+            <button
+                style={{ ...styles.pageBtn, ...(page === totalPages ? styles.pageBtnDisabled : {}) }}
+                disabled={page === totalPages}
+                onClick={() => goToPage(page + 1)}>
+                التالي
+            </button>
+        </nav>
+    ) : null;
+
     return (
         <>
             {/* ══ SEO — exact title / description for this course category ══ */}
@@ -722,209 +774,213 @@ const CoursesPage = () => {
                     {courses.length === 0 ? (
                         <div style={styles.emptyState}><div style={styles.emptyStateText}>لا توجد دورات متاحة حالياً</div></div>
                     ) : (
-                        <div style={styles.grid} className="grid">
-                            {courses.map((course) => {
-                                const isFree = !course.cost || course.cost === 0;
-                                const isOwned = ownedCourseIds.has(course.id);
-                                const isAdding = addingToCart === course.id;
-                                const isEnrolling = enrollingId === course.id;
-                                const enrollMsg = enrollMsgs[course.id] || null;
-                                const cert = certificates[course.id] || null;
-                                const certLoading = certsLoading[course.id] || false;
+                        <>
+                            <div id="courses-grid" style={styles.grid} className="grid">
+                                {visibleCourses.map((course) => {
+                                    const isFree = !course.cost || course.cost === 0;
+                                    const isOwned = ownedCourseIds.has(course.id);
+                                    const isAdding = addingToCart === course.id;
+                                    const isEnrolling = enrollingId === course.id;
+                                    const enrollMsg = enrollMsgs[course.id] || null;
+                                    const cert = certificates[course.id] || null;
+                                    const certLoading = certsLoading[course.id] || false;
 
-                                const mode = getCourseMode(course.id);
-                                const onlineCost = course.onlineCost ?? course.online_cost ?? null;
-                                const activePrice = mode === 'online'
-                                    ? (onlineCost != null ? onlineCost : 0)
-                                    : (course.cost || 0);
+                                    const mode = getCourseMode(course.id);
+                                    const onlineCost = course.onlineCost ?? course.online_cost ?? null;
+                                    const activePrice = mode === 'online'
+                                        ? (onlineCost != null ? onlineCost : 0)
+                                        : (course.cost || 0);
 
-                                return (
-                                    <div key={course.id}
-                                        style={{ ...styles.card, ...(hoveredCard === course.id ? styles.cardHover : {}) }}
-                                        onMouseEnter={() => setHoveredCard(course.id)}
-                                        onMouseLeave={() => setHoveredCard(null)}>
+                                    return (
+                                        <div key={course.id}
+                                            className="course-card"
+                                            style={{ ...styles.card, ...(hoveredCard === course.id ? styles.cardHover : {}) }}
+                                            onMouseEnter={() => setHoveredCard(course.id)}
+                                            onMouseLeave={() => setHoveredCard(null)}>
 
-                                        {/* ── card header ── */}
-                                        <div
-                                            style={{ ...styles.cardHeader, ...(isOwned ? styles.cardHeaderOwned : isFree ? styles.cardHeaderFree : {}) }}
-                                            className="card-header"
-                                            onMouseEnter={() => setHoveredHeaderCard(course.id)}
-                                            onMouseLeave={() => setHoveredHeaderCard(null)}>
-                                            <div style={{ ...styles.cardHeaderOverlay, ...(isFree ? styles.cardHeaderOverlayFree : {}), ...(hoveredHeaderCard === course.id ? styles.cardHeaderOverlayHover : {}) }} />
-                                            <div style={styles.iconWrapper}>
-                                                <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                                </svg>
-                                            </div>
-                                            {isOwned
-                                                ? <div style={styles.ownedBadge}>✅ مسجل</div>
-                                                : isFree && <div style={styles.freeBadge}>مجاناً</div>
-                                            }
-                                            {isOwned && certLoading && (
-                                                <div style={styles.certCardRibbon}><span style={styles.certRibbonSpinner} /></div>
-                                            )}
-                                            {isOwned && !certLoading && cert && (
-                                                <div style={styles.certCardRibbon} onClick={(e) => { e.stopPropagation(); setPreviewCert(cert); }}>
-                                                    📜 <span style={{ fontSize: '12px' }}>شهادة</span>
+                                            {/* ── card header ── */}
+                                            <div
+                                                style={{ ...styles.cardHeader, ...(isOwned ? styles.cardHeaderOwned : isFree ? styles.cardHeaderFree : {}) }}
+                                                className="card-header"
+                                                onMouseEnter={() => setHoveredHeaderCard(course.id)}
+                                                onMouseLeave={() => setHoveredHeaderCard(null)}>
+                                                <div style={{ ...styles.cardHeaderOverlay, ...(isFree ? styles.cardHeaderOverlayFree : {}), ...(hoveredHeaderCard === course.id ? styles.cardHeaderOverlayHover : {}) }} />
+                                                <div style={styles.iconWrapper}>
+                                                    <svg style={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                    </svg>
                                                 </div>
-                                            )}
-                                        </div>
-
-                                        {/* ── card body ── */}
-                                        <div style={styles.cardBody} className="card-body">
-                                            <h3 style={styles.courseTitle}>{course.title}</h3>
-
-                                            <div style={styles.infoSection}>
-                                                {course.place && (
-                                                    <div style={styles.infoRow}>
-                                                        <svg style={styles.infoIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                                        <span style={styles.clampText}>{course.place}</span>
-                                                    </div>
+                                                {isOwned
+                                                    ? <div style={styles.ownedBadge}>✅ مسجل</div>
+                                                    : isFree && <div style={styles.freeBadge}>مجاناً</div>
+                                                }
+                                                {isOwned && certLoading && (
+                                                    <div style={styles.certCardRibbon}><span style={styles.certRibbonSpinner} /></div>
                                                 )}
-                                                {course.date && (
-                                                    <div style={styles.infoRow}>
-                                                        <svg style={styles.infoIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                        <span>{course.date}</span>
+                                                {isOwned && !certLoading && cert && (
+                                                    <div style={styles.certCardRibbon} onClick={(e) => { e.stopPropagation(); setPreviewCert(cert); }}>
+                                                        📜 <span style={{ fontSize: '12px' }}>شهادة</span>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {course.description && <p style={styles.description}>{course.description}</p>}
+                                            {/* ── card body ── */}
+                                            <div style={styles.cardBody} className="card-body">
+                                                <h3 style={styles.courseTitle}>{course.title}</h3>
 
-                                            {/* ── mode toggle (paid + unowned only) ── */}
-                                            {!isOwned && !isFree && (
-                                                <ModeToggle mode={mode} onChange={(m) => handleModeChange(course.id, m)} />
-                                            )}
+                                                <div style={styles.infoSection}>
+                                                    {course.place && (
+                                                        <div style={styles.infoRow}>
+                                                            <svg style={styles.infoIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                                            <span style={styles.clampText}>{course.place}</span>
+                                                        </div>
+                                                    )}
+                                                    {course.date && (
+                                                        <div style={styles.infoRow}>
+                                                            <svg style={styles.infoIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                            <span>{course.date}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                            {/* ── price section ── */}
-                                            <div style={styles.priceSection}>
-                                                <div style={styles.priceContainer}>
-                                                    {activePrice > 0 ? (
+                                                {course.description && <p style={styles.description}>{course.description}</p>}
+
+                                                {/* ── mode toggle (paid + unowned only) ── */}
+                                                {!isOwned && !isFree && (
+                                                    <ModeToggle mode={mode} onChange={(m) => handleModeChange(course.id, m)} />
+                                                )}
+
+                                                {/* ── price section ── */}
+                                                <div style={styles.priceSection}>
+                                                    <div style={styles.priceContainer}>
+                                                        {activePrice > 0 ? (
+                                                            <>
+                                                                {(mode === 'online' ? course.onlineOldCost : course.oldCost) > activePrice && (
+                                                                    <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif' }}>
+                                                                        {mode === 'online' ? course.onlineOldCost : course.oldCost} جنيه
+                                                                    </span>
+                                                                )}
+                                                                <span style={styles.currentPrice}>{activePrice} جنيه</span>
+                                                                {(mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage) > 0 && (
+                                                                    <span style={{ background: '#ffeded', color: '#e53935', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', width: 'fit-content', fontFamily: '"Noto Kufi Arabic", serif' }}>
+                                                                        خصم {mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage}%
+                                                                    </span>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <span style={styles.freePriceLabel}>مجاناً</span>
+                                                        )}
+                                                        <span style={styles.priceLabel}>{mode === 'online' ? 'السعر الأونلاين' : 'السعر الحضوري'}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* ── buttons ── */}
+                                                <div style={styles.buttonsContainer}>
+                                                    {isOwned ? (
                                                         <>
-                                                            {(mode === 'online' ? course.onlineOldCost : course.oldCost) > activePrice && (
-                                                                <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif' }}>
-                                                                    {mode === 'online' ? course.onlineOldCost : course.oldCost} جنيه
-                                                                </span>
+                                                            {certLoading && <div style={styles.certLoadingRow}><div style={styles.certLoadingPulse} /></div>}
+                                                            {!certLoading && cert && (
+                                                                <div style={styles.certSection}>
+                                                                    <div style={styles.certSectionHeader}>
+                                                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                                                                        <span style={styles.certSectionTitle}>شهادة الإتمام جاهزة</span>
+                                                                    </div>
+                                                                    <div style={styles.certBtnRow}>
+                                                                        <button style={styles.certPreviewBtn} onClick={(e) => { e.stopPropagation(); setPreviewCert(cert); }}>
+                                                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                                            <span>معاينة</span>
+                                                                        </button>
+                                                                        <a href={cert.url} download={cert.name || 'certificate'} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={styles.certDownloadBtn}>
+                                                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
+                                                                            <span>تحميل</span>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
                                                             )}
-                                                            <span style={styles.currentPrice}>{activePrice} جنيه</span>
-                                                            {(mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage) > 0 && (
-                                                                <span style={{ background: '#ffeded', color: '#e53935', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', width: 'fit-content', fontFamily: '"Noto Kufi Arabic", serif' }}>
-                                                                    خصم {mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage}%
-                                                                </span>
+                                                            <button
+                                                                style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
+                                                                onMouseEnter={() => setHoveredDetailsBtn(course.id)}
+                                                                onMouseLeave={() => setHoveredDetailsBtn(null)}
+                                                                onClick={() => navigate(`/course/${course.slug}`)}>
+                                                                عرض التفاصيل
+                                                            </button>
+                                                            {!isFree && (
+                                                                <button
+                                                                    style={{ ...styles.refundBtn, ...(hoveredRefundBtn === course.id ? styles.refundBtnHover : {}) }}
+                                                                    onMouseEnter={() => setHoveredRefundBtn(course.id)}
+                                                                    onMouseLeave={() => setHoveredRefundBtn(null)}
+                                                                    onClick={() => setRefundCourse(course)}>
+                                                                    💸 طلب استرداد المبلغ
+                                                                </button>
                                                             )}
                                                         </>
+                                                    ) : isFree ? (
+                                                        <>
+                                                            {enrollMsg && (
+                                                                <div style={{
+                                                                    ...styles.enrollMsgBox,
+                                                                    backgroundColor: enrollMsg.type === 'success' ? '#e8f5e9' : enrollMsg.type === 'info' ? '#e3f2fd' : '#ffebee',
+                                                                    border: `1px solid ${enrollMsg.type === 'success' ? '#4caf50' : enrollMsg.type === 'info' ? '#2196f3' : '#f44336'}`,
+                                                                    color: enrollMsg.type === 'success' ? '#2e7d32' : enrollMsg.type === 'info' ? '#1565c0' : '#c62828',
+                                                                }}>
+                                                                    {enrollMsg.text}
+                                                                </div>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleEnroll(course)}
+                                                                disabled={isEnrolling}
+                                                                style={{ ...styles.enrollBtn, ...(hoveredAddBtn === course.id && !isEnrolling ? styles.enrollBtnHover : {}), ...(isEnrolling ? { opacity: 0.7, cursor: 'not-allowed' } : {}) }}
+                                                                onMouseEnter={() => !isEnrolling && setHoveredAddBtn(course.id)}
+                                                                onMouseLeave={() => setHoveredAddBtn(null)}>
+                                                                {isEnrolling
+                                                                    ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                                        <svg style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                                        جاري التسجيل...
+                                                                    </span>
+                                                                    : '🎁 اشترك الآن — مجاناً'
+                                                                }
+                                                            </button>
+                                                            <button
+                                                                style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
+                                                                onMouseEnter={() => setHoveredDetailsBtn(course.id)}
+                                                                onMouseLeave={() => setHoveredDetailsBtn(null)}
+                                                                onClick={() => navigate(`/course/${course.slug}`)}>
+                                                                عرض التفاصيل
+                                                            </button>
+                                                        </>
                                                     ) : (
-                                                        <span style={styles.freePriceLabel}>مجاناً</span>
+                                                        <>
+                                                            <button
+                                                                onClick={() => addToCart(course)}
+                                                                disabled={isAdding}
+                                                                style={{ ...styles.addToCartBtn, ...(hoveredAddBtn === course.id && !isAdding ? styles.addToCartBtnHover : {}), ...(isAdding ? styles.addToCartBtnDisabled : {}) }}
+                                                                onMouseEnter={() => !isAdding && setHoveredAddBtn(course.id)}
+                                                                onMouseLeave={() => setHoveredAddBtn(null)}>
+                                                                {isAdding
+                                                                    ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                                        <svg style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                                        جاري الإضافة...
+                                                                    </span>
+                                                                    : 'أضف إلى السلة'
+                                                                }
+                                                            </button>
+                                                            <button
+                                                                style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
+                                                                onMouseEnter={() => setHoveredDetailsBtn(course.id)}
+                                                                onMouseLeave={() => setHoveredDetailsBtn(null)}
+                                                                onClick={() => navigate(`/course/${course.slug}`)}>
+                                                                عرض التفاصيل
+                                                            </button>
+                                                        </>
                                                     )}
-                                                    <span style={styles.priceLabel}>{mode === 'online' ? 'السعر الأونلاين' : 'السعر الحضوري'}</span>
                                                 </div>
                                             </div>
-
-                                            {/* ── buttons ── */}
-                                            <div style={styles.buttonsContainer}>
-                                                {isOwned ? (
-                                                    <>
-                                                        {certLoading && <div style={styles.certLoadingRow}><div style={styles.certLoadingPulse} /></div>}
-                                                        {!certLoading && cert && (
-                                                            <div style={styles.certSection}>
-                                                                <div style={styles.certSectionHeader}>
-                                                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
-                                                                    <span style={styles.certSectionTitle}>شهادة الإتمام جاهزة</span>
-                                                                </div>
-                                                                <div style={styles.certBtnRow}>
-                                                                    <button style={styles.certPreviewBtn} onClick={(e) => { e.stopPropagation(); setPreviewCert(cert); }}>
-                                                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                                                        <span>معاينة</span>
-                                                                    </button>
-                                                                    <a href={cert.url} download={cert.name || 'certificate'} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={styles.certDownloadBtn}>
-                                                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
-                                                                        <span>تحميل</span>
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        <button
-                                                            style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
-                                                            onMouseEnter={() => setHoveredDetailsBtn(course.id)}
-                                                            onMouseLeave={() => setHoveredDetailsBtn(null)}
-                                                            onClick={() => navigate(`/course/${course.slug}`)}>
-                                                            عرض التفاصيل
-                                                        </button>
-                                                        {!isFree && (
-                                                            <button
-                                                                style={{ ...styles.refundBtn, ...(hoveredRefundBtn === course.id ? styles.refundBtnHover : {}) }}
-                                                                onMouseEnter={() => setHoveredRefundBtn(course.id)}
-                                                                onMouseLeave={() => setHoveredRefundBtn(null)}
-                                                                onClick={() => setRefundCourse(course)}>
-                                                                💸 طلب استرداد المبلغ
-                                                            </button>
-                                                        )}
-                                                    </>
-                                                ) : isFree ? (
-                                                    <>
-                                                        {enrollMsg && (
-                                                            <div style={{
-                                                                ...styles.enrollMsgBox,
-                                                                backgroundColor: enrollMsg.type === 'success' ? '#e8f5e9' : enrollMsg.type === 'info' ? '#e3f2fd' : '#ffebee',
-                                                                border: `1px solid ${enrollMsg.type === 'success' ? '#4caf50' : enrollMsg.type === 'info' ? '#2196f3' : '#f44336'}`,
-                                                                color: enrollMsg.type === 'success' ? '#2e7d32' : enrollMsg.type === 'info' ? '#1565c0' : '#c62828',
-                                                            }}>
-                                                                {enrollMsg.text}
-                                                            </div>
-                                                        )}
-                                                        <button
-                                                            onClick={() => handleEnroll(course)}
-                                                            disabled={isEnrolling}
-                                                            style={{ ...styles.enrollBtn, ...(hoveredAddBtn === course.id && !isEnrolling ? styles.enrollBtnHover : {}), ...(isEnrolling ? { opacity: 0.7, cursor: 'not-allowed' } : {}) }}
-                                                            onMouseEnter={() => !isEnrolling && setHoveredAddBtn(course.id)}
-                                                            onMouseLeave={() => setHoveredAddBtn(null)}>
-                                                            {isEnrolling
-                                                                ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                                                    <svg style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                                    جاري التسجيل...
-                                                                </span>
-                                                                : '🎁 اشترك الآن — مجاناً'
-                                                            }
-                                                        </button>
-                                                        <button
-                                                            style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
-                                                            onMouseEnter={() => setHoveredDetailsBtn(course.id)}
-                                                            onMouseLeave={() => setHoveredDetailsBtn(null)}
-                                                            onClick={() => navigate(`/course/${course.slug}`)}>
-                                                            عرض التفاصيل
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            onClick={() => addToCart(course)}
-                                                            disabled={isAdding}
-                                                            style={{ ...styles.addToCartBtn, ...(hoveredAddBtn === course.id && !isAdding ? styles.addToCartBtnHover : {}), ...(isAdding ? styles.addToCartBtnDisabled : {}) }}
-                                                            onMouseEnter={() => !isAdding && setHoveredAddBtn(course.id)}
-                                                            onMouseLeave={() => setHoveredAddBtn(null)}>
-                                                            {isAdding
-                                                                ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                                                    <svg style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                                    جاري الإضافة...
-                                                                </span>
-                                                                : 'أضف إلى السلة'
-                                                            }
-                                                        </button>
-                                                        <button
-                                                            style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
-                                                            onMouseEnter={() => setHoveredDetailsBtn(course.id)}
-                                                            onMouseLeave={() => setHoveredDetailsBtn(null)}
-                                                            onClick={() => navigate(`/course/${course.slug}`)}>
-                                                            عرض التفاصيل
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                            {paginationBar}
+                        </>
                     )}
                 </div>
             </div>

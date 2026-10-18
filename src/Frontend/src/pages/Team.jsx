@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from "react";
+﻿import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 /* ─── Design tokens ──────────────────────── */
@@ -19,9 +20,8 @@ const T = {
     font: '"Noto Kufi Arabic", serif',
 };
 
-/* ─── Keyframe injection (one-time) ─────── */
+/* ─── Styles ─────────────────────────────── */
 const STYLES = `
-
     .team-root { direction: rtl; font-family: ${T.font}; background: ${T.white}; overflow-x: hidden; }
 
     /* hero grid overlay */
@@ -42,7 +42,7 @@ const STYLES = `
     .team-card--large:hover { border-color: ${T.blue} !important; box-shadow: 0 20px 56px rgba(8,101,168,0.22) !important; }
 
     /* right accent bar */
-    .team-card::before { content: ''; position: absolute; top:0; right:0; width:4px; height:100%; background:${T.orange}; transform:scaleY(0); transform-origin:bottom; transition:transform 0.38s cubic-bezier(.4,0,.2,1); z-index:2; border-radius:0; }
+    .team-card::before { content: ''; position: absolute; top:0; right:0; width:4px; height:100%; background:${T.orange}; transform:scaleY(0); transform-origin:bottom; transition:transform 0.38s cubic-bezier(.4,0,.2,1); z-index:2; }
     .team-card--large::before { background:${T.blue}; }
     .team-card:hover::before { transform: scaleY(1); }
 
@@ -62,39 +62,69 @@ const STYLES = `
     .team-card__name { transition: color 0.3s; }
     .team-card:hover .team-card__name { color:${T.orange} !important; }
 
-    /* social btn */
-    .social-btn { transition: background 0.28s, border-color 0.28s, color 0.28s, transform 0.28s; cursor:pointer; }
-    .social-btn:hover { background:${T.orange} !important; border-color:${T.orange} !important; color:${T.white} !important; transform:scale(1.18); }
-
-    /* strategy-item hover */
-    .strat-item { transition: background 0.35s, border-color 0.35s, transform 0.35s, box-shadow 0.35s; }
-    .strat-item::before { content:''; position:absolute; top:0; right:0; width:3px; height:100%; background:${T.orange}; transform:scaleY(0); transform-origin:bottom; transition:transform 0.38s cubic-bezier(.4,0,.2,1); }
-    .strat-item:hover { transform:translateX(5px) !important; background:rgba(255,255,255,0.11) !important; border-color:rgba(245,124,0,0.45) !important; box-shadow:0 8px 28px rgba(0,0,0,0.25) !important; }
-    .strat-item:hover::before { transform:scaleY(1); }
-
     /* breadcrumb link */
     .bc-link { transition:color 0.25s; }
     .bc-link:hover { color:${T.orange} !important; }
-
-    /* responsive grid */
-    .team-grid { display:grid; gap:clamp(16px,3vw,32px); justify-items:center; grid-template-columns:1fr; }
-    @media(min-width:480px){ .team-grid { grid-template-columns:repeat(2,1fr); } }
-    @media(min-width:900px){ .team-grid { grid-template-columns:repeat(3,1fr); } }
-    @media(min-width:1441px){ .team-grid { gap:40px; } }
 
     /* hero diagonal */
     .hero-cut::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:clamp(40px,8vw,110px); background:${T.white}; clip-path:polygon(0 100%,100% 0,100% 100%); }
     .chairman-cut::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:clamp(40px,8vw,110px); background:${T.blue}; clip-path:polygon(0 100%,100% 0,100% 100%); }
     .team-cut::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:clamp(40px,8vw,110px); background:${T.black}; clip-path:polygon(0 100%,100% 0,100% 100%); }
-`;
 
-function injectStyles() {
-    if (document.getElementById('team-styles')) return;
-    const el = document.createElement('style');
-    el.id = 'team-styles';
-    el.textContent = STYLES;
-    document.head.appendChild(el);
-}
+    /* ───────── Org tree (pyramid) ───────── */
+    .org-tree { display:flex; flex-direction:column; align-items:center; }
+    .org-top { display:flex; justify-content:center; width:100%; }
+
+    /* vertical line from the director down to the horizontal bar */
+    .org-stem { width:2px; height:40px; background:${T.orangeLight}; }
+
+    .org-level { display:flex; justify-content:center; width:100%; }
+
+    .org-branch {
+        position:relative;
+        flex:0 1 360px;
+        display:flex;
+        justify-content:center;
+        padding:40px clamp(10px,2.5vw,30px) 0;
+    }
+    /* horizontal bar */
+    .org-branch::before {
+        content:'';
+        position:absolute;
+        top:0; left:0; right:0;
+        height:2px;
+        background:${T.orangeLight};
+    }
+    /* vertical drop to the card */
+    .org-branch::after {
+        content:'';
+        position:absolute;
+        top:0; left:50%;
+        width:2px; height:40px;
+        transform:translateX(-50%);
+        background:${T.orangeLight};
+    }
+    /* the bar stops at the center on the outer edges so it forms a clean "T" */
+    .org-branch:first-child::before { inset-inline-start:50%; inset-inline-end:0; left:auto; right:auto; }
+    .org-branch:last-child::before  { inset-inline-start:0; inset-inline-end:50%; left:auto; right:auto; }
+    .org-branch:only-child::before  { display:none; }
+
+    /* little dot where the stem meets the bar */
+    .org-dot {
+        width:12px; height:12px; border-radius:50%;
+        background:${T.orange};
+        box-shadow:0 0 0 4px rgba(245,124,0,0.25);
+        margin-top:-1px;
+    }
+
+    @media (max-width:700px) {
+        .org-level { flex-direction:column; align-items:center; }
+        .org-branch { flex:0 0 auto; width:100%; max-width:340px; }
+        .org-branch::before { display:none; }
+        .org-branch:not(:first-child)::after { height:32px; }
+        .org-branch { padding-top:32px; }
+    }
+`;
 
 /* ─── Sub-components ─────────────────────── */
 
@@ -179,7 +209,7 @@ const MemberCard = ({ member, large = false }) => (
         <div className="team-card__bar" />
 
         {/* Body */}
-        <div style={{ padding: 'clamp(14px,2.5vw,22px) clamp(12px,2vw,18px) 8px', textAlign: 'center', flex: 1 }}>
+        <div style={{ padding: 'clamp(14px,2.5vw,22px) clamp(12px,2vw,18px) clamp(16px,2.5vw,24px)', textAlign: 'center', flex: 1 }}>
             <h3
                 className="team-card__name"
                 style={{
@@ -198,33 +228,10 @@ const MemberCard = ({ member, large = false }) => (
                 fontFamily: T.font,
                 lineHeight: 1.65,
                 minHeight: '38px',
+                margin: 0,
             }}>
                 {member.role}
             </p>
-        </div>
-
-        {/* Social icons */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '10px 12px 16px' }}>
-            {['f', '✉', '📞'].map((icon, i) => (
-                <span
-                    key={i}
-                    className="social-btn"
-                    style={{
-                        width: 'clamp(28px,3.5vw,34px)',
-                        height: 'clamp(28px,3.5vw,34px)',
-                        borderRadius: '50%',
-                        background: T.white,
-                        border: `1.5px solid ${T.gray300}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 'clamp(11px,1.4vw,14px)',
-                        color: T.gray700,
-                    }}
-                >
-                    {icon}
-                </span>
-            ))}
         </div>
     </motion.div>
 );
@@ -232,18 +239,30 @@ const MemberCard = ({ member, large = false }) => (
 /* ─── Main Component ─────────────────────── */
 const Team = () => {
 
-    
-
     const chairman = {
         name: 'أحمد العصار',
         role: 'رئيس مجلس الإدارة',
         image: '/images/team4.jpg',
     };
 
-    const teamMembers = [
-        { name: 'شريف حمدي', role: 'مدير المعهد', image: '/images/team1.jpg' },
-        { name: 'هبه عادل', role: 'نائب مدير المعهد للشئون العلمية والجودة', image: '/images/team2.jpg' },
-        { name: 'طارق منصور', role: 'نائب مدير المعهد للشئون الفنية والاختبارات', image: '/images/team3.jpg' },
+    const director = {
+        name: 'م. شريف حمدي',
+        role: 'مدير المعهد',
+        image: '/images/team1.jpg',
+    };
+
+    // Order matches the org chart (right → left in RTL)
+    const deputies = [
+        {
+            name: 'طارق منصور',
+            role: 'نائب مدير المعهد للشئون الفنية والاختبارات',
+            image: '/images/team3.jpg',
+        },
+        {
+            name: 'م. محمد صبحي',
+            role: 'نائب مدير المعهد للشئون العلمية والتدريب الفني والمهني',
+            image: '/images/المهندس محمد صبحى.jpg', // ⚠️ add his photo here (replaces team2.jpg)
+        },
     ];
 
     const sectionInner = {
@@ -253,8 +272,9 @@ const Team = () => {
 
     return (
         <div className="team-root">
+            <style>{STYLES}</style>
 
-            {/* ══ FIXED OVERVIEW BAR ══════════════════ */}
+            {/* ══ FIXED BREADCRUMB BAR ════════════════ */}
             <div style={{
                 position: 'fixed',
                 top: 70,
@@ -267,7 +287,7 @@ const Team = () => {
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <span>
-                        <a href="/" style={{ fontWeight: 700, textDecoration: 'none', color: T.gray700, marginLeft: '12px' }}>الصفحة الرئيسية</a>
+                        <Link to="/" className="bc-link" style={{ fontWeight: 700, textDecoration: 'none', color: T.blue, marginLeft: '12px' }}>الصفحة الرئيسية</Link>
                         <span style={{ color: T.gray500, margin: '0 6px' }}> - </span>
                         <span style={{ color: T.gray700, marginRight: '12px' }}>فريق العمل</span>
                     </span>
@@ -288,7 +308,6 @@ const Team = () => {
                     padding: 'clamp(130px,16vw,180px) clamp(20px,6vw,80px) clamp(90px,12vw,140px)',
                 }}
             >
-                {/* right orange accent bar */}
                 <div style={{
                     position: 'absolute', top: 0, right: 0,
                     width: 'clamp(6px,0.8vw,10px)', height: '100%',
@@ -334,9 +353,7 @@ const Team = () => {
                 </div>
             </section>
 
-            {/* ══ CHAIRMAN SECTION ════════════════════
-                white bg → diagonal blue cut
-            ═══════════════════════════════════════ */}
+            {/* ══ CHAIRMAN SECTION (top of the pyramid) ══ */}
             <section
                 className="chairman-cut"
                 style={{
@@ -360,7 +377,7 @@ const Team = () => {
                 </div>
             </section>
 
-            {/* ══ ORG CONNECTOR ════════════════════════ */}
+            {/* ══ CONNECTOR: chairman → director ══════ */}
             <div style={{
                 position: 'relative', zIndex: 10,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -381,9 +398,7 @@ const Team = () => {
                 }} />
             </div>
 
-            {/* ══ TEAM MEMBERS SECTION ════════════════
-                blue bg → diagonal black cut
-            ═══════════════════════════════════════ */}
+            {/* ══ EXECUTIVE SECTION: director → deputies ══ */}
             <section
                 className="team-cut"
                 style={{
@@ -402,10 +417,23 @@ const Team = () => {
                         <HeadingBar light />
                     </div>
 
-                    <div className="team-grid">
-                        {teamMembers.map((member, index) => (
-                            <MemberCard key={index} member={member} />
-                        ))}
+                    <div className="org-tree">
+                        {/* Level 2: Institute director */}
+                        <div className="org-top">
+                            <MemberCard member={director} large={true} />
+                        </div>
+
+                        <div className="org-stem" />
+                        <div className="org-dot" />
+
+                        {/* Level 3: Deputies */}
+                        <div className="org-level">
+                            {deputies.map((member) => (
+                                <div className="org-branch" key={member.name}>
+                                    <MemberCard member={member} />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </section>

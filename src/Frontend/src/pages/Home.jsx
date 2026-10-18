@@ -60,7 +60,6 @@ const features = [
 
 const downloadItems = [
     { title: 'الخطة التدريبية السنوية', Icon: EmojiEventsIcon, pdfUrl: '/pdf/ICEMT_Plan_Training.pdf', desc: 'خطة شاملة لجميع البرامج' },
-    { title: 'التقرير الشهري', Icon: DescriptionIcon, pdfUrl: '/pdf/ICEMT_Monthly_Activity.pdf', desc: 'آخر تقرير نشاط شهري' },
     { title: 'الخطة الاستراتيجية', Icon: HomeWorkIcon, pdfUrl: '/pdf/StrategicPlan_2024_2030.pdf', desc: '2024 — 2030' },
 ];
 
@@ -640,7 +639,7 @@ export default function Home() {
         .vis-item{padding:28px;border-radius:8px;border:1px solid ${C.g3};background:${C.w};transition:border-color .25s,box-shadow .25s;opacity:0;transform-origin:center bottom;}
         .vis-item:hover{border-color:${C.o};box-shadow:0 4px 24px rgba(245,124,0,.10);}
 
-        .dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2vw,16px);}
+        .dl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2vw,16px);max-width:720px;margin:0 auto;}
         @media(max-width:600px){.dl-grid{grid-template-columns:1fr;}}
         .dl-item{opacity:0;}
 

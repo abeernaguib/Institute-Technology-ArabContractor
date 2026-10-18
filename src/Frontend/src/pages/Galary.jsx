@@ -438,7 +438,7 @@ const PhotoGallery = () => {
                 </div>
             </div>
 
-            <h1 style={{ textAlign: 'center', fontSize: '1.8rem', fontWeight: 800, color: '#0865a8', margin: '12px 0 16px' }}>
+            <h1 style={{ textAlign: 'center', fontSize: '1.8rem', fontWeight: 800, color: '#0865a8', margin: '45px 0 20px' }}>
                 مكتبة الصور والفيديوهات
             </h1>
 

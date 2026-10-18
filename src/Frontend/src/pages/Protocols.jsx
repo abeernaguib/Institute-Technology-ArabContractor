@@ -192,17 +192,7 @@ export default function Protocols() {
                     </div>
                 ))}
 
-                {/* IMAGES */}
-                <div
-                    style={{
-                        display: isMobile ? "block" : "flex",
-                        gap: 20,
-                        marginTop: 40,
-                    }}
-                >
-                    <ImageCard url="https://www.arabcont.com/icemt/assets/images/protocol1.jpg" />
-                    <ImageCard url="https://www.arabcont.com/icemt/assets/images/protocol2.jpg" />
-                </div>
+                
             </div>
         </div>
     );
