@@ -1,11 +1,26 @@
 ﻿import React, { useState, useEffect } from "react";
 
-// Image helper: tech-01.png, tech-02.png ...
-const img = (n) => `/images/tech-${String(n).padStart(2, '0')}.png`;
+// Images that are PNG. Everything else is JPG.
+// When you add a new PNG image, add its number here.
+const PNG_IMAGES = [7, 8, 9, 10, 11];
+
+// Image helper: tech-01.jpg ... tech-07.png ... tech-12.jpg
+const img = (n) =>
+    `/images/tech-${String(n).padStart(2, '0')}.${PNG_IMAGES.includes(n) ? 'png' : 'jpg'}`;
+
+// Safety net: if an image fails to load, try the other extension once.
+const swapExt = (e) => {
+    const el = e.currentTarget;
+    if (el.dataset.retried) return; // avoid an infinite loop
+    el.dataset.retried = '1';
+    el.src = el.src.endsWith('.png')
+        ? el.src.replace(/\.png$/, '.jpg')
+        : el.src.replace(/\.jpg$/, '.png');
+};
 
 // Slideshow range (section 3). Change these two numbers when needed.
 const SLIDE_FIRST = 7;
-const SLIDE_LAST = 14; // update to the last image number when you send the rest
+const SLIDE_LAST = 12; // last image that exists in the folder is tech-12
 
 export default function TechnicalEducationAlt() {
     const [modalImage, setModalImage] = useState(null);
@@ -55,7 +70,7 @@ export default function TechnicalEducationAlt() {
             major: 'فني ديزل ومعدات ثقيلة',
             count: 38,
             place: 'ورش دويتس التابعة لإدارة ورش العمرات بالإسماعيلية',
-            images: [ img(6)]
+            images: [img(6)]
         }
     ];
 
@@ -232,37 +247,38 @@ export default function TechnicalEducationAlt() {
                 .school-row-label { font-size: 0.78rem; color: #888; margin-bottom: 4px; }
                 .school-row-value { font-weight: 700; font-size: 0.95rem; line-height: 1.6; }
 
-.school-imgs {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+                .school-imgs {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
 
-.school-imgs .school-img {
-    width: 70%;
-    height: clamp(260px, 38vw, 420px);
-}
+                .school-imgs .school-img {
+                    width: 70%;
+                    height: clamp(260px, 38vw, 420px);
+                }
+
                 .school-img {
-    height: clamp(260px, 38vw, 420px);
-    cursor: pointer;
-    overflow: hidden;
-    background: #eef1f5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+                    height: clamp(260px, 38vw, 420px);
+                    cursor: pointer;
+                    overflow: hidden;
+                    background: #eef1f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
 
-.school-img img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    display: block;
-    transition: transform 0.5s ease;
-}
+                .school-img img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    display: block;
+                    transition: transform 0.5s ease;
+                }
 
-.school-img:hover img { transform: scale(1.03); }
+                .school-img:hover img { transform: scale(1.03); }
 
                 .total-banner {
                     background: linear-gradient(135deg, var(--primary-color), #044474);
@@ -362,17 +378,17 @@ export default function TechnicalEducationAlt() {
                 }
 
                 .slide-thumb {
-    width: 110px;
-    height: 72px;
-    flex-shrink: 0;
-    object-fit: contain;
-    background: #e9e9e9;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: border-color var(--transition-speed), opacity var(--transition-speed);
-    opacity: 0.7;
-}
+                    width: 110px;
+                    height: 72px;
+                    flex-shrink: 0;
+                    object-fit: contain;
+                    background: #e9e9e9;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    border: 3px solid transparent;
+                    transition: border-color var(--transition-speed), opacity var(--transition-speed);
+                    opacity: 0.7;
+                }
 
                 .slide-thumb.active { border-color: var(--secondary-color); opacity: 1; }
 
@@ -451,9 +467,10 @@ export default function TechnicalEducationAlt() {
 
                 @media (max-width: 480px) {
                     .tech-main-container { padding: 90px 15px 40px; }
-.school-imgs .school-img {
-    width: 100%;
-}                    .slide-btn { width: 38px; height: 38px; }
+
+                    .school-imgs .school-img { width: 100%; }
+
+                    .slide-btn { width: 38px; height: 38px; }
                     .tech-modal-close { top: -45px; width: 35px; height: 35px; }
                 }
 
@@ -525,7 +542,7 @@ export default function TechnicalEducationAlt() {
                         <div className="school-imgs">
                             {s.images.map((src, k) => (
                                 <div key={k} className="school-img" onClick={() => openModal(src, s.name)}>
-                                    <img src={src} alt={s.name} />
+                                    <img src={src} alt={s.name} onError={swapExt} />
                                 </div>
                             ))}
                         </div>
@@ -554,7 +571,12 @@ export default function TechnicalEducationAlt() {
                         className="slide-frame"
                         onClick={() => openModal(slides[current], 'التعاون الدولي لتطوير التعليم الفني')}
                     >
-                        <img key={current} src={slides[current]} alt={`صورة ${current + 1}`} />
+                        <img
+                            key={current}
+                            src={slides[current]}
+                            alt={`صورة ${current + 1}`}
+                            onError={swapExt}
+                        />
 
                         <button
                             className="slide-btn slide-btn-prev"
@@ -578,6 +600,7 @@ export default function TechnicalEducationAlt() {
                                 alt={`مصغرة ${i + 1}`}
                                 className={`slide-thumb ${i === current ? 'active' : ''}`}
                                 onClick={() => setCurrent(i)}
+                                onError={swapExt}
                             />
                         ))}
                     </div>
@@ -588,7 +611,12 @@ export default function TechnicalEducationAlt() {
                 <div className="tech-modal-overlay" onClick={closeModal}>
                     <div className="tech-modal-content" onClick={e => e.stopPropagation()}>
                         <button className="tech-modal-close" onClick={closeModal}>✕</button>
-                        <img src={modalImage.src} alt={modalImage.title} className="tech-modal-image" />
+                        <img
+                            src={modalImage.src}
+                            alt={modalImage.title}
+                            className="tech-modal-image"
+                            onError={swapExt}
+                        />
                         <div className="tech-modal-title">{modalImage.title}</div>
                     </div>
                 </div>
