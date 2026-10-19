@@ -12,14 +12,11 @@ const font = '"Noto Kufi Arabic",serif';
 function resolveCertUrl(url) {
     if (!url) return null;
     if (url === 'uploaded') return null;
-    // Only return absolute blob URLs directly — relative paths need token-fetch
     if (url.startsWith('https://') || url.startsWith('http://')) return url;
-    // Relative path: store as-is with leading slash, caller must token-fetch it
     if (url.startsWith('/')) return url;
     return null;
 }
 
-// Normalise a raw cert object from the API
 function normaliseCert(raw) {
     if (!raw) return null;
     const rawUrl = raw.fileUrl ?? raw.url ?? raw.filePath ?? raw.path ?? null;
@@ -27,16 +24,13 @@ function normaliseCert(raw) {
     if (!url) return null;
     return {
         ...raw,
-        url,   // may be absolute blob URL OR relative /api/... path
+        url,
         rawUrl,
         name: raw.fileName ?? raw.filename ?? raw.name ?? null,
-        // Flag whether this needs an authenticated fetch to get the real content
         needsAuth: !!(url && !url.startsWith('http')),
     };
 }
 
-// ── Fetch an auth-gated URL and return a blob object URL ────────────────────
-// Used when fileUrl is a relative /api/... path that requires Authorization header.
 async function fetchBlobUrl(relativeOrAbsoluteUrl, token) {
     const fullUrl = relativeOrAbsoluteUrl.startsWith('http')
         ? relativeOrAbsoluteUrl
@@ -49,7 +43,6 @@ async function fetchBlobUrl(relativeOrAbsoluteUrl, token) {
     return URL.createObjectURL(blob);
 }
 
-// ── Resolve a plan-file URL from the AdminPlanFiles API ─────────────────────
 function resolvePlanFileUrl(raw) {
     if (!raw) return null;
     if (raw.startsWith('https://') || raw.startsWith('http://')) return raw;
@@ -57,13 +50,8 @@ function resolvePlanFileUrl(raw) {
     return null;
 }
 
-// ── Map a "latest courses" list item into the shape the "other courses"
-//    sidebar needs. This endpoint returns a lighter DTO than /Course/{slug},
-//    so we don't run it through the full transform() — we just pull out the
-//    handful of fields the sidebar card actually renders, with fallbacks for
-//    different casing (camelCase vs PascalCase) since we don't control the API.
 function mapOtherCourse(a) {
-    const cost = a.cost ?? a.Cost ?? a.price ?? a.Price ?? 0;
+    const cost = a.cost ?? a.Cost ?? a.planCost ?? a.PlanCost ?? a.price ?? a.Price ?? 0;
     return {
         id: a.id ?? a.Id ?? a.childId ?? a.ChildId,
         slug: a.slug ?? a.Slug,
@@ -73,6 +61,16 @@ function mapOtherCourse(a) {
         currency: 'جنيه',
         image: a.image ?? a.Image ?? 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800',
     };
+}
+
+// Did this enrollment (from /course/my-courses) get bought as ONLINE?
+// 👈 If your API uses a different field name, add it here.
+function enrollmentIsOnline(e) {
+    const v = e.purchasedOnline ?? e.PurchasedOnline ?? e.boughtOnline ?? e.enrolledOnline ??
+        e.isOnline ?? e.IsOnline ?? e.online ?? e.Online ?? e.isOnlineMode ?? e.IsOnlineMode ?? null;
+    if (v != null) return v === true || v === 1 || v === 'true' || v === 'True';
+    const m = String(e.mode ?? e.Mode ?? e.modeLabel ?? e.attendanceType ?? '').toLowerCase();
+    return m === 'online' || m === 'أونلاين';
 }
 
 const mediaQueryStyles = `
@@ -157,9 +155,9 @@ const S = {
     previewImg: { width: '100%', height: '100%', objectFit: 'cover' },
     certPreviewRibbon: {
         position: 'absolute', bottom: '12px', left: '12px',
-        backgroundColor: 'rgba(124,58,237,0.92)',  // fallback
+        backgroundColor: 'rgba(124,58,237,0.92)',
         backgroundImage: 'linear-gradient(100deg, rgba(124,58,237,0.95) 0%, rgba(159,103,245,0.95) 50%, rgba(124,58,237,0.95) 100%)',
-        backgroundSize: '200% auto',               // no longer conflicts
+        backgroundSize: '200% auto',
         backgroundRepeat: 'no-repeat',
         backdropFilter: 'blur(6px)',
         borderRadius: '8px', padding: '6px 14px',
@@ -198,6 +196,9 @@ const S = {
     btnEnroll: { width: '100%', padding: '14px 24px', background: 'linear-gradient(135deg,#1a7a3c 0%,#27ae60 100%)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '17px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Noto Kufi Arabic",serif', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(26,122,60,0.3)' },
     btnAddCart: { width: '100%', padding: '14px 24px', backgroundColor: '#fff', color: '#0865a8', border: '2px solid #0865a8', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Noto Kufi Arabic",serif', transition: 'all 0.3s' },
     btnBuyNow: { width: '100%', padding: '14px 24px', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Noto Kufi Arabic",serif', transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(8,101,168,0.3)' },
+    includesSec: { borderTop: '1px solid #f0f0f0', paddingTop: '16px' },
+    includesTitle: { fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#000' },
+    includesList: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' },
     includesItem: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#000' },
     otherCard: { backgroundColor: '#fff', borderRadius: '12px', border: '2px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', padding: '24px' },
     otherTitle: { fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#000' },
@@ -403,19 +404,17 @@ async function parseServerError(res) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 const CertificateModal = ({ cert, courseTitle, onClose, getToken }) => {
-    const [blobUrl, setBlobUrl] = useState(null);     // resolved object URL for preview & download
+    const [blobUrl, setBlobUrl] = useState(null);
     const [loadingBlob, setLoadingBlob] = useState(false);
     const [loadError, setLoadError] = useState(false);
 
     const rawUrl = cert?.url ?? null;
     const certName = cert?.name || `شهادة_${courseTitle || 'الدورة'}.jpg`;
-    // Determine if it's a direct URL (blob storage) or needs auth fetch
     const isDirectUrl = rawUrl && rawUrl.startsWith('http');
     const displayUrl = isDirectUrl ? rawUrl : blobUrl;
     const isImage = displayUrl && /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(displayUrl);
     const isPdf = displayUrl && /\.pdf($|\?)/i.test(displayUrl);
 
-    // Fetch auth-gated content as blob URL
     useEffect(() => {
         if (!rawUrl || isDirectUrl) return;
         let objectUrl = null;
@@ -435,7 +434,6 @@ const CertificateModal = ({ cert, courseTitle, onClose, getToken }) => {
         return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
     }, [rawUrl, isDirectUrl, getToken]);
 
-    // Download handler — works for both direct URLs and blob object URLs
     const handleDownload = () => {
         const url = displayUrl;
         if (!url) return;
@@ -447,7 +445,6 @@ const CertificateModal = ({ cert, courseTitle, onClose, getToken }) => {
         document.body.removeChild(a);
     };
 
-    // Open in new tab — for direct URLs only (blob object URLs can't be opened in new tab reliably)
     const handleOpenNewTab = () => {
         if (!displayUrl) return;
         window.open(displayUrl, '_blank', 'noopener,noreferrer');
@@ -511,7 +508,6 @@ const CertificateModal = ({ cert, courseTitle, onClose, getToken }) => {
                                 title="معاينة الشهادة"
                             />
                         ) : readyToShow ? (
-                            // Unknown type — show as image first, fallback handled by onError
                             <img
                                 src={displayUrl}
                                 alt="شهادة الإتمام"
@@ -535,7 +531,6 @@ const CertificateModal = ({ cert, courseTitle, onClose, getToken }) => {
                         <span>شهادتك معتمدة ✓</span>
                     </div>
                     <div style={S.certModalActions}>
-                        {/* Open in new tab — only meaningful for direct URLs */}
                         {isDirectUrl && displayUrl && (
                             <button onClick={handleOpenNewTab} style={S.btnOpenNewTab} className="btnOpenNewTab">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -544,7 +539,6 @@ const CertificateModal = ({ cert, courseTitle, onClose, getToken }) => {
                                 فتح في تبويب جديد
                             </button>
                         )}
-                        {/* Download — works for both direct and blob object URLs */}
                         <button
                             onClick={handleDownload}
                             disabled={!displayUrl}
@@ -579,12 +573,12 @@ const CourseDetails = () => {
     const [error, setError] = useState(null);
     const [otherCourses, setOtherCourses] = useState([]);
     const [ownedCourseIds, setOwnedCourseIds] = useState(new Set());
+    // courseId -> true if the user bought it as ONLINE
+    const [ownedModes, setOwnedModes] = useState(new Map());
 
-    // ── Plan files state ─────────────────────────────────────────────────────
     const [planFiles, setPlanFiles] = useState([]);
     const [planFilesLoading, setPlanFilesLoading] = useState(false);
 
-    // cert: normalised cert object { url, rawUrl, name, ... } or null
     const [cert, setCert] = useState(null);
     const [certLoading, setCertLoading] = useState(false);
     const [showCertModal, setShowCertModal] = useState(false);
@@ -592,7 +586,6 @@ const CourseDetails = () => {
     const [enrolling, setEnrolling] = useState(false);
     const [enrollMsg, setEnrollMsg] = useState(null);
 
-    // Toast for cart/add errors that shouldn't be swallowed silently
     const [cartMsg, setCartMsg] = useState(null);
 
     const [showRefund, setShowRefund] = useState(false);
@@ -609,20 +602,16 @@ const CourseDetails = () => {
     const [onlineSetting, setOnlineSetting] = useState(null);
     const [onlineLoading, setOnlineLoading] = useState(false);
 
-    // Used for read-only / non-critical calls where a slightly stale token is fine.
     const safeGetToken = useCallback(async () => {
         try { return await getToken(); } catch (_) { return null; }
     }, [getToken]);
 
-    // Used for calls that must succeed (add to cart) — bypasses Clerk's short-lived
-    // client cache so we don't send a token that looks valid locally but has
-    // already expired / been revoked server-side.
     const freshGetToken = useCallback(async () => {
         try { return await getToken({ skipCache: true }); } catch (_) { return null; }
     }, [getToken]);
 
     const fetchOwnedCourses = useCallback(async () => {
-        if (!isSignedIn) { setOwnedCourseIds(new Set()); return; }
+        if (!isSignedIn) { setOwnedCourseIds(new Set()); setOwnedModes(new Map()); return; }
         try {
             const token = await safeGetToken();
             if (!token) return;
@@ -630,10 +619,10 @@ const CourseDetails = () => {
             if (!res.ok) return;
             const data = await res.json();
             setOwnedCourseIds(new Set(data.map(e => e.childId)));
-        } catch { setOwnedCourseIds(new Set()); }
+            setOwnedModes(new Map(data.map(e => [e.childId, enrollmentIsOnline(e)])));
+        } catch { setOwnedCourseIds(new Set()); setOwnedModes(new Map()); }
     }, [isSignedIn, safeGetToken]);
 
-    // ── Fetch plan files ─────────────────────────────────────────────────────
     const fetchPlanFiles = useCallback(async (courseId) => {
         if (!courseId) return;
         setPlanFiles([]);
@@ -666,13 +655,6 @@ const CourseDetails = () => {
         }
     }, [safeGetToken]);
 
-    // ── Fetch certificate ─────────────────────────────────────────────────────
-    // /course/my-courses does not return a userId field from this backend, so
-    // step 2 below (the two-segment route) will normally be skipped — this is
-    // expected and harmless. Step 3 (the full certificates list, filtered by
-    // planworkId) is the path that actually resolves the certificate today.
-    // The two-segment attempt is kept only so nothing needs to change here if
-    // the backend ever starts returning userId in the future.
     const fetchCertForCourse = useCallback(async (courseId) => {
         if (!isSignedIn || !courseId) return;
         setCert(null);
@@ -681,7 +663,6 @@ const CourseDetails = () => {
             const token = await safeGetToken();
             if (!token) return;
 
-            // Step 1: try to get an internal userId from my-courses (usually absent)
             let userId = null;
             try {
                 const mcRes = await fetch(`${API_BASE}/course/my-courses`, {
@@ -696,7 +677,6 @@ const CourseDetails = () => {
 
             let raw = null;
 
-            // Step 2 – Only attempted if we somehow have a userId
             if (userId) {
                 try {
                     const res = await fetch(
@@ -710,8 +690,6 @@ const CourseDetails = () => {
                 } catch { /* fall through */ }
             }
 
-            // Step 3 – Fallback (the path that actually runs in practice):
-            // GET the full certificates list and filter by planworkId ourselves.
             if (!raw) {
                 try {
                     const res = await fetch(
@@ -721,7 +699,6 @@ const CourseDetails = () => {
                     if (res.ok) {
                         const data = await res.json();
                         const list = Array.isArray(data) ? data : [data];
-                        // Match by planworkId first, then userId+planworkId
                         raw = list.find(c =>
                             String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId) &&
                             (!userId || String(c.userId ?? c.UserId ?? '') === String(userId))
@@ -803,16 +780,30 @@ const CourseDetails = () => {
         const onsiteOriginalPrice = a.originalPrice ?? a.onSale ?? (a.cost ? Math.round(a.cost / (1 - (a.discountPercent || 0) / 100)) : 0);
         const onsiteDiscountPercent = a.discountPercent ?? a.DiscountPercent ?? 0;
         const onsiteDiscountAmount = a.discountAmount ?? a.DiscountAmount ?? 0;
+
+        // ── Online ──────────────────────────────────────────────────────────
         const onlineCostRaw = a.onlineCost ?? a.online_cost ?? a.OnlineCost ?? null;
-        const onlineOriginalPrice = a.onlineOriginalPrice ?? null;
-        const onlineDiscountPercent = a.onlineDiscountPercent ?? a.OnlineDiscountPercent ?? 0;
+        const hasOnlineCost = onlineCostRaw != null && Number(onlineCostRaw) > 0;
+        // Admin "متاح أونلاين" checkbox 👈 adjust field name if your API differs
+        const onlineFlag = a.isOnlineAvailable ?? a.IsOnlineAvailable ?? a.onlineAvailable ?? a.OnlineAvailable ?? a.isOnline ?? a.IsOnline ?? null;
+        const isOnlineAvailable = !isFree && (onlineFlag != null ? !!onlineFlag : hasOnlineCost);
+        const onlineLink = a.onlineLink ?? a.OnlineLink ?? a.meetingLink ?? a.MeetingLink ?? '';
+        const rawOnlineOriginal = a.onlineOriginalPrice ?? a.onlineOldCost ?? null;
+        const rawOnlineDiscount = a.onlineDiscountPercent ?? a.OnlineDiscountPercent ?? 0;
         const onlineDiscountAmount = a.onlineDiscountAmount ?? a.OnlineDiscountAmount ?? 0;
+
         return {
             id: a.id, slug: a.slug, title: a.title, description: a.description, place: a.place,
             price: onsitePrice, originalPrice: onsiteOriginalPrice,
             discountPercent: onsiteDiscountPercent, discountAmount: onsiteDiscountAmount,
-            onlineCost: onlineCostRaw, onlineOriginalPrice,
-            onlineDiscountPercent, onlineDiscountAmount,
+            onlineCost: onlineCostRaw,
+            isOnlineAvailable,
+            onlineLink,
+            // online price if admin set one, otherwise same as onsite
+            onlinePrice: hasOnlineCost ? Number(onlineCostRaw) : onsitePrice,
+            onlineOriginalPrice: hasOnlineCost ? (rawOnlineOriginal ?? 0) : onsiteOriginalPrice,
+            onlineDiscountPercent: hasOnlineCost ? rawOnlineDiscount : onsiteDiscountPercent,
+            onlineDiscountAmount,
             currency: 'جنيه', isFree,
             duration: 26, videoDuration: 26,
             articlesCount: a.files?.length || 0,
@@ -827,10 +818,6 @@ const CourseDetails = () => {
         };
     };
 
-    // ── Load course data ─────────────────────────────────────────────────────
-    // FIXED: related courses now come from /course/latest instead of a
-    // hardcoded slug list — the hardcoded slugs 404'd whenever one of them
-    // wasn't a currently-published leaf course.
     useEffect(() => {
         if (!slug) return;
         (async () => {
@@ -840,6 +827,7 @@ const CourseDetails = () => {
                 if (!res.ok) throw new Error('not found');
                 const c = transform(await res.json());
                 setCourse(c);
+                setMode('onsite');
 
                 try {
                     const latestRes = await fetch(`${API_BASE}/course/latest`);
@@ -863,8 +851,8 @@ const CourseDetails = () => {
     }, [slug]);
 
     const isOwned = course ? ownedCourseIds.has(course.id) : false;
+    const boughtOnline = course ? !!ownedModes.get(course.id) : false;
 
-    // ── Fetch plan files (always, for all users) ─────────────────────────────
     useEffect(() => {
         if (course?.id) {
             fetchPlanFiles(course.id);
@@ -873,7 +861,6 @@ const CourseDetails = () => {
         }
     }, [course?.id, fetchPlanFiles]);
 
-    // ── Fetch cert only when owned ───────────────────────────────────────────
     useEffect(() => {
         if (course?.id && isOwned) {
             fetchCertForCourse(course.id);
@@ -882,8 +869,9 @@ const CourseDetails = () => {
         }
     }, [course?.id, isOwned, fetchCertForCourse]);
 
+    // Meeting-link settings — only needed when the user bought the course online
     useEffect(() => {
-        if (!course?.id) { setOnlineSetting(null); return; }
+        if (!course?.id || !isOwned || !boughtOnline) { setOnlineSetting(null); return; }
         setOnlineLoading(true);
         (async () => {
             try {
@@ -903,15 +891,8 @@ const CourseDetails = () => {
             } catch { setOnlineSetting(null); }
             finally { setOnlineLoading(false); }
         })();
-    }, [course?.id, safeGetToken]);
+    }, [course?.id, isOwned, boughtOnline, safeGetToken]);
 
-
-
-    // ── Add to cart ───────────────────────────────────────────────────────────
-    // Requires sign-in and a fresh, valid token from the server before the item
-    // is ever mirrored into localStorage — previously this silently swallowed
-    // a missing/expired token and still wrote the item locally, making it look
-    // "added" even though the server rejected the request with a 401.
     const addToCart = async (buyNow = false, courseMode = 'onsite') => {
         if (!course) return;
         setCartMsg(null);
@@ -922,10 +903,9 @@ const CourseDetails = () => {
         }
 
         const isOnline = courseMode === 'online';
-        const priceToUse = isOnline ? (course.onlineCost != null ? course.onlineCost : 0) : course.price;
+        const priceToUse = isOnline ? course.onlinePrice : course.price;
 
         try {
-            // skipCache forces a fresh token instead of a possibly-stale cached one
             const token = await freshGetToken();
             if (!token) {
                 setCartMsg({ type: 'error', text: 'انتهت الجلسة، سجل دخول مرة أخرى' });
@@ -946,7 +926,7 @@ const CourseDetails = () => {
                     return;
                 }
                 if (res.status === 409) {
-                    // already in cart — treat as success and continue to cart/checkout
+                    // already in cart — treat as success
                 } else {
                     setCartMsg({ type: 'error', text: await parseServerError(res) });
                     return;
@@ -957,7 +937,6 @@ const CourseDetails = () => {
             return;
         }
 
-        // Only mirror into localStorage after the server call actually succeeded (or item already existed)
         const cart = JSON.parse(localStorage.getItem('cartItems') || '[]');
         if (!cart.some(i => i.id === course.id)) {
             cart.push({
@@ -1047,15 +1026,16 @@ const CourseDetails = () => {
             ? 'linear-gradient(135deg,#1a7a3c 0%,#27ae60 100%)'
             : 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)';
 
-    const font = '"Noto Kufi Arabic",serif';
     const statusInfo = existingRefund ? REFUND_STATUS_MAP[existingRefund.status] : null;
 
-    const refundPolicy = course ? getRefundPolicy(course.date, course.price) : { type: 'unknown' };
+    const refundPrice = course ? (boughtOnline ? course.onlinePrice : course.price) : 0;
+    const refundPolicy = course ? getRefundPolicy(course.date, refundPrice) : { type: 'unknown' };
     const isRefundBlocked = refundPolicy.type === 'blocked';
 
-    const onlineCost = course?.onlineCost ?? null;
-    const onlinePriceFree = onlineCost === null || onlineCost === 0;
-    const activePrice = mode === 'online' ? (onlineCost != null ? onlineCost : 0) : (course?.price ?? 0);
+    // Online is only offered when the admin enabled it for this course
+    const effectiveMode = course?.isOnlineAvailable ? mode : 'onsite';
+    const activePrice = effectiveMode === 'online' ? (course?.onlinePrice ?? 0) : (course?.price ?? 0);
+    const onlinePriceFree = (course?.onlinePrice ?? 0) === 0;
 
     const modeTabBase = { flex: 1, padding: '9px 10px', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Noto Kufi Arabic",serif', transition: 'all .2s' };
     const modeTabActive = { ...modeTabBase, background: 'linear-gradient(135deg,#0865a8,#1a84d4)', color: '#fff', boxShadow: '0 3px 10px rgba(8,101,168,0.3)' };
@@ -1064,6 +1044,10 @@ const CourseDetails = () => {
     const hasCert = !!(cert?.url);
 
     const showFilesSection = planFilesLoading || planFiles.length > 0;
+
+    // Meeting link (only for people who bought it online)
+    const meetingLink = onlineSetting?.link || course?.onlineLink || '';
+    const meetingVisible = onlineSetting ? onlineSetting.visible : !!meetingLink;
 
     if (loading) return (
         <>
@@ -1108,7 +1092,6 @@ const CourseDetails = () => {
 
     return (
         <>
-            {/* ══ SEO — exact title / description for this course ══ */}
             <Seo
                 title={`${course.title} | المعهد التكنولوجي لهندسة التشييد والإدارة`}
                 description={
@@ -1130,7 +1113,8 @@ const CourseDetails = () => {
                     </div>
                 </div>
 
-                <div style={{ ...S.heroSection, background: heroBg }} className="hero-section">                    <div style={S.heroContainer}>
+                <div style={{ ...S.heroSection, background: heroBg }} className="hero-section">
+                    <div style={S.heroContainer}>
                         <div style={S.heroContent}>
                             {isOwned && <div style={S.ownedBadge}>✅ مسجل في هذه الدورة</div>}
                             {!isOwned && course.isFree && <div style={S.freeBadge}>مجاناً</div>}
@@ -1216,7 +1200,7 @@ const CourseDetails = () => {
                                 </div>
                             )}
 
-                            {/* ── PLAN FILES SECTION ────────────────────────────────────── */}
+                            {/* ── PLAN FILES SECTION ── */}
                             {showFilesSection && (
                                 <div style={S.section}>
                                     <h2 style={S.sectionHeading}>الملفات المرفقة</h2>
@@ -1279,7 +1263,7 @@ const CourseDetails = () => {
                             )}
                         </div>
 
-                        {/* ── RIGHT SIDEBAR ─────────────────────────────────────────── */}
+                        {/* ── RIGHT SIDEBAR ── */}
                         <div style={S.rightSidebar} className="right-sidebar">
                             <div style={S.priceCard}>
                                 <div style={S.pricePreview}>
@@ -1309,7 +1293,8 @@ const CourseDetails = () => {
                                 </div>
 
                                 <div style={S.priceContent}>
-                                    {!isOwned && !course.isFree && (
+                                    {/* Tabs only when the course is available online */}
+                                    {!isOwned && !course.isFree && course.isOnlineAvailable && (
                                         <div style={{ display: 'flex', gap: 6, padding: '6px', background: '#f0f1f2', borderRadius: '10px', marginBottom: '16px' }}>
                                             <button style={mode === 'onsite' ? modeTabActive : modeTabInactive} onClick={() => setMode('onsite')}>🏢 حضوري</button>
                                             <button style={mode === 'online' ? modeTabActive : modeTabInactive} onClick={() => setMode('online')}>🌐 أونلاين</button>
@@ -1318,16 +1303,18 @@ const CourseDetails = () => {
 
                                     <div style={S.priceSec}>
                                         {isOwned ? (
-                                            <><span style={S.ownedLabel}>✅ مسجل</span><span style={S.priceSub}>لديك هذه الدورة بالفعل</span></>
+                                            <>
+                                                <span style={S.ownedLabel}>✅ مسجل</span>
+                                                <span style={S.priceSub}>لديك هذه الدورة بالفعل{boughtOnline ? ' (أونلاين)' : ''}</span>
+                                            </>
                                         ) : course.isFree ? (
                                             <><span style={S.freeLabel}>مجاناً</span><span style={S.priceSub}>دورة مجانية بالكامل</span></>
-                                        ) : mode === 'online' ? (
+                                        ) : effectiveMode === 'online' ? (
                                             <>
                                                 {onlinePriceFree ? <span style={S.freeLabel}>مجاناً</span> : (
                                                     <>
                                                         <span style={S.paidPrice}>{Number(activePrice).toLocaleString('ar-EG')} {course.currency}</span>
                                                         {course.onlineOriginalPrice > activePrice && <span style={S.strikePrice}>{Number(course.onlineOriginalPrice).toLocaleString('ar-EG')} {course.currency}</span>}
-                                                        {!course.onlineOriginalPrice && course.originalPrice > activePrice && <span style={S.strikePrice}>{Number(course.originalPrice).toLocaleString('ar-EG')} {course.currency}</span>}
                                                         {course.onlineDiscountPercent > 0 && <span style={S.discountBadge}>🏷️ خصم {course.onlineDiscountPercent}%</span>}
                                                     </>
                                                 )}
@@ -1380,26 +1367,26 @@ const CourseDetails = () => {
 
                                                 <button className="btnViewMyCourses" style={S.btnViewMyCourses} onClick={() => navigate('/my-courses')}>عرض في دوراتي</button>
 
-                                                {onlineLoading ? (
-                                                    <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '13px', color: '#7c3aed', fontFamily: font }}>
-                                                        <svg style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', verticalAlign: 'middle', marginLeft: 6 }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                        جاري تحميل رابط الاجتماع...
-                                                    </div>
-                                                ) : onlineSetting?.visible && onlineSetting?.link ? (
-                                                    <a href={onlineSetting.link} target="_blank" rel="noopener noreferrer"
-                                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '13px 20px', boxSizing: 'border-box', background: 'linear-gradient(135deg,#5b21b6,#7c3aed)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', fontFamily: font, boxShadow: '0 4px 14px rgba(124,58,237,0.35)', transition: 'all .25s ease' }}
-                                                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.5)'; }}
-                                                        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 14px rgba(124,58,237,0.35)'; }}>
-                                                        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                                                            <path d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6v6l-4-4" />
-                                                        </svg>
-                                                        🌐 انضم إلى الاجتماع الإلكتروني
-                                                    </a>
-                                                ) : onlineSetting && !onlineSetting.visible ? (
-                                                    <div style={{ padding: '12px 14px', borderRadius: '10px', background: '#f8f9fa', border: '1.5px solid #e2e8f0', fontSize: '13px', color: '#6b7280', fontFamily: font, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                                                        🕐 رابط الاجتماع سيُتاح قريبًا
-                                                    </div>
-                                                ) : null}
+                                                {/* ── Meeting link: ONLY for users who bought the course online ── */}
+                                                {boughtOnline && (
+                                                    onlineLoading ? (
+                                                        <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '13px', color: '#7c3aed', fontFamily: font }}>
+                                                            <svg style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', verticalAlign: 'middle', marginLeft: 6 }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                            جاري تحميل رابط الاجتماع...
+                                                        </div>
+                                                    ) : meetingVisible && meetingLink ? (
+                                                        <a href={meetingLink} target="_blank" rel="noopener noreferrer"
+                                                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '13px 20px', boxSizing: 'border-box', background: 'linear-gradient(135deg,#5b21b6,#7c3aed)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', fontFamily: font, boxShadow: '0 4px 14px rgba(124,58,237,0.35)', transition: 'all .25s ease' }}
+                                                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.5)'; }}
+                                                            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 14px rgba(124,58,237,0.35)'; }}>
+                                                            🌐 انضم إلى الاجتماع الإلكتروني
+                                                        </a>
+                                                    ) : (
+                                                        <div style={{ padding: '12px 14px', borderRadius: '10px', background: '#f8f9fa', border: '1.5px solid #e2e8f0', fontSize: '13px', color: '#6b7280', fontFamily: font, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                                            🕐 رابط الاجتماع سيُتاح قريبًا
+                                                        </div>
+                                                    )
+                                                )}
 
                                                 {!course.isFree && (
                                                     <button className="btnRefund" style={S.btnRefund} onClick={openRefund}>💸 طلب استرداد المبلغ</button>
@@ -1418,8 +1405,8 @@ const CourseDetails = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <button className="btnAddCart" style={S.btnAddCart} onClick={() => addToCart(false, mode)}>إضافة إلى السلة</button>
-                                                <button className="btnBuyNow" style={S.btnBuyNow} onClick={() => addToCart(true, mode)}>اشترِ الآن</button>
+                                                <button className="btnAddCart" style={S.btnAddCart} onClick={() => addToCart(false, effectiveMode)}>إضافة إلى السلة</button>
+                                                <button className="btnBuyNow" style={S.btnBuyNow} onClick={() => addToCart(true, effectiveMode)}>اشترِ الآن</button>
                                             </>
                                         )}
                                     </div>
@@ -1459,12 +1446,10 @@ const CourseDetails = () => {
                 </div>
             </div>
 
-            {/* ── CERTIFICATE PREVIEW MODAL ──────────────────────────────────── */}
             {showCertModal && hasCert && (
                 <CertificateModal cert={cert} courseTitle={course.title} onClose={() => setShowCertModal(false)} getToken={safeGetToken} />
             )}
 
-            {/* ── REFUND MODAL ───────────────────────────────────────────────── */}
             {showRefund && (
                 <div style={S.overlay} onClick={e => { if (e.target === e.currentTarget) closeRefund(); }}>
                     <div style={S.modalCard} dir="rtl">

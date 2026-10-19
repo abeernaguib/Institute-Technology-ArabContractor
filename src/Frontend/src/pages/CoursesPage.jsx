@@ -5,6 +5,25 @@ import Seo from '../components/Seo';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
 
+// ── Online info for a course (from the list endpoint) ────────────────────────
+// - Online is offered only if the admin ticked "متاح أونلاين"
+//   (👈 adjust the flag field names below if your API uses different ones).
+// - If no online price is set, the online price equals the onsite price.
+function getOnlineInfo(course) {
+    const cost = course.cost || 0;
+    const rawOnline = course.onlineCost ?? course.online_cost ?? course.OnlineCost ?? null;
+    const hasOnlineCost = rawOnline != null && Number(rawOnline) > 0;
+    const flag = course.isOnlineAvailable ?? course.IsOnlineAvailable ?? course.onlineAvailable ?? course.OnlineAvailable ?? course.isOnline ?? course.IsOnline ?? null;
+    const available = cost > 0 && (flag != null ? !!flag : hasOnlineCost);
+    return {
+        available,
+        hasOnlineCost,
+        price: hasOnlineCost ? Number(rawOnline) : cost,
+        oldCost: hasOnlineCost ? (course.onlineOldCost ?? 0) : (course.oldCost ?? 0),
+        discount: hasOnlineCost ? (course.onlineDiscountPercentage ?? 0) : (course.discountPercentage ?? 0),
+    };
+}
+
 const styles = {
     overviewBar: { position: 'fixed', left: 0, top: '64px', zIndex: 40, width: '100%', backgroundColor: '#f5f5f5', padding: '12px 24px', boxSizing: 'border-box', boxShadow: '0 2px 4px rgba(0,0,0,0.08)', borderBottom: '1px solid #e0e0e0' },
     overviewBarText: { textAlign: 'center', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif', color: '#000000' },
@@ -304,7 +323,8 @@ const Toast = ({ message, type, onClose }) => {
 };
 
 // ── RefundModal ───────────────────────────────────────────────────────────────
-const RefundModal = ({ course, onClose, getToken }) => {
+// `price` = the price the user actually paid (online or onsite)
+const RefundModal = ({ course, price, onClose, getToken }) => {
     const [refundReason, setRefundReason] = useState('');
     const [bankName, setBankName] = useState('');
     const [iban, setIban] = useState('');
@@ -337,7 +357,7 @@ const RefundModal = ({ course, onClose, getToken }) => {
         })();
     }, [course.id, safeToken]);
 
-    const policy = getRefundPolicy(course.date, course.cost || 0);
+    const policy = getRefundPolicy(course.date, price ?? course.cost ?? 0);
     const isBlocked = policy.type === 'blocked';
 
     const handleSubmit = async () => {
@@ -467,16 +487,11 @@ const CoursesPage = () => {
     const [hoveredHeaderCard, setHoveredHeaderCard] = useState(null);
     const [refundCourse, setRefundCourse] = useState(null);
     const [ownedCourseIds, setOwnedCourseIds] = useState(new Set());
-    // Kept for forward-compatibility: if /course/my-courses ever starts
-    // returning a userId per enrollment, fetchCertForCourse will pick it up
-    // automatically. Today it doesn't, so this stays empty of userId values
-    // and every cert lookup falls through to the full-list endpoint below.
     const [ownedEnrollments, setOwnedEnrollments] = useState([]);
     const [certificates, setCertificates] = useState({});
     const [certsLoading, setCertsLoading] = useState({});
     const [previewCert, setPreviewCert] = useState(null);
 
-    // ── Pagination ──
     const COURSES_PER_PAGE = 12;
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -499,16 +514,10 @@ const CoursesPage = () => {
             if (!res.ok) return;
             const data = await res.json();
             setOwnedCourseIds(new Set(data.map(e => e.childId)));
-            setOwnedEnrollments(data); // keep full records for the internal userId lookup
+            setOwnedEnrollments(data);
         } catch { setOwnedCourseIds(new Set()); setOwnedEnrollments([]); }
     }, [isSignedIn, safeGetToken]);
 
-    // ── Certificate fetch falls back to the full certificates list ──
-    // /course/my-courses does not return a userId field from this backend, so
-    // the two-segment /Admin/certificates/{userId}/{planworkId} route can almost
-    // never be reached from here. Fall back to GET /Admin/certificates (the full
-    // list) and filter by planworkId client-side — the same pattern already used
-    // successfully on the course-details page.
     const fetchCertForCourse = useCallback(async (planworkId) => {
         if (!isSignedIn) return;
 
@@ -598,7 +607,6 @@ const CoursesPage = () => {
         })();
     }, [slug]);
 
-    // Each category starts on page 1
     useEffect(() => { setCurrentPage(1); }, [slug]);
 
     const handleEnroll = async (course) => {
@@ -636,9 +644,10 @@ const CoursesPage = () => {
 
     const addToCart = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); return; }
-        const isOnline = getCourseMode(course.id) === 'online';
-        const onlinePrice = course.onlineCost != null ? course.onlineCost : 0;
-        const priceToUse = isOnline ? onlinePrice : (course.cost || 0);
+        const online = getOnlineInfo(course);
+        // online only if the course supports it AND the user picked it
+        const isOnline = online.available && getCourseMode(course.id) === 'online';
+        const priceToUse = isOnline ? online.price : (course.cost || 0);
         setAddingToCart(course.id);
         try {
             const token = await safeGetToken();
@@ -658,7 +667,7 @@ const CoursesPage = () => {
                     id: course.id, title: course.title,
                     instructor: course.place || 'غير محدد', image: 'book',
                     currentPrice: priceToUse,
-                    originalPrice: course.cost ? course.cost / 0.6 : 0,
+                    originalPrice: isOnline ? (online.oldCost || 0) : (course.oldCost || (course.cost ? course.cost / 0.6 : 0)),
                     quantity: 1, slug: course.slug || '',
                     date: course.date || '', place: course.place || '',
                     isOnline, modeLabel: isOnline ? 'أونلاين' : 'حضوري',
@@ -695,7 +704,6 @@ const CoursesPage = () => {
 
     const courses = programData?.courses || [];
 
-    // ── Pagination logic ──
     const totalPages = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
     const page = Math.min(currentPage, totalPages);
     const visibleCourses = courses.slice((page - 1) * COURSES_PER_PAGE, page * COURSES_PER_PAGE);
@@ -742,7 +750,6 @@ const CoursesPage = () => {
 
     return (
         <>
-            {/* ══ SEO — exact title / description for this course category ══ */}
             <Seo
                 title={`دورات ${programData?.programName || 'تدريبية'} | المعهد التكنولوجي لهندسة التشييد والإدارة`}
                 description={`استعرض دورات ${programData?.programName || 'المعهد التكنولوجي'} المتاحة بالمعهد التكنولوجي لهندسة التشييد والإدارة وسجّل الآن.`}
@@ -751,7 +758,12 @@ const CoursesPage = () => {
             <style>{`* { font-family: "Noto Kufi Arabic", serif !important; } ${mediaQueryStyles}`}</style>
             <div dir="rtl" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
                 {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-                {refundCourse && <RefundModal course={refundCourse} getToken={safeGetToken} onClose={() => setRefundCourse(null)} />}
+                {refundCourse && (() => {
+                    const enr = ownedEnrollments.find(e => String(e.childId) === String(refundCourse.id));
+                    const paidOnline = enr ? !!(enr.isOnline ?? enr.IsOnline ?? false) : false;
+                    const paidPrice = paidOnline ? getOnlineInfo(refundCourse).price : (refundCourse.cost || 0);
+                    return <RefundModal course={refundCourse} price={paidPrice} getToken={safeGetToken} onClose={() => setRefundCourse(null)} />;
+                })()}
                 {previewCert && <CertPreviewModal cert={previewCert} onClose={() => setPreviewCert(null)} />}
 
                 <div style={{ ...styles.overviewBar, top: 70 }} className="overview-bar">
@@ -785,11 +797,13 @@ const CoursesPage = () => {
                                     const cert = certificates[course.id] || null;
                                     const certLoading = certsLoading[course.id] || false;
 
-                                    const mode = getCourseMode(course.id);
-                                    const onlineCost = course.onlineCost ?? course.online_cost ?? null;
-                                    const activePrice = mode === 'online'
-                                        ? (onlineCost != null ? onlineCost : 0)
-                                        : (course.cost || 0);
+                                    // ── online / onsite logic ──
+                                    const online = getOnlineInfo(course);
+                                    const selectedMode = getCourseMode(course.id);
+                                    const mode = online.available ? selectedMode : 'onsite';
+                                    const activePrice = mode === 'online' ? online.price : (course.cost || 0);
+                                    const activeOldCost = mode === 'online' ? online.oldCost : course.oldCost;
+                                    const activeDiscount = mode === 'online' ? online.discount : course.discountPercentage;
 
                                     return (
                                         <div key={course.id}
@@ -798,7 +812,6 @@ const CoursesPage = () => {
                                             onMouseEnter={() => setHoveredCard(course.id)}
                                             onMouseLeave={() => setHoveredCard(null)}>
 
-                                            {/* ── card header ── */}
                                             <div
                                                 style={{ ...styles.cardHeader, ...(isOwned ? styles.cardHeaderOwned : isFree ? styles.cardHeaderFree : {}) }}
                                                 className="card-header"
@@ -824,7 +837,6 @@ const CoursesPage = () => {
                                                 )}
                                             </div>
 
-                                            {/* ── card body ── */}
                                             <div style={styles.cardBody} className="card-body">
                                                 <h3 style={styles.courseTitle}>{course.title}</h3>
 
@@ -845,36 +857,40 @@ const CoursesPage = () => {
 
                                                 {course.description && <p style={styles.description}>{course.description}</p>}
 
-                                                {/* ── mode toggle (paid + unowned only) ── */}
-                                                {!isOwned && !isFree && (
+                                                {/* mode toggle: paid + unowned + online available */}
+                                                {!isOwned && !isFree && online.available && (
                                                     <ModeToggle mode={mode} onChange={(m) => handleModeChange(course.id, m)} />
                                                 )}
 
-                                                {/* ── price section ── */}
                                                 <div style={styles.priceSection}>
                                                     <div style={styles.priceContainer}>
                                                         {activePrice > 0 ? (
                                                             <>
-                                                                {(mode === 'online' ? course.onlineOldCost : course.oldCost) > activePrice && (
+                                                                {activeOldCost > activePrice && (
                                                                     <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif' }}>
-                                                                        {mode === 'online' ? course.onlineOldCost : course.oldCost} جنيه
+                                                                        {activeOldCost} جنيه
                                                                     </span>
                                                                 )}
                                                                 <span style={styles.currentPrice}>{activePrice} جنيه</span>
-                                                                {(mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage) > 0 && (
+                                                                {activeDiscount > 0 && (
                                                                     <span style={{ background: '#ffeded', color: '#e53935', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', width: 'fit-content', fontFamily: '"Noto Kufi Arabic", serif' }}>
-                                                                        خصم {mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage}%
+                                                                        خصم {activeDiscount}%
                                                                     </span>
                                                                 )}
                                                             </>
                                                         ) : (
                                                             <span style={styles.freePriceLabel}>مجاناً</span>
                                                         )}
-                                                        <span style={styles.priceLabel}>{mode === 'online' ? 'السعر الأونلاين' : 'السعر الحضوري'}</span>
+                                                        {!isFree && (
+                                                            <span style={styles.priceLabel}>
+                                                                {online.available
+                                                                    ? (mode === 'online' ? 'السعر الأونلاين' : 'السعر الحضوري')
+                                                                    : 'السعر الحضوري'}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                {/* ── buttons ── */}
                                                 <div style={styles.buttonsContainer}>
                                                     {isOwned ? (
                                                         <>
