@@ -63,14 +63,19 @@ function mapOtherCourse(a) {
     };
 }
 
+// ✱ CHANGED
 // Did this enrollment (from /course/my-courses) get bought as ONLINE?
-// 👈 If your API uses a different field name, add it here.
+// Returns true / false when the API says so, and null when it can't be told.
+// NOTE: `isOnline` is intentionally NOT read here. In /my-courses it describes the
+// COURSE ("offered online"), not the user's purchase.
+// 👈 Once the backend returns a per-purchase flag (e.g. purchasedOnline), it is picked up here.
 function enrollmentIsOnline(e) {
     const v = e.purchasedOnline ?? e.PurchasedOnline ?? e.boughtOnline ?? e.enrolledOnline ??
-        e.isOnline ?? e.IsOnline ?? e.online ?? e.Online ?? e.isOnlineMode ?? e.IsOnlineMode ?? null;
+        e.orderIsOnline ?? e.OrderIsOnline ?? null;
     if (v != null) return v === true || v === 1 || v === 'true' || v === 'True';
     const m = String(e.mode ?? e.Mode ?? e.modeLabel ?? e.attendanceType ?? '').toLowerCase();
-    return m === 'online' || m === 'أونلاين';
+    if (m) return m === 'online' || m === 'أونلاين';
+    return null;
 }
 
 const mediaQueryStyles = `
@@ -573,8 +578,10 @@ const CourseDetails = () => {
     const [error, setError] = useState(null);
     const [otherCourses, setOtherCourses] = useState([]);
     const [ownedCourseIds, setOwnedCourseIds] = useState(new Set());
-    // courseId -> true if the user bought it as ONLINE
+    // courseId -> true / false / null (true if the user bought it as ONLINE, null if unknown)
     const [ownedModes, setOwnedModes] = useState(new Map());
+    // ✱ NEW: courseId -> meeting link returned by /course/my-courses
+    const [ownedLinks, setOwnedLinks] = useState(new Map());
 
     const [planFiles, setPlanFiles] = useState([]);
     const [planFilesLoading, setPlanFilesLoading] = useState(false);
@@ -610,8 +617,14 @@ const CourseDetails = () => {
         try { return await getToken({ skipCache: true }); } catch (_) { return null; }
     }, [getToken]);
 
+    // ✱ CHANGED: also stores the meeting link coming from /course/my-courses
     const fetchOwnedCourses = useCallback(async () => {
-        if (!isSignedIn) { setOwnedCourseIds(new Set()); setOwnedModes(new Map()); return; }
+        const clear = () => {
+            setOwnedCourseIds(new Set());
+            setOwnedModes(new Map());
+            setOwnedLinks(new Map());
+        };
+        if (!isSignedIn) { clear(); return; }
         try {
             const token = await safeGetToken();
             if (!token) return;
@@ -620,7 +633,11 @@ const CourseDetails = () => {
             const data = await res.json();
             setOwnedCourseIds(new Set(data.map(e => e.childId)));
             setOwnedModes(new Map(data.map(e => [e.childId, enrollmentIsOnline(e)])));
-        } catch { setOwnedCourseIds(new Set()); setOwnedModes(new Map()); }
+            setOwnedLinks(new Map(data.map(e => [
+                e.childId,
+                e.onlineLink ?? e.OnlineLink ?? e.meetingLink ?? e.MeetingLink ?? '',
+            ])));
+        } catch { clear(); }
     }, [isSignedIn, safeGetToken]);
 
     const fetchPlanFiles = useCallback(async (courseId) => {
@@ -851,7 +868,15 @@ const CourseDetails = () => {
     }, [slug]);
 
     const isOwned = course ? ownedCourseIds.has(course.id) : false;
-    const boughtOnline = course ? !!ownedModes.get(course.id) : false;
+
+    // ✱ CHANGED
+    // ownedMode: true = bought online, false = bought onsite, null/undefined = API doesn't say
+    const ownedMode = course ? ownedModes.get(course.id) : undefined;
+    const boughtOnline = ownedMode === true;
+    // TEMPORARY: if the API doesn't say how the course was bought, fall back to
+    // "the course is offered online". Remove the second part of this condition once
+    // /course/my-courses returns a per-purchase flag such as `purchasedOnline`.
+    const showMeetingBlock = isOwned && (boughtOnline || (ownedMode == null && !!course?.isOnlineAvailable));
 
     useEffect(() => {
         if (course?.id) {
@@ -869,9 +894,10 @@ const CourseDetails = () => {
         }
     }, [course?.id, isOwned, fetchCertForCourse]);
 
-    // Meeting-link settings — only needed when the user bought the course online
+    // ✱ CHANGED
+    // Meeting-link settings — only needed when the meeting block is shown
     useEffect(() => {
-        if (!course?.id || !isOwned || !boughtOnline) { setOnlineSetting(null); return; }
+        if (!course?.id || !showMeetingBlock) { setOnlineSetting(null); return; }
         setOnlineLoading(true);
         (async () => {
             try {
@@ -883,15 +909,15 @@ const CourseDetails = () => {
                     const item = Array.isArray(data) ? data[0] : data;
                     if (item) {
                         setOnlineSetting({
-                            link: item.meetingLink ?? item.MeetingLink ?? '',
-                            visible: !!(item.isVisible ?? item.IsVisible ?? false),
+                            link: item.meetingLink ?? item.MeetingLink ?? item.onlineLink ?? item.OnlineLink ?? '',
+                            visible: item.isVisible ?? item.IsVisible ?? true,
                         });
                     } else { setOnlineSetting(null); }
                 } else { setOnlineSetting(null); }
             } catch { setOnlineSetting(null); }
             finally { setOnlineLoading(false); }
         })();
-    }, [course?.id, isOwned, boughtOnline, safeGetToken]);
+    }, [course?.id, showMeetingBlock, safeGetToken]);
 
     const addToCart = async (buyNow = false, courseMode = 'onsite') => {
         if (!course) return;
@@ -1045,9 +1071,10 @@ const CourseDetails = () => {
 
     const showFilesSection = planFilesLoading || planFiles.length > 0;
 
-    // Meeting link (only for people who bought it online)
-    const meetingLink = onlineSetting?.link || course?.onlineLink || '';
-    const meetingVisible = onlineSetting ? onlineSetting.visible : !!meetingLink;
+    // ✱ CHANGED
+    // Meeting link priority: online-settings → /my-courses → /Course/{slug}
+    const meetingLink = onlineSetting?.link || ownedLinks.get(course?.id) || course?.onlineLink || '';
+    const meetingVisible = !!meetingLink && (onlineSetting ? onlineSetting.visible : true);
 
     if (loading) return (
         <>
@@ -1367,8 +1394,8 @@ const CourseDetails = () => {
 
                                                 <button className="btnViewMyCourses" style={S.btnViewMyCourses} onClick={() => navigate('/my-courses')}>عرض في دوراتي</button>
 
-                                                {/* ── Meeting link: ONLY for users who bought the course online ── */}
-                                                {boughtOnline && (
+                                                {/* ✱ CHANGED: ── Meeting link: users who bought the course online ── */}
+                                                {showMeetingBlock && (
                                                     onlineLoading ? (
                                                         <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '13px', color: '#7c3aed', fontFamily: font }}>
                                                             <svg style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', verticalAlign: 'middle', marginLeft: 6 }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
