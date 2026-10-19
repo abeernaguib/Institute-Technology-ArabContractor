@@ -17,7 +17,8 @@ namespace Institute.Application.DTOs.AdminDtos
         public bool? MainFlag { get; set; }
         public bool? DetailsFlag { get; set; }
         public bool? SpecialFlag { get; set; }
-
+        public bool SponsorFlag { get; set; }
+        public string? SponsorDesc { get; set; }
         public string? CourseDesc { get; set; }
         public string? CoursePlace { get; set; }
         public string? CourseDate { get; set; }

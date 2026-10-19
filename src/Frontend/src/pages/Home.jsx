@@ -44,6 +44,7 @@ const CustomersSection = React.lazy(() =>
 const DynamicCoursesSection = React.lazy(() =>
     import('./Dynamiccoursessection')
 );
+const SponsoredCategorySection = React.lazy(() => import('./SponsoredCategorySection'));
 const slides = [
     { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/training-methods', image: '/images/banner6.jpg' },
     { title: 'التدريب الفني على المهن\nالميكانيكية والكهربائية', subtitle: 'تأهيل الكوادر الفنية', tag: 'تدريب تقني', link: '/shobra', image: '/images/banner3.jpg' },
@@ -999,6 +1000,7 @@ export default function Home() {
                 </div>
             </div>
 
+            <SponsoredCategorySection />
             {/* ── 7 COURSES ────────────────────────────────────────────────────── */}
             <section style={{ background: C.w, paddingBottom: 24 }}>
                 <div className="W" style={{ paddingTop: 'clamp(48px,7vw,80px)' }}>

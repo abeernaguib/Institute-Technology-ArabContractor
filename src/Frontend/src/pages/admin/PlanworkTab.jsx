@@ -5,6 +5,9 @@
  * POST /api/admin/AdminPlanFiles          (FormData: planId, file, fileTitle, filePeriorty)
  * PUT  /api/admin/AdminPlanFiles/{fileId} (FormData: file?, fileTitle, filePeriorty)
  * DELETE /api/admin/AdminPlanFiles/{fileId}
+ *
+ * Sponsored category: planwork records can be flagged as a "sponsored" section
+ * (sponsorFlag + sponsorDesc) shown on the Home page.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -38,6 +41,8 @@ function apiToForm(item) {
         show: item.mainFlag ?? false,
         hasDetails: item.detailsFlag ?? false,
         showOnHome: item.specialFlag ?? false,
+        isSponsored: item.sponsorFlag ?? false,
+        sponsorDesc: item.sponsorDesc ?? '',
         priceOnsite: item.planCost ?? '',
         isOnline: item.isOnline ?? false,
         onlineLink: item.onlineLink ?? '',
@@ -57,6 +62,8 @@ function formToApi(form) {
         mainFlag: !!form.show,
         detailsFlag: !!form.hasDetails,
         specialFlag: !!form.showOnHome,
+        sponsorFlag: !!form.isSponsored,
+        sponsorDesc: form.isSponsored ? (form.sponsorDesc || null) : null,
         courseDesc: form.description || null,
         coursePlace: form.place || null,
         courseDate: form.date || null,
@@ -82,6 +89,7 @@ function flattenTree(nodes, acc = []) {
 const BLANK = {
     id: 0, parentId: null, priority: '', days: '', name: '', slug: '', sku: '',
     show: false, hasDetails: false, showOnHome: false,
+    isSponsored: false, sponsorDesc: '',
     priceOnsite: '', isOnline: false, onlineLink: '', onlineCost: '',
     description: '', place: '', date: '', details: ''
 };
@@ -841,7 +849,7 @@ const PlanworkTab = () => {
                                     <div className="lec-field" style={{ gridColumn: '1/-1' }}>
                                         <label className="lec-label">الخيارات</label>
                                         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', padding: '10px 12px', border: '1.5px solid #d0d3d8', borderRadius: 3, background: '#fff' }}>
-                                            {[{ name: 'show', label: 'عرض' }, { name: 'hasDetails', label: 'له تفاصيل' }, { name: 'showOnHome', label: 'عرض على الصفحه الرئيسيه' }].map(cb => (
+                                            {[{ name: 'show', label: 'عرض' }, { name: 'hasDetails', label: 'له تفاصيل' }, { name: 'showOnHome', label: 'عرض على الصفحه الرئيسيه' }, { name: 'isSponsored', label: 'عرض كقسم مميز (راعي)' }].map(cb => (
                                                 <label key={cb.name} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: '.8rem', fontWeight: 700, color: '#374151' }}>
                                                     <input type="checkbox" name={cb.name} checked={!!form[cb.name]} onChange={handleChange}
                                                         style={{ width: 16, height: 16, accentColor: T.orange, cursor: 'pointer' }} />
@@ -850,6 +858,14 @@ const PlanworkTab = () => {
                                             ))}
                                         </div>
                                     </div>
+                                    {form.isSponsored && (
+                                        <Field label="وصف القسم المميز" full>
+                                            <textarea className="lec-inp" name="sponsorDesc" rows={3}
+                                                value={form.sponsorDesc || ''} onChange={handleChange}
+                                                placeholder="مثال: برامج تكنولوجيا بناء السفن — إبراز البرامج الجديدة وإضافة محتوى يعرّف الزائر بها"
+                                                style={{ resize: 'vertical' }} />
+                                        </Field>
+                                    )}
                                 </div>
 
                                 <div className="lec-divider" />

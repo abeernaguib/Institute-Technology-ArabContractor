@@ -34,6 +34,8 @@ namespace Institute.Application.Services
                 MainFlag = x.MainFlag,
                 DetailsFlag = x.DetailsFlag,
                 SpecialFlag = x.SpecialFlag,
+                SponsorFlag = x.SponsorFlag,
+                SponsorDesc = x.SponsorDesc,
                 CourseDesc = x.CourseDesc,
                 CoursePlace = x.CoursePlace,
                 CourseDate = x.CourseDate,
@@ -91,6 +93,8 @@ namespace Institute.Application.Services
                 MainFlag = x.MainFlag,
                 DetailsFlag = x.DetailsFlag,
                 SpecialFlag = x.SpecialFlag,
+                SponsorFlag = x.SponsorFlag,
+                SponsorDesc = x.SponsorDesc,
                 CourseDesc = x.CourseDesc,
                 CoursePlace = x.CoursePlace,
                 CourseDate = x.CourseDate,
@@ -117,6 +121,8 @@ namespace Institute.Application.Services
                 MainFlag = dto.MainFlag,
                 DetailsFlag = dto.DetailsFlag,
                 SpecialFlag = dto.SpecialFlag,
+                SponsorFlag = dto.SponsorFlag,
+                SponsorDesc = dto.SponsorFlag ? dto.SponsorDesc : null,
                 CourseDesc = dto.CourseDesc,
                 CoursePlace = dto.CoursePlace,
                 CourseDate = dto.CourseDate,
@@ -149,6 +155,8 @@ namespace Institute.Application.Services
             entity.MainFlag = dto.MainFlag;
             entity.DetailsFlag = dto.DetailsFlag;
             entity.SpecialFlag = dto.SpecialFlag;
+            entity.SponsorFlag = dto.SponsorFlag;
+            entity.SponsorDesc = dto.SponsorFlag ? dto.SponsorDesc : null;
 
             entity.CourseDesc = dto.CourseDesc;
             entity.CoursePlace = dto.CoursePlace;
@@ -183,4 +191,4 @@ namespace Institute.Application.Services
             return true;
         }
     }
-}   
+}

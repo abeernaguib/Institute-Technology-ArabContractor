@@ -222,7 +222,37 @@ namespace Institute.API.Controllers
             var courses = await _categoryService.GetLatestCoursesAsync(20);
             return Ok(courses);
         }
+        // GET /api/course/sponsored
+        // Categories the admin marked as sponsored, each with its courses (recursive).
+        [HttpGet("sponsored")]
+        public async Task<IActionResult> GetSponsored()
+        {
+            var planworks = (await _planRepo.GetAllAsync()).ToList();
+            var noFiles = new List<PlanFile>(); // GetCoursesRecursive doesn't use files
 
+            var result = planworks
+                .Where(p => p.SponsorFlag)
+                .OrderBy(p => p.Priority)
+                .Select(p =>
+                {
+                    var courses = GetCoursesRecursive(planworks, noFiles, p.ChildId)
+                        .OrderByDescending(c => c.Id)
+                        .ToList();
+
+                    return new
+                    {
+                        id = p.ChildId,
+                        slug = p.Slug,
+                        title = p.ServiceTitle,
+                        sponsorDesc = p.SponsorDesc,
+                        coursesCount = courses.Count,
+                        courses
+                    };
+                })
+                .ToList();
+
+            return Ok(result);
+        }
         // ══════════════════════════════════════════════════════════════
         // GET /api/course/my-courses
         // بيجيب كل الكورسات اللي اليوزر المسجل دخول سجل فيها

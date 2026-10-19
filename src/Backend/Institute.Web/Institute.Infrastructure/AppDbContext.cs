@@ -483,7 +483,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.MainFlag).HasColumnName("main_flag");
             entity.Property(e => e.DetailsFlag).HasColumnName("details_flag");
             entity.Property(e => e.SpecialFlag).HasColumnName("special_flag");
-
+            entity.Property(e => e.SponsorFlag).HasColumnName("sponsor_flag").HasDefaultValue(false);
+            entity.Property(e => e.SponsorDesc).HasColumnName("sponsor_desc").HasMaxLength(1000);
             entity.Property(e => e.PlanCost).HasColumnType("decimal(18, 2)");
 
             // 🔥 Relationships

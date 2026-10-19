@@ -40,6 +40,8 @@ public partial class Planwork
     public string? Slug { get; set; }
     public string? SKU { get; set; }
 
+    public bool SponsorFlag { get; set; }
+    public string? SponsorDesc { get; set; }
 
     // 🔹 Navigation
     public Planwork? Parent { get; set; }
