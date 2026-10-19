@@ -12,6 +12,7 @@ const News = lazy(() => import('../pages/News'));
 const NewsDetails = lazy(() => import('../pages/newsDetails.jsx'));
 const CoursesPage = lazy(() => import('../pages/CoursesPage'));
 const CourseDetails = lazy(() => import('../pages/CourseDetails'));
+const SponsoredCategoryPage = lazy(() => import('../pages/SponsoredCategoryPage')); // NEW
 const Library = lazy(() => import('../pages/Library'));
 const CustomersPage = lazy(() => import('../pages/CustomersPage'));
 const Certifications = lazy(() => import('../pages/Certifications'));
@@ -80,6 +81,7 @@ const AppRoutes = () => {
                     <Route path="/news/:id" element={<NewsDetails />} />
                     <Route path="/courses/:slug" element={<CoursesPage />} />
                     <Route path="/course/:slug" element={<CourseDetails />} />
+                    <Route path="/category/:slug" element={<SponsoredCategoryPage />} /> {/* NEW */}
                     <Route path="/library" element={<Library />} />
                     <Route path="/customers" element={<CustomersPage />} />
                     <Route path="/certifications" element={<Certifications />} />

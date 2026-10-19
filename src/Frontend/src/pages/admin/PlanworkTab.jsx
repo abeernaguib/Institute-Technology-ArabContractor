@@ -849,7 +849,7 @@ const PlanworkTab = () => {
                                     <div className="lec-field" style={{ gridColumn: '1/-1' }}>
                                         <label className="lec-label">الخيارات</label>
                                         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', padding: '10px 12px', border: '1.5px solid #d0d3d8', borderRadius: 3, background: '#fff' }}>
-                                            {[{ name: 'show', label: 'عرض' }, { name: 'hasDetails', label: 'له تفاصيل' }, { name: 'showOnHome', label: 'عرض على الصفحه الرئيسيه' }, { name: 'isSponsored', label: 'عرض كقسم مميز (راعي)' }].map(cb => (
+                                            {[{ name: 'show', label: 'عرض' }, { name: 'hasDetails', label: 'له تفاصيل' }, { name: 'showOnHome', label: 'عرض على الصفحه الرئيسيه' }, { name: 'isSponsored', label: 'عرض كقسم مميز' }].map(cb => (
                                                 <label key={cb.name} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: '.8rem', fontWeight: 700, color: '#374151' }}>
                                                     <input type="checkbox" name={cb.name} checked={!!form[cb.name]} onChange={handleChange}
                                                         style={{ width: 16, height: 16, accentColor: T.orange, cursor: 'pointer' }} />

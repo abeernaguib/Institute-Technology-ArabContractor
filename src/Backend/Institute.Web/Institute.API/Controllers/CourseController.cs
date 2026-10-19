@@ -223,30 +223,51 @@ namespace Institute.API.Controllers
             return Ok(courses);
         }
         // GET /api/course/sponsored
-        // Categories the admin marked as sponsored, each with its courses (recursive).
         [HttpGet("sponsored")]
         public async Task<IActionResult> GetSponsored()
         {
             var planworks = (await _planRepo.GetAllAsync()).ToList();
-            var noFiles = new List<PlanFile>(); // GetCoursesRecursive doesn't use files
+            var noFiles = new List<PlanFile>();
 
             var result = planworks
                 .Where(p => p.SponsorFlag)
                 .OrderBy(p => p.Priority)
                 .Select(p =>
                 {
-                    var courses = GetCoursesRecursive(planworks, noFiles, p.ChildId)
+                    // same rule the rest of the controller uses for "a real course"
+                    var isCourse = p.DetailsFlag == false && p.CourseDate != null;
+
+                    if (isCourse)
+                    {
+                        return (object)new
+                        {
+                            type = "course",
+                            id = p.ChildId,
+                            slug = p.Slug,
+                            title = p.ServiceTitle,
+                            sponsorDesc = p.SponsorDesc,
+                            description = p.CourseDesc,
+                            place = p.CoursePlace,
+                            date = p.CourseDate,
+                            cost = p.PlanCost,
+                            isOnline = p.IsOnline,
+                            onlineCost = p.OnlineCost
+                        };
+                    }
+
+                    var all = GetCoursesRecursive(planworks, noFiles, p.ChildId)
                         .OrderByDescending(c => c.Id)
                         .ToList();
 
-                    return new
+                    return (object)new
                     {
+                        type = "category",
                         id = p.ChildId,
                         slug = p.Slug,
                         title = p.ServiceTitle,
                         sponsorDesc = p.SponsorDesc,
-                        coursesCount = courses.Count,
-                        courses
+                        coursesCount = all.Count,
+                        courses = all.Take(4).ToList()
                     };
                 })
                 .ToList();

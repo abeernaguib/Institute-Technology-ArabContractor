@@ -1,101 +1,87 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import StarIcon from '@mui/icons-material/Star';
+import { Link, useParams } from 'react-router-dom';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
-const F = '"Noto Kufi Arabic",serif';
-const C = { o: '#f57c00', b: '#0865a8', bd: '#044474', k: '#0a0a0a', g3: '#e5e7eb', g5: '#6b7280' };
-const PREVIEW = 4;
 
-function SponsorBlock({ item }) {
-    const [showAll, setShowAll] = useState(false);
-    const list = showAll ? item.courses : item.courses.slice(0, PREVIEW);
+const F = '"Noto Kufi Arabic",serif';
+const C = { o: '#f57c00', b: '#0865a8', bd: '#044474', k: '#0a0a0a', g3: '#e5e7eb', g5: '#6b7280', tint: '#f4f8fc' };
+
+const Price = ({ cost }) => {
+    if (cost > 0) return <span style={{ fontFamily: F, fontWeight: 800, color: C.o }}>{cost} جنيه</span>;
+    if (cost === 0) return <span style={{ fontFamily: F, fontWeight: 800, color: '#1a7a3c' }}>مجاناً</span>;
+    return null;
+};
+
+const Meta = ({ Icon, text }) => text ? (
+    <span style={{ fontFamily: F, fontSize: '.72rem', color: C.g5, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Icon sx={{ fontSize: 14, color: C.b }} />{text}
+    </span>
+) : null;
+
+export default function SponsoredCategoryPage() {
+    const { slug } = useParams();
+    const [data, setData] = useState(null);
+    const [state, setState] = useState('loading'); // loading | ok | notfound | error
+
+    useEffect(() => {
+        setState('loading');
+        fetch(`${API_BASE}/Course/programs/${encodeURIComponent(slug)}/courses`)
+            .then(r => {
+                if (r.status === 404) { setState('notfound'); return null; }
+                if (!r.ok) throw new Error();
+                return r.json();
+            })
+            .then(d => { if (d) { setData(d); setState('ok'); } })
+            .catch(() => setState('error'));
+        window.scrollTo(0, 0);
+    }, [slug]);
+
+    const courses = data?.courses || [];
 
     return (
-        <div style={{ marginBottom: 40, borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.g3}`, background: '#fff' }}>
-            {/* Header */}
-            <div style={{ background: `linear-gradient(135deg, ${C.b} 0%, ${C.bd} 100%)`, padding: 'clamp(24px,4vw,48px)', color: '#fff', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: C.o }} />
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 20, padding: '4px 14px', marginBottom: 16 }}>
-                    <StarIcon sx={{ fontSize: 13, color: C.o }} />
-                    <span style={{ fontFamily: F, fontSize: '.68rem', fontWeight: 700, letterSpacing: 1.5 }}>قسم مميز</span>
+        <div dir="rtl" style={{ background: '#fff', minHeight: '70vh' }}>
+            <div style={{ background: C.tint, borderBottom: `1px solid ${C.g3}`, borderInlineStart: `5px solid ${C.o}`, padding: 'clamp(28px,5vw,56px) clamp(16px,4vw,56px)' }}>
+                <div style={{ maxWidth: 1320, margin: '0 auto' }}>
+                    <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: F, fontSize: '.8rem', fontWeight: 700, color: C.b, textDecoration: 'none', marginBottom: 14 }}>
+                        <ArrowForwardIcon sx={{ fontSize: 16 }} /> الرئيسية
+                    </Link>
+                    <h1 style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1.5rem,3.4vw,2.6rem)', color: C.bd, lineHeight: 1.5, margin: 0 }}>
+                        {state === 'ok' ? data.programName : '...'}
+                    </h1>
+                    {state === 'ok' && (
+                        <p style={{ fontFamily: F, fontSize: '.9rem', color: C.g5, margin: '10px 0 0' }}>{courses.length} برنامج</p>
+                    )}
                 </div>
-                <h2 style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1.4rem,3vw,2.4rem)', lineHeight: 1.4, margin: '0 0 12px' }}>
-                    {item.title}
-                </h2>
-                {item.sponsorDesc && (
-                    <p style={{ fontFamily: F, fontSize: 'clamp(.84rem,1.2vw,.98rem)', lineHeight: 2, color: 'rgba(255,255,255,.8)', maxWidth: 760, margin: 0 }}>
-                        {item.sponsorDesc}
-                    </p>
-                )}
             </div>
 
-            {/* Courses */}
-            <div style={{ padding: 'clamp(16px,3vw,32px)' }}>
-                {item.courses.length === 0 ? (
-                    <p style={{ fontFamily: F, color: C.g5, textAlign: 'center', margin: 0 }}>سيتم إضافة البرامج قريبًا</p>
-                ) : (
-                    <>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
-                            {list.map(c => (
-                                <Link key={c.id} to={`/course/${c.slug}`}
-                                    style={{ textDecoration: 'none', border: `1px solid ${C.g3}`, borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10, background: '#fff', transition: 'border-color .25s, transform .25s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.o; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.g3; e.currentTarget.style.transform = ''; }}>
-                                    <div style={{ fontFamily: F, fontWeight: 800, fontSize: '.9rem', lineHeight: 1.6, color: C.k, minHeight: 58 }}>{c.title}</div>
-                                    {c.place && (
-                                        <span style={{ fontFamily: F, fontSize: '.68rem', color: C.g5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                                            <LocationOnIcon sx={{ fontSize: 13, color: C.b }} />{c.place}
-                                        </span>
-                                    )}
-                                    {c.date && (
-                                        <span style={{ fontFamily: F, fontSize: '.68rem', color: C.g5, display: 'flex', alignItems: 'center', gap: 5 }}>
-                                            <CalendarTodayIcon sx={{ fontSize: 12, color: C.b }} />{c.date}
-                                        </span>
-                                    )}
-                                    <div style={{ marginTop: 'auto', fontFamily: F, fontWeight: 800, color: c.cost > 0 ? C.o : '#1a7a3c' }}>
-                                        {c.cost > 0 ? `${c.cost} جنيه` : 'مجاناً'}
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+            <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'clamp(24px,4vw,48px) clamp(16px,4vw,56px) clamp(48px,7vw,80px)' }}>
+                {state === 'loading' && <p style={{ fontFamily: F, textAlign: 'center', color: C.b }}>جاري التحميل...</p>}
+                {state === 'notfound' && <p style={{ fontFamily: F, textAlign: 'center', color: C.g5 }}>القسم غير موجود</p>}
+                {state === 'error' && <p style={{ fontFamily: F, textAlign: 'center', color: '#dc2626' }}>تعذر تحميل البرامج، حاول مرة أخرى</p>}
+                {state === 'ok' && courses.length === 0 && <p style={{ fontFamily: F, textAlign: 'center', color: C.g5 }}>سيتم إضافة البرامج قريبًا</p>}
 
-                        {item.courses.length > PREVIEW && (
-                            <div style={{ textAlign: 'center', marginTop: 24 }}>
-                                <button onClick={() => setShowAll(s => !s)}
-                                    style={{ fontFamily: F, fontWeight: 700, fontSize: '.85rem', color: '#fff', background: C.o, border: 'none', borderRadius: 8, padding: '10px 28px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                                    {showAll ? 'عرض أقل' : `عرض كل البرامج (${item.coursesCount})`}
-                                    <ArrowForwardIosIcon sx={{ fontSize: 11, transform: showAll ? 'rotate(-90deg)' : 'rotate(90deg)' }} />
-                                </button>
-                            </div>
-                        )}
-                    </>
+                {state === 'ok' && courses.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 18 }}>
+                        {courses.map(c => (
+                            <Link key={c.id} to={`/course/${c.slug || c.id}`}
+                                style={{ textDecoration: 'none', border: `1px solid ${C.g3}`, borderTop: `4px solid ${C.b}`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, background: '#fff', transition: 'border-color .25s, transform .25s, box-shadow .25s' }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = C.o; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,.08)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.g3; e.currentTarget.style.borderTopColor = C.b; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}>
+                                <div style={{ fontFamily: F, fontWeight: 800, fontSize: '.92rem', lineHeight: 1.7, color: C.k, minHeight: 62 }}>{c.title}</div>
+                                {c.description && (
+                                    <p style={{ fontFamily: F, fontSize: '.74rem', lineHeight: 1.8, color: C.g5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.description}</p>
+                                )}
+                                <Meta Icon={LocationOnIcon} text={c.place} />
+                                <Meta Icon={CalendarTodayIcon} text={c.date} />
+                                <div style={{ marginTop: 'auto', paddingTop: 6 }}><Price cost={c.cost} /></div>
+                            </Link>
+                        ))}
+                    </div>
                 )}
             </div>
         </div>
-    );
-}
-
-export default function SponsoredCategorySection() {
-    const [items, setItems] = useState([]);
-
-    useEffect(() => {
-        fetch(`${API_BASE}/Course/sponsored`)
-            .then(r => (r.ok ? r.json() : []))
-            .then(d => setItems(Array.isArray(d) ? d : []))
-            .catch(() => setItems([]));
-    }, []);
-
-    if (!items.length) return null; // nothing sponsored → section disappears
-
-    return (
-        <section dir="rtl" style={{ background: '#fff', padding: 'clamp(40px,6vw,80px) clamp(16px,4vw,56px) 0' }}>
-            <div style={{ maxWidth: 1320, margin: '0 auto' }}>
-                {items.map(it => <SponsorBlock key={it.id} item={it} />)}
-            </div>
-        </section>
     );
 }
