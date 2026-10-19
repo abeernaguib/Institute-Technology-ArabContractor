@@ -1,35 +1,32 @@
-﻿using Institute.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Institute.Infrastructure;
-
-public partial class AppUser
+namespace Institute.Domain.Entities
 {
-    [Key]
-    public int Id { get; set; }
+    public class AppUser
+    {
+        public int Id { get; set; }
 
-    public string Username { get; set; } = null!;
+        public string ClerkUserId { get; set; } = null!;
+        public string Username { get; set; } = null!;
 
-    public string PasswordHash { get; set; } = null!;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Email { get; set; }
 
-    [StringLength(255)]
-    public string? Email { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; set; }
+        public bool IsManager { get; set; }
+        public bool IsAdmin { get; set; }
+        // Navigation
+        public ICollection<Cart> Carts { get; set; } = new HashSet<Cart>();
+        public ICollection<Order> Orders { get; set; } = new HashSet<Order>();
+        public ICollection<Enrollment> Enrollments { get; set; } = new HashSet<Enrollment>();
+        public ICollection<UserPermission> Permissions { get; set; } = new HashSet<UserPermission>();
 
-    [StringLength(100)]
-    public string? FirstName { get; set; }
 
-    [StringLength(100)]
-    public string? LastName { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    [InverseProperty("User")]
-    public virtual ICollection<CoursePurchase> CoursePurchases { get; set; } = new List<CoursePurchase>();
-
-    [InverseProperty("User")]
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    }
 }

@@ -148,12 +148,11 @@ const DynamicCoursesSection = () => {
     const [error, setError] = useState(null);
     const [hoveredCourse, setHoveredCourse] = useState(null);
     const [addingToCart, setAddingToCart] = useState(null);
-    const [enrollingId, setEnrollingId] = useState(null);
     const [ownedCourseIds, setOwnedCourseIds] = useState(new Set());
     const [certificates, setCertificates] = useState({});
     const [toast, setToast] = useState(null);
 
-    // per-card mode state: { [courseId]: 'onsite' | 'online' }
+    // ── per-card mode state: { [courseId]: 'onsite' | 'online' } ─────────────
     const [courseModes, setCourseModes] = useState({});
     const getCourseMode = (id) => courseModes[id] || 'onsite';
     const handleModeChange = (id, mode) => setCourseModes(prev => ({ ...prev, [id]: mode }));
@@ -184,7 +183,16 @@ const DynamicCoursesSection = () => {
         }
     }, [isSignedIn, safeGetToken]);
 
-    // ── Fetch certificates (full list, filtered client-side by planworkId) ────
+    // ── Fetch certificates ────────────────────────────────────────────────────
+    // FIXED: this used to call `/Admin/certificates/${userId}` with the raw
+    // Clerk user id (e.g. "user_39OF6kv..."). The server's own error message
+    // shows that route's single segment is actually `planworkId` (an int,
+    // i.e. a course id) — not a user id — which is exactly why it was
+    // rejected with a 400 ("planworkId ... is not valid"). There is no
+    // per-user endpoint available here, so instead we fetch the full
+    // certificates list once and filter it client-side by each owned
+    // course's id (planworkId) — the same pattern already used successfully
+    // in CourseDetails.jsx and CoursesPage.jsx.
     const fetchCertificates = useCallback(async (ownedIds) => {
         if (!isSignedIn || !ownedIds || ownedIds.size === 0) { setCertificates({}); return; }
         try {
@@ -209,6 +217,7 @@ const DynamicCoursesSection = () => {
         } catch { /* certs optional */ }
     }, [isSignedIn, safeGetToken]);
 
+    // Load owned courses first, then certificates filtered to just those ids.
     useEffect(() => {
         (async () => {
             const ids = await fetchOwnedCourses();
@@ -245,19 +254,9 @@ const DynamicCoursesSection = () => {
                 const transformed = raw
                     .filter(c => c && c.childId)
                     .map(c => {
-                        const cost = c.planCost ?? c.cost ?? 0;
-                        const isFree = !cost || cost === 0;
-
-                        // ── online ──
-                        const onlineCostRaw = c.onlineCost ?? c.online_cost ?? null;
-                        const hasOnlineCost = onlineCostRaw != null && Number(onlineCostRaw) > 0;
-                        // "متاح أونلاين" flag from the admin
-                        const onlineFlag = c.isOnline ?? c.IsOnline ?? c.isOnlineAvailable ?? c.onlineAvailable ?? null;
-                        const onlineAvailable = !isFree && (onlineFlag != null ? !!onlineFlag : hasOnlineCost);
-
-                        const oldCost = c.oldCost ?? null;
-                        const discountPercentage = c.discountPercentage ?? 0;
-
+                        const cost = c.planCost ?? 0;
+                        // Mirror CoursesPage field names exactly
+                        const onlineCost = c.onlineCost ?? c.online_cost ?? null;
                         return {
                             id: c.childId,
                             slug: c.slug || String(c.childId),
@@ -265,17 +264,16 @@ const DynamicCoursesSection = () => {
                             description: c.courseDesc || '',
                             // onsite
                             cost,
-                            oldCost,
-                            discountPercentage,
-                            // online (same as onsite when no online price is set)
-                            onlineAvailable,
-                            onlinePrice: hasOnlineCost ? Number(onlineCostRaw) : cost,
-                            onlineOldCost: hasOnlineCost ? (c.onlineOldCost ?? null) : oldCost,
-                            onlineDiscountPercentage: hasOnlineCost ? (c.onlineDiscountPercentage ?? 0) : discountPercentage,
+                            oldCost: c.oldCost ?? null,
+                            discountPercentage: c.discountPercentage ?? 0,
+                            // online
+                            onlineCost,
+                            onlineOldCost: c.onlineOldCost ?? null,
+                            onlineDiscountPercentage: c.onlineDiscountPercentage ?? 0,
                             // meta
                             date: c.courseDate || '',
                             place: c.coursePlace || '',
-                            isFree,
+                            isFree: !cost || cost === 0,
                         };
                     });
 
@@ -288,16 +286,15 @@ const DynamicCoursesSection = () => {
         })();
     }, []);
 
-    // ── Add to cart ───────────────────────────────────────────────────────────
+    // ── Add to cart (mirrors CoursesPage logic) ───────────────────────────────
     const addToCart = async (course) => {
         if (!isSignedIn) {
             showToast('الرجاء تسجيل الدخول أولاً', 'warning');
             return;
         }
-        // online only if the course supports it AND the user picked it
-        const isOnline = course.onlineAvailable && getCourseMode(course.id) === 'online';
-        const priceToUse = isOnline ? course.onlinePrice : (course.cost || 0);
-        const oldToUse = isOnline ? course.onlineOldCost : course.oldCost;
+        const isOnline = getCourseMode(course.id) === 'online';
+        const onlinePrice = course.onlineCost != null ? course.onlineCost : 0;
+        const priceToUse = isOnline ? onlinePrice : (course.cost || 0);
 
         setAddingToCart(course.id);
         try {
@@ -327,7 +324,7 @@ const DynamicCoursesSection = () => {
                     instructor: course.place || 'غير محدد',
                     image: 'book',
                     currentPrice: priceToUse,
-                    originalPrice: oldToUse || (priceToUse ? priceToUse / 0.6 : 0),
+                    originalPrice: course.cost ? course.cost / 0.6 : 0,
                     quantity: 1,
                     slug: course.slug || '',
                     date: course.date || '',
@@ -346,39 +343,20 @@ const DynamicCoursesSection = () => {
         }
     };
 
-    // ── Enroll free course (now uses the real API like the other pages) ───────
-    const handleEnroll = async (course) => {
-        if (!isSignedIn) {
-            showToast('الرجاء تسجيل الدخول أولاً', 'warning');
-            navigate('/sign-in');
-            return;
-        }
-        setEnrollingId(course.id);
-        try {
-            const token = await safeGetToken();
-            if (!token) { showToast('انتهت الجلسة، سجل دخول مرة أخرى', 'error'); return; }
-            const res = await fetch(`${API_BASE}/course/enroll-free/${course.id}`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    // ── Enroll free course ────────────────────────────────────────────────────
+    const handleEnroll = (course) => {
+        const existing = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+        if (!existing.some(e => e.id === course.id)) {
+            existing.push({
+                id: course.id, slug: course.slug, title: course.title,
+                place: course.place || '', instructor: course.place || 'غير محدد',
+                date: course.date || '', image: 'book', currentPrice: 0, progress: 0,
             });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                showToast(data?.message || 'حدث خطأ، حاول مرة أخرى', 'error');
-                return;
-            }
-            if (data.alreadyEnrolled) {
-                showToast('أنت مسجل في هذا الكورس بالفعل', 'warning');
-            } else {
-                showToast('تم التسجيل في الدورة بنجاح 🎉', 'success');
-            }
-            await fetchOwnedCourses();
+            localStorage.setItem('enrolledCourses', JSON.stringify(existing));
             window.dispatchEvent(new Event('enrollUpdated'));
-            setTimeout(() => navigate('/my-courses'), 900);
-        } catch (err) {
-            showToast(err.message || 'حدث خطأ، حاول مرة أخرى', 'error');
-        } finally {
-            setEnrollingId(null);
         }
+        showToast('تم التسجيل في الدورة بنجاح', 'success');
+        setTimeout(() => navigate('/my-courses'), 900);
     };
 
     // ── Loading / Error states ────────────────────────────────────────────────
@@ -433,24 +411,31 @@ const DynamicCoursesSection = () => {
                     {courses.map((course, index) => {
                         const isOwned = ownedCourseIds.has(course.id);
                         const isAdding = addingToCart === course.id;
-                        const isEnrolling = enrollingId === course.id;
                         const isHovered = hoveredCourse === course.id;
                         const cert = certificates[course.id] || null;
 
-                        // ── mode & price ──
-                        // online is only used when the admin enabled it for this course
-                        const mode = course.onlineAvailable ? getCourseMode(course.id) : 'onsite';
-                        const activePrice = mode === 'online' ? course.onlinePrice : (course.cost || 0);
-                        const activeOldCost = mode === 'online' ? course.onlineOldCost : course.oldCost;
-                        const activeDiscount = mode === 'online' ? course.onlineDiscountPercentage : course.discountPercentage;
+                        // ── mode & price (mirrors CoursesPage exactly) ──
+                        const mode = getCourseMode(course.id);
+                        const onlineCost = course.onlineCost;                          // null = not available
+                        const activePrice = mode === 'online'
+                            ? (onlineCost != null ? onlineCost : 0)
+                            : (course.cost || 0);
+                        const activeOldCost = mode === 'online'
+                            ? course.onlineOldCost
+                            : course.oldCost;
+                        const activeDiscount = mode === 'online'
+                            ? course.onlineDiscountPercentage
+                            : course.discountPercentage;
                         const effectivelyFree = activePrice === 0;
 
+                        // Card header gradient
                         const headerGradient = isOwned
                             ? 'linear-gradient(135deg, #4a4a8a 0%, #7b5ea7 100%)'
                             : (course.isFree || effectivelyFree)
                                 ? 'linear-gradient(135deg, #1a7a3c 0%, #27ae60 100%)'
                                 : 'linear-gradient(135deg, #0865a8 0%, #064a7a 100%)';
 
+                        // Badge
                         const badgeText = isOwned
                             ? '✅ مسجل'
                             : (course.isFree || effectivelyFree)
@@ -465,7 +450,7 @@ const DynamicCoursesSection = () => {
                                     onMouseEnter={() => setHoveredCourse(course.id)}
                                     onMouseLeave={() => setHoveredCourse(null)}
                                     sx={{
-                                        height: 'auto',
+                                        height: cert && isOwned ? 'auto' : 'auto',
                                         minHeight: cert && isOwned ? 460 : 410,
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -502,6 +487,7 @@ const DynamicCoursesSection = () => {
                                             {getCourseIcon(index)}
                                         </Box>
 
+                                        {/* Hover overlay */}
                                         <Box sx={{
                                             position: 'absolute', inset: 0, zIndex: 3,
                                             background: headerGradient,
@@ -517,6 +503,7 @@ const DynamicCoursesSection = () => {
                                             </Typography>
                                         </Box>
 
+                                        {/* Badge */}
                                         {badgeText && (
                                             <Box sx={{
                                                 position: 'absolute', top: 10, right: 10, zIndex: 4,
@@ -535,6 +522,7 @@ const DynamicCoursesSection = () => {
                                             </Box>
                                         )}
 
+                                        {/* Cert ribbon */}
                                         {isOwned && cert && (
                                             <Box sx={{
                                                 position: 'absolute', top: 10, left: 10, zIndex: 4,
@@ -587,8 +575,8 @@ const DynamicCoursesSection = () => {
 
                                         <Box sx={{ flexGrow: 1 }} />
 
-                                        {/* Mode toggle — paid + unowned + online available */}
-                                        {!isOwned && !course.isFree && course.onlineAvailable && (
+                                        {/* ── Mode toggle — paid + unowned only ── */}
+                                        {!isOwned && !course.isFree && (
                                             <div onClick={e => e.stopPropagation()}>
                                                 <ModeToggle
                                                     mode={mode}
@@ -597,7 +585,7 @@ const DynamicCoursesSection = () => {
                                             </div>
                                         )}
 
-                                        {/* Price section */}
+                                        {/* ── Price section (mirrors CoursesPage) ── */}
                                         <Box sx={{ borderTop: '1px solid #f0f0f0', pt: '8px' }}>
                                             {isOwned ? (
                                                 <Typography sx={{
@@ -608,6 +596,7 @@ const DynamicCoursesSection = () => {
                                                 </Typography>
                                             ) : activePrice > 0 ? (
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                    {/* Strikethrough old price */}
                                                     {activeOldCost > activePrice && (
                                                         <Typography sx={{
                                                             fontFamily: '"Noto Kufi Arabic", serif',
@@ -617,6 +606,7 @@ const DynamicCoursesSection = () => {
                                                             {activeOldCost} جنيه
                                                         </Typography>
                                                     )}
+                                                    {/* Current price */}
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <Typography sx={{
                                                             fontWeight: 800, fontFamily: '"Noto Kufi Arabic", serif',
@@ -624,6 +614,7 @@ const DynamicCoursesSection = () => {
                                                         }}>
                                                             {activePrice} جنيه
                                                         </Typography>
+                                                        {/* Discount badge */}
                                                         {activeDiscount > 0 && (
                                                             <Box sx={{
                                                                 background: '#ffeded', color: '#e53935',
@@ -635,6 +626,7 @@ const DynamicCoursesSection = () => {
                                                             </Box>
                                                         )}
                                                     </Box>
+                                                    {/* Mode label */}
                                                     <Typography sx={{
                                                         fontFamily: '"Noto Kufi Arabic", serif',
                                                         fontSize: '0.65rem', color: '#888',
@@ -645,7 +637,8 @@ const DynamicCoursesSection = () => {
                                             ) : (
                                                 <Typography sx={{
                                                     fontWeight: 800, fontFamily: '"Noto Kufi Arabic", serif',
-                                                    fontSize: '0.95rem', color: '#1a7a3c',
+                                                    fontSize: '0.95rem',
+                                                    color: course.isFree ? '#1a7a3c' : '#1a7a3c',
                                                 }}>
                                                     مجاناً
                                                 </Typography>
@@ -682,6 +675,7 @@ const DynamicCoursesSection = () => {
                                     {/* ── Action buttons ── */}
                                     <CardActions sx={{ p: '0 14px 14px', flexShrink: 0, flexDirection: 'column', gap: '8px' }}>
 
+                                        {/* Certificate download button */}
                                         {isOwned && cert && (
                                             <Box
                                                 component="a"
@@ -741,7 +735,6 @@ const DynamicCoursesSection = () => {
                                             <Button
                                                 fullWidth
                                                 variant="contained"
-                                                disabled={isEnrolling}
                                                 onClick={(e) => { e.stopPropagation(); handleEnroll(course); }}
                                                 sx={{
                                                     background: 'linear-gradient(135deg, #1a7a3c 0%, #27ae60 100%)',
@@ -750,10 +743,9 @@ const DynamicCoursesSection = () => {
                                                     py: '7px', fontFamily: '"Noto Kufi Arabic", serif',
                                                     border: 'none', boxShadow: 'none',
                                                     '&:hover': { background: 'linear-gradient(135deg, #155f30 0%, #1e8449 100%)', boxShadow: 'none' },
-                                                    '&:disabled': { opacity: 0.7, color: '#fff' },
                                                 }}
                                             >
-                                                {isEnrolling ? 'جاري التسجيل...' : '🎁 اشترك الآن — مجاناً'}
+                                                🎁 اشترك الآن — مجاناً
                                             </Button>
                                         ) : (
                                             <Button
