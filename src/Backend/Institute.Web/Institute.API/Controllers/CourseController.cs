@@ -163,6 +163,7 @@ namespace Institute.API.Controllers
         // GET /api/course/{slug}
         // بيجيب تفاصيل كورس واحد كامل عن طريق الـ Slug بتاعه
         // بيرجع كل البيانات + الملفات المرفقة مرتبة بالـ Priority
+        // ملاحظة: لا يرجع رابط الاجتماع هنا لأن الـ endpoint عام
         // ══════════════════════════════════════════════════════════════
         [HttpGet("{slug}")]
         public async Task<IActionResult> GetCourseById(string slug)
@@ -226,6 +227,8 @@ namespace Institute.API.Controllers
         // GET /api/course/my-courses
         // بيجيب كل الكورسات اللي اليوزر المسجل دخول سجل فيها
         // سواء كانت مدفوعة (ليها OrderId) أو مجانية (OrderId = null)
+        // ✱ CHANGED: بيرجع كمان UserId و PurchasedOnline و OnlineLink
+        // رابط الاجتماع بيتبعت بس لو اليوزر اشترى أونلاين
         // ══════════════════════════════════════════════════════════════
         [HttpGet("my-courses")]
         public async Task<IActionResult> GetMyCourses()
@@ -263,10 +266,13 @@ namespace Institute.API.Controllers
                         Slug = plan.Slug,
                         EnrolledAt = e.EnrolledAt,
                         OrderId = e.OrderId,
+                        UserId = e.UserId,                                   // ✱ NEW
                         Cost = plan.PlanCost,
                         IsFree = e.OrderId == null,
-                        IsOnline = plan.IsOnline,
-                        OnlineCost = plan.OnlineCost
+                        IsOnline = plan.IsOnline,                            // الكورس متاح أونلاين
+                        OnlineCost = plan.OnlineCost,
+                        PurchasedOnline = e.IsOnline,                        // ✱ NEW: اليوزر اشترى أونلاين
+                        OnlineLink = e.IsOnline ? plan.OnlineLink : null     // ✱ NEW: الرابط لمشتري الأونلاين فقط
                     };
                 })
                 .Where(c => c != null)
@@ -329,7 +335,8 @@ namespace Institute.API.Controllers
                 UserId = appUser.Id,
                 PlanworkId = planworkId,
                 OrderId = freeOrder.Id,
-                EnrolledAt = DateTime.UtcNow
+                EnrolledAt = DateTime.UtcNow,
+                IsOnline = false                                             // الكورسات المجانية دائماً حضوري
             });
             await _enrollmentRepo.SaveChangesAsync();
 
