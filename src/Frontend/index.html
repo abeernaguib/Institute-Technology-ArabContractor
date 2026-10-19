@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8" />
 
-    <!-- Preconnect (تسريع تحميل الخط) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <script>
+                // Runs in the browser before the first paint, also on prerendered HTML.
+                document.documentElement.classList.add('js-loading');
+                // Safety net: never keep the page hidden for more than 4 seconds.
+                setTimeout(function () {
+                    document.documentElement.classList.remove('js-loading');
+                }, 4000);
+    </script>
 
-    <!-- Global CSS Layout Reset + hide prerendered HTML until the app is ready -->
     <style>
         html, body {
             background: #ffffff;
@@ -18,38 +22,43 @@
             height: auto;
         }
 
-        /* Hide the prerendered HTML until React has mounted and styles are applied */
-        #root:not(.app-ready) {
-            opacity: 0;
+        /* Even if the JS styles are late, icons and the logo can never blow up */
+        .MuiSvgIcon-root {
+            width: 1em;
+            height: 1em;
+            font-size: 1.5rem;
         }
 
+        img.nav-logo {
+            height: 62px;
+            width: auto;
+        }
+
+        /* Hide the page while it is loading */
         #root {
             transition: opacity .25s ease;
         }
 
-        /* Safety net: show the page after 4s even if JS fails */
-        @keyframes show-root {
-            to {
-                opacity: 1;
-            }
+        html.js-loading #root {
+            opacity: 0;
         }
 
-        #root:not(.app-ready) {
-            animation: show-root 0s 4s forwards;
-        }
-
-        /* Small loading spinner while the page is hidden */
+        /* Spinner, shown only while loading */
         #splash {
+            display: none;
+        }
+
+        html.js-loading #splash {
+            display: flex;
             position: fixed;
             inset: 0;
-            display: flex;
             align-items: center;
             justify-content: center;
             background: #ffffff;
             z-index: 9999;
         }
 
-            #splash::after {
+            html.js-loading #splash::after {
                 content: '';
                 width: 38px;
                 height: 38px;
@@ -64,22 +73,22 @@
                 transform: rotate(360deg);
             }
         }
-
-        #root.app-ready ~ #splash {
-            display: none;
-        }
     </style>
     <noscript>
         <style>
-            #root {
-                opacity: 1 !important;
+            html.js-loading #root {
+                opacity: 1;
             }
 
-            #splash {
+            html.js-loading #splash {
                 display: none;
             }
         </style>
     </noscript>
+
+    <!-- Preconnect (تسريع تحميل الخط) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
 
     <!-- Font (optimized load) -->
     <link rel="stylesheet"
@@ -150,25 +159,25 @@
     <div id="splash"></div>
 
     <script>
-                                        // @ts-nocheck
-                                        function completeCallback(resultIndicator) {
-                                            const win = window;
-                                            if (win.completeCallbackReact) {
-                                                win.completeCallbackReact(resultIndicator);
-                                            }
-                                        }
-                                        function errorCallback(error) {
-                                            const win = window;
-                                            if (win.errorCallbackReact) {
-                                                win.errorCallbackReact(error);
-                                            }
-                                        }
-                                        function cancelCallback() {
-                                            const win = window;
-                                            if (win.cancelCallbackReact) {
-                                                win.cancelCallbackReact();
-                                            }
-                                        }
+                                                // @ts-nocheck
+                                                function completeCallback(resultIndicator) {
+                                                    const win = window;
+                                                    if (win.completeCallbackReact) {
+                                                        win.completeCallbackReact(resultIndicator);
+                                                    }
+                                                }
+                                                function errorCallback(error) {
+                                                    const win = window;
+                                                    if (win.errorCallbackReact) {
+                                                        win.errorCallbackReact(error);
+                                                    }
+                                                }
+                                                function cancelCallback() {
+                                                    const win = window;
+                                                    if (win.cancelCallbackReact) {
+                                                        win.cancelCallbackReact();
+                                                    }
+                                                }
     </script>
     <script src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
             data-error="errorCallback"

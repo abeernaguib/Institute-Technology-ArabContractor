@@ -19,11 +19,12 @@ function App() {
     }, [i18n.language]);
 
     // Reveal the page once React has mounted and the styles are applied.
-    // Until then #root is hidden (see index.html) so the unstyled prerendered HTML never shows.
+    // Until then the page is hidden via html.js-loading (see index.html).
     useEffect(() => {
-        const root = document.getElementById('root');
         const reveal = () =>
-            requestAnimationFrame(() => root?.classList.add('app-ready'));
+            requestAnimationFrame(() =>
+                document.documentElement.classList.remove('js-loading')
+            );
 
         // wait for the fonts, but never longer than 1.5s
         const fontsReady = document.fonts?.ready ?? Promise.resolve();

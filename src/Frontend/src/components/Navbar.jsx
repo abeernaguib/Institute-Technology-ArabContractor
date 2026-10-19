@@ -767,7 +767,7 @@ const Navbar = () => {
                             )}
                             <Stack direction="row" alignItems="center" component={Link} to="/"
                                 sx={{ textDecoration: 'none', color: 'inherit', flexShrink: 0 }}>
-                                <Box component="img" src={logo} alt="ICEMT Logo"
+                                <Box component="img" src={logo} alt="ICEMT Logo" className="nav-logo"
                                     sx={{ height: 62, width: 'auto', minWidth: 62, flexShrink: 0 }} />
                                 {!isSmallMobile && (
                                     <Box sx={{ mx: 1 }}>
