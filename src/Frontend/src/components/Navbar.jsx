@@ -3,7 +3,9 @@ import {
     AppBar, Toolbar, Box, IconButton, InputBase,
     Badge, Button, Divider, Typography, Stack,
     List, ListItemButton, ListItemText, useMediaQuery, useTheme,
-    Drawer, Collapse, Paper, ClickAwayListener, Skeleton
+    Drawer, Collapse, Paper, ClickAwayListener,
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    Skeleton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -226,6 +228,129 @@ const TreeLinks = ({ nodes, depth = 0 }) => nodes.map(n => {
         </React.Fragment>
     );
 });
+
+
+
+const PhonePage = () => {
+    const { user } = useUser();
+    const [phone, setPhone] = useState(user?.unsafeMetadata?.phone || '');
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = async () => {
+        setSaving(true);
+        setSaved(false);
+        try {
+            await user.update({
+                unsafeMetadata: { ...user.unsafeMetadata, phone: phone.trim() },
+            });
+            setSaved(true);
+        } catch (err) {
+            console.error('Failed to save phone:', err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <Box dir="rtl" sx={{ p: 1 }}>
+            <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', mb: 2 }}>
+                رقم التليفون
+            </Typography>
+            <InputBase
+                value={phone}
+                onChange={(e) => { setPhone(e.target.value); setSaved(false); }}
+                placeholder="01001234567"
+                inputProps={{ inputMode: 'tel', dir: 'ltr' }}
+                sx={{ border: '1px solid #ccc', borderRadius: 1, px: 1.5, py: 0.5, width: '100%', mb: 2 }}
+            />
+            <Button variant="contained" onClick={handleSave} disabled={saving || !phone.trim()}
+                sx={{ bgcolor: '#0865a8', fontFamily: '"Noto Kufi Arabic",serif', '&:hover': { bgcolor: '#f57c00' } }}>
+                {saving ? 'جاري الحفظ...' : 'حفظ'}
+            </Button>
+            {saved && (
+                <Typography sx={{ color: 'green', fontSize: '0.8rem', mt: 1, fontFamily: '"Noto Kufi Arabic",serif' }}>
+                    تم الحفظ ✓
+                </Typography>
+            )}
+        </Box>
+    );
+};
+
+
+const PhoneRequiredDialog = () => {
+    const { user, isLoaded } = useUser();
+    const [phone, setPhone] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState('');
+
+    if (!isLoaded || !user) return null;
+
+    const hasPhone = !!user.unsafeMetadata?.phone;
+    if (hasPhone) return null;
+
+    // رقم مصري: 01 + (0/1/2/5) + 8 أرقام، أو بالصيغة الدولية +20
+    const isValidPhone = (value) => /^(\+20|0020|0)?1[0125][0-9]{8}$/.test(value.replace(/[\s-]/g, ''));
+
+    const handleSave = async () => {
+        const cleaned = phone.replace(/[\s-]/g, '');
+        if (!isValidPhone(cleaned)) {
+            setError('من فضلك أدخل رقم موبايل مصري صحيح');
+            return;
+        }
+        setSaving(true);
+        setError('');
+        try {
+            await user.update({
+                unsafeMetadata: { ...user.unsafeMetadata, phone: cleaned },
+            });
+        } catch (err) {
+            console.error('Failed to save phone:', err);
+            setError('حصلت مشكلة أثناء الحفظ، حاول تاني');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <Dialog open disableEscapeKeyDown dir="rtl" maxWidth="xs" fullWidth
+            onClose={() => { /* مفيش إغلاق: الرقم إجباري */ }}>
+            <DialogTitle sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', color: '#0865a8' }}>
+                أكمل بياناتك
+            </DialogTitle>
+            <DialogContent>
+                <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontSize: '0.85rem', color: '#555', mb: 2 }}>
+                    من فضلك أدخل رقم الموبايل للتواصل .
+                </Typography>
+                <InputBase
+                    autoFocus
+                    value={phone}
+                    onChange={(e) => { setPhone(e.target.value); setError(''); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+                    placeholder="01001234567"
+                    inputProps={{ inputMode: 'tel', dir: 'ltr', 'aria-label': 'رقم الموبايل' }}
+                    sx={{
+                        border: error ? '1px solid #f44336' : '1px solid #ccc',
+                        borderRadius: 1, px: 1.5, py: 0.8, width: '100%',
+                    }}
+                />
+                {error && (
+                    <Typography sx={{ color: '#f44336', fontSize: '0.78rem', mt: 1, fontFamily: '"Noto Kufi Arabic",serif' }}>
+                        {error}
+                    </Typography>
+                )}
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button variant="contained" onClick={handleSave} disabled={saving || !phone.trim()}
+                    sx={{ bgcolor: '#0865a8', fontFamily: '"Noto Kufi Arabic",serif', '&:hover': { bgcolor: '#f57c00' } }}>
+                    {saving ? 'جاري الحفظ...' : 'حفظ'}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+
+
 
 const Navbar = () => {
     const { t, i18n } = useTranslation();
@@ -1142,8 +1267,13 @@ const Navbar = () => {
                                     </SignInButton>
                                 </SignedOut>}
                                 {authLoaded && <SignedIn>
-                                    <UserButton afterSignOutUrl="/" />
+                                    <UserButton afterSignOutUrl="/">
+                                        <UserButton.UserProfilePage label="رقم التليفون" url="phone" labelIcon={<span>📞</span>}>
+                                            <PhonePage />
+                                        </UserButton.UserProfilePage>
+                                    </UserButton>
                                     <AuthSync />
+                                    <PhoneRequiredDialog />
                                 </SignedIn>}
                             </Box>
                         </Box>
