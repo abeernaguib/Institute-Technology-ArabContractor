@@ -1130,8 +1130,7 @@ const CourseDetails = () => {
                     </div>
                 </div>
 
-                <div style={S.heroSection} className="hero-section">
-                    <div style={S.heroContainer}>
+                <div style={{ ...S.heroSection, background: heroBg }} className="hero-section">                    <div style={S.heroContainer}>
                         <div style={S.heroContent}>
                             {isOwned && <div style={S.ownedBadge}>✅ مسجل في هذه الدورة</div>}
                             {!isOwned && course.isFree && <div style={S.freeBadge}>مجاناً</div>}
