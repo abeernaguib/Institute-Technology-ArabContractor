@@ -302,7 +302,7 @@ const PhonePage = () => {
             {error && <Typography sx={{ color: '#f44336', fontSize: '0.78rem', mb: 1, fontFamily: FONT }}>{error}</Typography>}
             <Button variant="contained" onClick={handleSave} disabled={saving || !phone.trim()}
                 sx={{ bgcolor: '#0865a8', fontFamily: '"Noto Kufi Arabic",serif', '&:hover': { bgcolor: '#f57c00' } }}>
-                {saving ? 'جاري الحفظ...' : 'حفظ'}
+                {saving ? 'جاري الحفظ...' : 'save'}
             </Button>
             {saved && (
                 <Typography sx={{ color: 'green', fontSize: '0.8rem', mt: 1, fontFamily: '"Noto Kufi Arabic",serif' }}>
@@ -363,7 +363,7 @@ const PhoneRequiredDialog = () => {
                     onChange={(e) => { setPhone(e.target.value); setError(''); }}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
                     placeholder="01001234567"
-                    inputProps={{ inputMode: 'tel', dir: 'ltr', 'aria-label': 'رقم الموبايل' }}
+                    inputProps={{ inputMode: 'tel', dir: 'ltr', 'aria-label': 'phone number ' }}
                     sx={{
                         border: error ? '1px solid #f44336' : '1px solid #ccc',
                         borderRadius: 1, px: 1.5, py: 0.8, width: '100%',
@@ -1303,7 +1303,7 @@ const Navbar = () => {
                                 </SignedOut>}
                                 {authLoaded && <SignedIn>
                                     <UserButton afterSignOutUrl="/">
-                                        <UserButton.UserProfilePage label="رقم التليفون" url="phone" labelIcon={<span>📞</span>}>
+                                        <UserButton.UserProfilePage label="phone number " url="phone" labelIcon={<span>📞</span>}>
                                             <PhonePage />
                                         </UserButton.UserProfilePage>
                                     </UserButton>
