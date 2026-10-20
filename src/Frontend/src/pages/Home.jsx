@@ -11,7 +11,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
-
+import { createPortal } from 'react-dom';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -185,7 +185,10 @@ const trainingPrograms = [
     { Icon: MenuBookIcon, label: 'الحلول التدريبية المتكاملة' },
     { Icon: HardwareIcon, label: 'التدريب فى موقع العمل' },
 ];
-
+const embassyImages = Array.from({ length: 8 }, (_, i) => ({
+    src: `/images/library/IMG-20241012-WA00${10 + i}.jpg`,
+    alt: `افتتاح سفارة المعرفة ${i + 1}`,
+}));
 const F = '"Noto Kufi Arabic",serif';
 const C = {
     o: '#f57c00', od: '#e65100',
@@ -243,6 +246,157 @@ const SolidBtn = ({ to, href, children, orange, small }) => {
     if (href) return <a href={href} target="_blank" rel="noopener noreferrer" style={s} onMouseEnter={hover} onMouseLeave={leave}>{children}</a>;
     return <Link to={to} style={s} onMouseEnter={hover} onMouseLeave={leave}>{children}</Link>;
 };
+// ─── EMBASSY SLIDER ────────────────────────────────────────────────────────────
+function EmbassySlider({ images, interval = 4000 }) {
+    const trackRef = useRef(null);
+    const [active, setActive] = useState(0);
+    const [paused, setPaused] = useState(false);
+    const [err, setErr] = useState({});
+    const [lb, setLb] = useState(null); // lightbox index (null = closed)
+
+    const goTo = (i) => {
+        const el = trackRef.current;
+        if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+    };
+
+    const onScroll = () => {
+        const el = trackRef.current;
+        if (el) setActive(Math.round(el.scrollLeft / el.clientWidth));
+    };
+
+    // autoplay (stops while the lightbox is open)
+    useEffect(() => {
+        if (paused || lb !== null || images.length < 2) return;
+        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+        const t = setInterval(() => {
+            const el = trackRef.current;
+            if (!el) return;
+            const next = (Math.round(el.scrollLeft / el.clientWidth) + 1) % images.length;
+            el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' });
+        }, interval);
+        return () => clearInterval(t);
+    }, [paused, lb, images.length, interval]);
+
+    // lightbox: keyboard + lock page scroll
+    useEffect(() => {
+        if (lb === null) return;
+        const onKey = (e) => {
+            if (e.key === 'Escape') closeLb();
+            if (e.key === 'ArrowLeft') setLb(i => (i - 1 + images.length) % images.length);
+            if (e.key === 'ArrowRight') setLb(i => (i + 1) % images.length);
+        };
+        window.addEventListener('keydown', onKey);
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [lb, images.length]);
+
+    const closeLb = () => {
+        // keep the slider on the image the user was viewing
+        if (lb !== null) setTimeout(() => goTo(lb), 0);
+        setLb(null);
+    };
+    const lbPrev = (e) => { e.stopPropagation(); setLb(i => (i - 1 + images.length) % images.length); };
+    const lbNext = (e) => { e.stopPropagation(); setLb(i => (i + 1) % images.length); };
+
+    const navBtn = (side) => ({
+        position: 'absolute', top: '50%', [side]: 'clamp(8px,2vw,28px)', transform: 'translateY(-50%)',
+        width: 48, height: 48, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,.4)',
+        background: 'rgba(255,255,255,.15)', color: '#fff', fontSize: 22, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)',
+    });
+
+    return (
+        <>
+            <div
+                className="emb-media"
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => setPaused(false)}
+                onTouchStart={() => setPaused(true)}
+                onTouchEnd={() => setPaused(false)}
+            >
+                <div ref={trackRef} className="emb-track" onScroll={onScroll}>
+                    {images.map((img, i) => (
+                        <div key={i} className="emb-slide">
+                            {err[i] ? (
+                                <span style={{ fontFamily: F, fontSize: 13, color: C.g5 }}>الصورة غير متاحة</span>
+                            ) : (
+                                <img
+                                    src={img.src}
+                                    alt={img.alt}
+                                    loading="lazy"
+                                    onClick={() => setLb(i)}
+                                    onError={() => setErr(e => ({ ...e, [i]: true }))}
+                                    style={{ cursor: 'zoom-in' }}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <div className="emb-dots">
+                    {images.map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => goTo(i)}
+                            aria-label={`الصورة ${i + 1}`}
+                            style={{
+                                width: i === active ? 24 : 9, height: 9, borderRadius: 999, padding: 0,
+                                border: 'none', cursor: 'pointer', outline: 'none',
+                                background: i === active ? '#fff' : 'rgba(255,255,255,.55)',
+                                transition: 'all .3s ease',
+                            }}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* ── LIGHTBOX (rendered on <body> so it always covers the full screen) ── */}
+            {lb !== null && createPortal(
+                <div
+                    onClick={closeLb}
+                    role="dialog"
+                    aria-modal="true"
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,.92)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        animation: 'embFade .25s ease', direction: 'ltr',
+                    }}
+                >
+                    <button onClick={closeLb} aria-label="إغلاق"
+                        style={{ ...navBtn('right'), top: 'clamp(16px,3vw,32px)', transform: 'none', fontSize: 24 }}>✕</button>
+
+                    {images.length > 1 && <button onClick={lbPrev} aria-label="السابق" style={navBtn('left')}>‹</button>}
+
+                    <img
+                        key={lb}
+                        src={images[lb].src}
+                        alt={images[lb].alt}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            maxWidth: '92vw', maxHeight: '88vh', objectFit: 'contain',
+                            borderRadius: 8, boxShadow: '0 20px 60px rgba(0,0,0,.5)',
+                            animation: 'embZoom .3s cubic-bezier(.22,1,.36,1)',
+                        }}
+                    />
+
+                    {images.length > 1 && <button onClick={lbNext} aria-label="التالي" style={navBtn('right')}>›</button>}
+
+                    <div style={{
+                        position: 'absolute', bottom: 'clamp(14px,3vw,28px)', left: '50%', transform: 'translateX(-50%)',
+                        background: 'rgba(0,0,0,.55)', color: '#fff', fontFamily: F, fontSize: 13, fontWeight: 700,
+                        padding: '4px 14px', borderRadius: 20,
+                    }}>
+                        {lb + 1} / {images.length}
+                    </div>
+                </div>,
+                document.body
+            )}
+        </>
+    );
+}
 
 // ─── MAIN ──────────────────────────────────────────────────────────────────────
 export default function Home() {
@@ -734,7 +888,27 @@ export default function Home() {
         .about-img-wrap{opacity:0;overflow:hidden;}
         .about-img-wrap img{will-change:transform;}
         .about-txt-wrap>*{opacity:0;}
+        .emb-card{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;border:2px solid ${C.o};border-radius:8px;overflow:hidden;background:${C.w};box-shadow:0 10px 30px rgba(0,0,0,.08);}
+.emb-text{padding:clamp(20px,3vw,36px);display:flex;flex-direction:column;justify-content:center;text-align:right;}
 
+/* slider fills the whole card height */
+.emb-media{position:relative;align-self:stretch;min-height:clamp(320px,36vw,480px);background:#1f2937;overflow:hidden;}
+.emb-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;direction:ltr;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.emb-track::-webkit-scrollbar{display:none;}
+.emb-slide{position:relative;flex:0 0 100%;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;}
+.emb-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+
+/* dots float over the photo */
+.emb-dots{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(to top,rgba(0,0,0,.45),transparent);pointer-events:none;}
+.emb-dots button{pointer-events:auto;}
+
+@media(max-width:860px){
+  .emb-card{grid-template-columns:1fr;}
+  .emb-media{order:-1;min-height:0;height:clamp(240px,62vw,380px);}
+}
+
+@keyframes embFade{from{opacity:0}to{opacity:1}}
+@keyframes embZoom{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
         @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(7px);}}
         .scroll-ind{animation:bounce 2s ease-in-out infinite;position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:3;}
         .stat-counter{font-variant-numeric:lining-nums;unicode-bidi:plaintext;direction:ltr;display:inline-block;}
@@ -1003,6 +1177,92 @@ export default function Home() {
                 </div>
             </div>
 
+            {/* ── EMBASSY (standalone) ── */}
+            <section style={{ background: C.w, padding: 'clamp(40px,6vw,90px) clamp(16px,4vw,56px)' }}>
+                <div style={{ maxWidth: 1320, margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 'clamp(24px,4vw,40px)' }}>
+                        <Eyebrow center>مكتبة الإسكندرية</Eyebrow>
+                        <SplitTitle center size="sm">سفارة المعرفة بالمعهد</SplitTitle>
+                        <div style={{ width: 56, height: 3, background: C.o, margin: '16px auto 0', borderRadius: 2 }} />
+                    </div>
+
+                    <div className="emb-card">
+                        {/* text = right side (RTL) */}
+                        <div className="emb-text">
+
+                            {/* ── COLLABORATION LOGOS ── */}
+                            <div style={{ marginBottom: 20 }}>
+                                <div style={{ fontFamily: F, fontSize: '.7rem', fontWeight: 700, letterSpacing: 2, color: C.o, marginBottom: 10 }}>
+                                    بروتوكول تعاون
+                                </div>
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(8px,2vw,18px)',
+                                    padding: 'clamp(8px,1.5vw,14px)', border: `2px solid ${C.g3}`, borderRadius: 12, background: C.w,
+                                }}>
+                                    <img
+                                        src="/images/library/arabcont-logo.png"
+                                        alt="المقاولون العرب"
+                                        loading="lazy"
+                                        style={{ flex: 1, minWidth: 0, height: 'clamp(60px,8vw,90px)', objectFit: 'contain' }}
+                                    />
+
+                                    <div style={{
+                                        width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                                        background: `linear-gradient(135deg,${C.b},${C.o})`,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    }}>
+                                        <HandshakeIcon sx={{ fontSize: 22, color: C.w }} />
+                                    </div>
+
+                                    <img
+                                        src="/images/library/ba-logo.png"
+                                        alt="مكتبة الإسكندرية - Bibliotheca Alexandrina"
+                                        loading="lazy"
+                                        style={{ flex: 1, minWidth: 0, height: 'clamp(60px,8vw,90px)', objectFit: 'contain' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <span style={{
+                                alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8,
+                                padding: '6px 16px', borderRadius: 999, marginBottom: 14,
+                                background: `linear-gradient(135deg,${C.b},${C.o})`, color: '#fff',
+                                fontFamily: F, fontSize: '.72rem', fontWeight: 700,
+                            }}>
+                                <StarIcon sx={{ fontSize: 14 }} /> أول سفارة معرفة لشركة مقاولات في مصر
+                            </span>
+
+                            <p style={{ fontFamily: F, fontSize: 'clamp(.84rem,1.2vw,1rem)', color: C.g7, lineHeight: 2, marginBottom: 18 }}>
+                                بوابة رقمية داخل المعهد تتيح لك الوصول إلى مكتبة الإسكندرية: مئات الآلاف من الأوعية الرقمية وأرشيف الصحافة والأرشيفات التاريخية.
+                            </p>
+
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+                                {[{ v: '509,089', l: 'وعاء رقمي' }, { v: '17.5M', l: 'مقالة صحفية' }, { v: '24', l: 'سفارة معرفة' }].map((s, i) => (
+                                    <div key={i} style={{ flex: '1 1 90px', textAlign: 'center', padding: '12px 8px', borderRadius: 10, border: `2px solid ${C.g3}` }}>
+                                        <div style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1.05rem,1.8vw,1.5rem)', color: i % 2 ? C.o : C.b, lineHeight: 1.2 }}>{s.v}</div>
+                                        <div style={{ fontFamily: F, fontSize: '.7rem', color: C.g5, marginTop: 3 }}>{s.l}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ background: C.g2, borderRadius: 6, padding: '12px 16px', fontFamily: F, fontSize: 'clamp(.76rem,1.05vw,.9rem)', color: C.g7, lineHeight: 1.9, marginBottom: 22 }}>
+                                بدأت فكرة سفارات المعرفة عام 2014 لتوصيل خدمات مكتبة الإسكندرية إلى المحافظات، وسفارة المعهد هي الأولى لإحدى كبرى شركات المقاولات.
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                <SolidBtn to="/library#embassy" orange>اكتشف سفارة المعرفة <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn>
+                                <Link to="/library" className="ob-outline" style={{ color: C.b, borderColor: C.b }}>
+                                    المكتبة الرئيسية
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* slider = left side (RTL) */}
+                        <EmbassySlider images={embassyImages} />
+                    </div>
+                </div>
+            </section>
+
             {/* ── 6b SPONSORED CATEGORY ───────────────────────────────────────── */}
 
             <React.Suspense fallback={null}>
@@ -1220,6 +1480,8 @@ export default function Home() {
             {/* ── 13 LIBRARY ───────────────────────────────────────────────────── */}
             <section style={{ background: C.k }} ref={libRef}>
                 <div className="lib-split">
+
+                    {/* LEFT: intro + numbers */}
                     <div className="lib-content">
                         <Eyebrow light>المكتبة</Eyebrow>
                         <h3 style={{ fontFamily: F, fontSize: 'clamp(1rem,2vw,1.6rem)', fontWeight: 900, color: C.w, lineHeight: 1.4, marginBottom: 14 }}>
@@ -1239,29 +1501,41 @@ export default function Home() {
                         <div><SolidBtn to="/library" orange>زيارة المكتبة <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn></div>
                     </div>
 
+                    {/* RIGHT: services + platforms */}
                     <div className="lib-visual" style={{ flexDirection: 'column', gap: 0, justifyContent: 'center', alignItems: 'flex-start', padding: 'clamp(28px,5vw,64px) clamp(20px,4vw,56px)' }}>
                         <div className="lib-deco-circle float-slow" style={{ position: 'absolute', width: 380, height: 380, borderRadius: '50%', border: '1px solid rgba(255,255,255,.12)', top: -110, left: -110, pointerEvents: 'none' }} />
                         <div style={{ position: 'relative', zIndex: 1, width: '100%' }}>
+
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 20, padding: '5px 14px', marginBottom: 18 }}>
-                                <StarIcon sx={{ fontSize: 13, color: C.w }} />
-                                <span style={{ fontFamily: F, fontSize: '.62rem', fontWeight: 700, letterSpacing: 1.5, color: C.w, textTransform: 'uppercase' }}>أول سفارة لشركة مقاولات</span>
+                                <LibraryBooksIcon sx={{ fontSize: 13, color: C.w }} />
+                                <span style={{ fontFamily: F, fontSize: '.62rem', fontWeight: 700, letterSpacing: 1.5, color: C.w }}>خدمات للعاملين والباحثين</span>
                             </div>
-                            <div style={{ fontFamily: F, fontSize: 'clamp(1rem,2vw,1.65rem)', fontWeight: 900, color: C.w, lineHeight: 1.35, marginBottom: 8 }}>سفارة المعرفة</div>
-                            <div style={{ fontFamily: F, fontSize: 'clamp(.8rem,1.4vw,1.05rem)', fontWeight: 700, color: 'rgba(255,255,255,.75)', marginBottom: 16 }}>مكتبة الإسكندرية — بروتوكول تعاون</div>
+
+                            <div style={{ fontFamily: F, fontSize: 'clamp(1rem,2vw,1.65rem)', fontWeight: 900, color: C.w, lineHeight: 1.35, marginBottom: 14 }}>
+                                خدمات واشتراكات المكتبة
+                            </div>
                             <div style={{ width: 36, height: 2, background: 'rgba(255,255,255,.5)', marginBottom: 18 }} />
-                            <p style={{ fontFamily: F, fontSize: 'clamp(.76rem,1.1vw,.9rem)', color: 'rgba(255,255,255,.8)', lineHeight: 1.9, marginBottom: 24 }}>
-                                بوابة رقمية تمنح المستفيدين وصولاً إلى أكثر من 509,000 وعاء رقمي، وأرشيف 17.5 مليون مقالة صحفية، وكنوز تاريخية ومعرفية لا محدودة.
-                            </p>
-                            <div className="lib-tags" style={{ justifyContent: 'flex-start', marginBottom: 24 }}>
-                                {['509,089 وعاء رقمي', '17.5M مقالة', '24 سفارة معرفة'].map((t, i) => (
+
+                            {[
+                                'كتب مصنفة وفق تصنيف ديوي العشري مع قاعدة بيانات للبحث والاسترجاع',
+                                'الخدمات مجانية لموظفي الشركة، واشتراك خارجي 40 جنيه شهرياً أو 400 جنيه سنوياً',
+                                'استعارة حتى 3 كتب لمدة 15 يوماً، والاطلاع داخل المكتبة لجميع المشتركين',
+                                'خدمة التصوير بحد أقصى 20 صفحة، والرد على الاستفسارات عبر Library@arabcont.com',
+                            ].map((t, i) => (
+                                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
+                                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: C.w, flexShrink: 0, marginTop: '4px' }} />
+                                    <span style={{ fontFamily: F, fontSize: 'clamp(.76rem,1.1vw,.9rem)', color: 'rgba(255,255,255,.9)', lineHeight: 1.9 }}>{t}</span>
+                                </div>
+                            ))}
+
+                            <div className="lib-tags" style={{ justifyContent: 'flex-start', marginTop: 8 }}>
+                                {['Le Moniteur', 'Global Tenders', 'Construct Africa', 'بوابة قوانين الشرق'].map((t, i) => (
                                     <span key={i} className="lib-tag"><AutoStoriesIcon sx={{ fontSize: 11 }} /> {t}</span>
                                 ))}
                             </div>
-                            <SolidBtn to="/library#embassy" style={{ background: 'rgba(255,255,255,.15)', border: '1.5px solid rgba(255,255,255,.35)' }}>
-                                اكتشف السفارة <ArrowForwardIosIcon sx={{ fontSize: 11 }} />
-                            </SolidBtn>
                         </div>
                     </div>
+
                 </div>
             </section>
 
