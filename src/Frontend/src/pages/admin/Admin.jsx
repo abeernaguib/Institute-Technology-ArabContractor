@@ -44,6 +44,9 @@ const TABS = [
 
 const permKey = (p) => (typeof p === 'string' ? p : p?.name ?? p?.permissionName ?? '').trim().toLowerCase();
 
+// Strips everything except digits (so "010 1234-5678" matches "01012345678")
+const digitsOnly = (s) => String(s ?? '').replace(/\D/g, '');
+
 const AdminDashboard = () => {
     const { user, isLoaded } = useUser();
     const { getToken } = useAuth();
@@ -489,11 +492,17 @@ const AdminDashboard = () => {
     };
 
     const q = searchQuery.toLowerCase();
+    const qDigits = digitsOnly(searchQuery);
 
     const filteredUsers = usersData
         .map(u => ({ ...u, enrolledCourses: u.enrolledCourses.filter(c => inRange(c.date)) }))
         .filter(u => {
-            const m = `${u.firstName} ${u.lastName} ${u.email} ${u.username}`.toLowerCase().includes(q);
+            // Text match on name / email / username / phone (phone falls back to '' so it never becomes "undefined")
+            const textMatch = `${u.firstName} ${u.lastName} ${u.email} ${u.username} ${u.phone ?? ''}`
+                .toLowerCase().includes(q);
+            // Digits-only phone match so "010 1234 5678" or "010-1234-5678" still finds the user
+            const phoneMatch = qDigits.length > 0 && digitsOnly(u.phone).includes(qDigits);
+            const m = textMatch || phoneMatch;
             return (dateFrom || dateTo) ? m && u.enrolledCourses.length > 0 : m;
         });
 

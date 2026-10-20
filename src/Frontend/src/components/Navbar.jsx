@@ -229,24 +229,59 @@ const TreeLinks = ({ nodes, depth = 0 }) => nodes.map(n => {
     );
 });
 
+// Egyptian mobile: 01 + (0/1/2/5) + 8 digits, or the international +20 form
+const isValidPhone = (value) => /^(\+20|0020|0)?1[0125][0-9]{8}$/.test(value.replace(/[\s-]/g, ''));
 
+// Copies the phone into our database (Clerk already has it). Failure is not fatal:
+// /Account/sync copies it from Clerk on the user's next visit.
+const savePhoneToDb = async (getToken, phone, retries = 1) => {
+    try {
+        const token = await getToken({ template: 'backend' });
+        if (!token) return false;
+        const res = await fetch(`${API_BASE}/Account/phone`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ phone }),
+        });
+        if (res.ok) return true;
+        // 404 = the user row isn't created yet (sync still running): wait and retry once
+        if (res.status === 404 && retries > 0) {
+            await new Promise(r => setTimeout(r, 1500));
+            return savePhoneToDb(getToken, phone, retries - 1);
+        }
+        return false;
+    } catch (err) {
+        console.error('Failed to save phone to DB:', err);
+        return false;
+    }
+};
 
 const PhonePage = () => {
     const { user } = useUser();
+    const { getToken } = useAuth();
     const [phone, setPhone] = useState(user?.unsafeMetadata?.phone || '');
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSave = async () => {
+        const cleaned = phone.replace(/[\s-]/g, '');
+        if (!isValidPhone(cleaned)) {
+            setError('من فضلك أدخل رقم موبايل مصري صحيح');
+            return;
+        }
         setSaving(true);
         setSaved(false);
+        setError('');
         try {
             await user.update({
-                unsafeMetadata: { ...user.unsafeMetadata, phone: phone.trim() },
+                unsafeMetadata: { ...user.unsafeMetadata, phone: cleaned },
             });
+            await savePhoneToDb(getToken, cleaned);
             setSaved(true);
         } catch (err) {
             console.error('Failed to save phone:', err);
+            setError('حصلت مشكلة أثناء الحفظ، حاول تاني');
         } finally {
             setSaving(false);
         }
@@ -259,11 +294,12 @@ const PhonePage = () => {
             </Typography>
             <InputBase
                 value={phone}
-                onChange={(e) => { setPhone(e.target.value); setSaved(false); }}
+                onChange={(e) => { setPhone(e.target.value); setSaved(false); setError(''); }}
                 placeholder="01001234567"
                 inputProps={{ inputMode: 'tel', dir: 'ltr' }}
-                sx={{ border: '1px solid #ccc', borderRadius: 1, px: 1.5, py: 0.5, width: '100%', mb: 2 }}
+                sx={{ border: error ? '1px solid #f44336' : '1px solid #ccc', borderRadius: 1, px: 1.5, py: 0.5, width: '100%', mb: 2 }}
             />
+            {error && <Typography sx={{ color: '#f44336', fontSize: '0.78rem', mb: 1, fontFamily: FONT }}>{error}</Typography>}
             <Button variant="contained" onClick={handleSave} disabled={saving || !phone.trim()}
                 sx={{ bgcolor: '#0865a8', fontFamily: '"Noto Kufi Arabic",serif', '&:hover': { bgcolor: '#f57c00' } }}>
                 {saving ? 'جاري الحفظ...' : 'حفظ'}
@@ -280,6 +316,7 @@ const PhonePage = () => {
 
 const PhoneRequiredDialog = () => {
     const { user, isLoaded } = useUser();
+    const { getToken } = useAuth();
     const [phone, setPhone] = useState('');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -288,9 +325,6 @@ const PhoneRequiredDialog = () => {
 
     const hasPhone = !!user.unsafeMetadata?.phone;
     if (hasPhone) return null;
-
-    // رقم مصري: 01 + (0/1/2/5) + 8 أرقام، أو بالصيغة الدولية +20
-    const isValidPhone = (value) => /^(\+20|0020|0)?1[0125][0-9]{8}$/.test(value.replace(/[\s-]/g, ''));
 
     const handleSave = async () => {
         const cleaned = phone.replace(/[\s-]/g, '');
@@ -304,6 +338,7 @@ const PhoneRequiredDialog = () => {
             await user.update({
                 unsafeMetadata: { ...user.unsafeMetadata, phone: cleaned },
             });
+            await savePhoneToDb(getToken, cleaned);
         } catch (err) {
             console.error('Failed to save phone:', err);
             setError('حصلت مشكلة أثناء الحفظ، حاول تاني');

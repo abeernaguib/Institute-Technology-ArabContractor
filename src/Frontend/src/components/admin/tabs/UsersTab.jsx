@@ -45,7 +45,7 @@ export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, da
                                     <table className="adm-tbl">
                                         <thead><tr>
                                             <th className="c" style={{ width: 40 }}>#</th>
-                                            <th>المستخدم</th><th>البريد الإلكتروني</th>
+                                            <th>المستخدم</th><th>البريد الإلكتروني</th><th>رقم الموبايل</th>
                                             <th className="c">الدورات</th><th className="c">تفاصيل</th>
                                         </tr></thead>
                                         <tbody>
@@ -57,11 +57,16 @@ export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, da
                                                             <td style={{ color: T.gray500, fontSize: '.68rem', textAlign: 'center' }}>{rowNum}</td>
                                                             <td><div className="adm-uc"><div className="adm-av">{(u.firstName || u.username || '?')[0]}{(u.lastName || '')[0]}</div><span className="adm-uname">{u.firstName || u.username} {u.lastName}</span></div></td>
                                                             <td className="adm-email">{u.email}</td>
+                                                            <td style={{ direction: 'ltr', textAlign: 'right' }}>
+                                                                {u.phone
+                                                                    ? <a href={`tel:${u.phone}`} style={{ color: T.blue, fontWeight: 700, textDecoration: 'none' }}>{u.phone}</a>
+                                                                    : <span style={{ color: T.gray300 }}>—</span>}
+                                                            </td>
                                                             <td style={{ textAlign: 'center' }}><span className="adm-cb">{u.enrolledCourses.length}</span></td>
                                                             <td style={{ textAlign: 'center' }}>{u.enrolledCourses.length > 0 ? <span className={`adm-pill${expandedRow === u.id ? ' op' : ''}`} onClick={() => setExpandedRow(expandedRow === u.id ? null : u.id)}>{expandedRow === u.id ? '▲ إخفاء' : '▼ عرض'}</span> : <span style={{ color: T.gray300 }}>—</span>}</td>
                                                         </tr>
                                                         {expandedRow === u.id && (
-                                                            <tr className="adm-xrow"><td colSpan={5}>
+                                                            <tr className="adm-xrow"><td colSpan={6}>
                                                                 <div className="adm-xin">
                                                                     {u.enrolledCourses.map(c => {
                                                                         const ck = String(c.enrollmentId ?? `${u.id}-${c.id}`);
@@ -91,4 +96,3 @@ export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, da
         </>
     );
 } export default UsersTab;
-

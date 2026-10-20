@@ -276,17 +276,18 @@ export async function exportWord(filename, reportTitle, subtitle, headers, rows,
 // Row builders  (called by each tab to produce export data)
 // ════════════════════════════════════════════════════════════════════════════
 export function buildUsersRows(users) {
-    const headers = ['#', 'الاسم الكامل', 'البريد الإلكتروني', 'اسم الدورة', 'تاريخ التسجيل'];
+    const headers = ['#', 'الاسم الكامل', 'البريد الإلكتروني', 'رقم الموبايل', 'اسم الدورة', 'تاريخ التسجيل'];
     const rows = [];
     let n = 1;
     users.forEach(u => {
+        const phone = u.phone || '—';
         if (!u.enrolledCourses.length) {
-            rows.push([n++, `${u.firstName} ${u.lastName}`, u.email, '—', '—']);
+            rows.push([n++, `${u.firstName} ${u.lastName}`, u.email, phone, '—', '—']);
         } else {
             u.enrolledCourses.forEach((c, i) => {
                 rows.push(i === 0
-                    ? [n++, `${u.firstName} ${u.lastName}`, u.email, c.title, c.date || '—']
-                    : ['', '', '', c.title, c.date || '—']);
+                    ? [n++, `${u.firstName} ${u.lastName}`, u.email, phone, c.title, c.date || '—']
+                    : ['', '', '', '', c.title, c.date || '—']);
             });
         }
     });

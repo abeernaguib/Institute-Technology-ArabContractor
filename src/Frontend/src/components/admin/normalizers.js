@@ -9,6 +9,7 @@ export function normalizeUser(u) {
         firstName: u.firstName ?? u.first_name ?? (u.username ?? '').split(' ')[0] ?? '',
         lastName: u.lastName ?? u.last_name ?? (u.username ?? '').split(' ').slice(1).join(' ') ?? '',
         email: u.email ?? '',
+        phone: u.phone ?? '',
         enrolledCourses: (u.courses ?? []).map(c => ({
             enrollmentId: c.enrollmentId,
             id: c.planworkId ?? c.PlanworkId ?? c.planwork_id ?? c.courseId ?? c.serviceId ?? null,
@@ -37,6 +38,7 @@ export function normalizeCourse(c) {
                 firstName: u.firstName ?? parts[0] ?? '',
                 lastName: u.lastName ?? parts.slice(1).join(' ') ?? '',
                 email: u.email ?? '',
+                phone: u.phone ?? '',
                 date: fmtDate(u.enrolledAt),
                 attended: !!(u.attended ?? false),
                 certificateUrl: u.certificateUrl ?? null,
