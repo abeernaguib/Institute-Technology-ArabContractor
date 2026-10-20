@@ -290,7 +290,7 @@ const PhonePage = () => {
     return (
         <Box dir="rtl" sx={{ p: 1 }}>
             <Typography sx={{ fontFamily: '"Noto Kufi Arabic",serif', fontWeight: 'bold', mb: 2 }}>
-                رقم التليفون
+                phone number
             </Typography>
             <InputBase
                 value={phone}
