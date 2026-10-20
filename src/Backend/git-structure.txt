@@ -1,644 +1,493 @@
-Folder PATH listing for volume New Volume
-Volume serial number is 0000007D 1ABF:61F3
-D:.
-|   git-structure.txt
-|   README.md
-|   structure.txt
-|   
-\---Institute.Web
-    |   Institute.Web.sln
-    |   ngrok.exe
-    |   tree.txt
-    |   
-    +---Domain
-    |   \---Entities
-    |           AppDbContext.cs
-    |           AppUser.cs
-    |           CoursePurchase.cs
-    |           Payment.cs
-    |           
-    +---Institute.API
-    |   |   appsettings.json
-    |   |   Institute.API.csproj
-    |   |   Institute.API.csproj.user
-    |   |   Institute.API.http
-    |   |   Program.cs
-    |   |   
-    |   +---bin
-    |   |   \---Debug
-    |   |       \---net8.0
-    |   |           |   appsettings.json
-    |   |           |   AutoMapper.dll
-    |   |           |   Azure.Core.dll
-    |   |           |   Azure.Identity.dll
-    |   |           |   Azure.Storage.Blobs.dll
-    |   |           |   Azure.Storage.Common.dll
-    |   |           |   Humanizer.dll
-    |   |           |   Institute.API.deps.json
-    |   |           |   Institute.API.dll
-    |   |           |   Institute.API.exe
-    |   |           |   Institute.API.pdb
-    |   |           |   Institute.API.runtimeconfig.json
-    |   |           |   Institute.API.staticwebassets.endpoints.json
-    |   |           |   Institute.API.staticwebassets.runtime.json
-    |   |           |   Institute.Application.dll
-    |   |           |   Institute.Application.pdb
-    |   |           |   Institute.Domain.dll
-    |   |           |   Institute.Domain.pdb
-    |   |           |   Institute.Infrastructure.dll
-    |   |           |   Institute.Infrastructure.pdb
-    |   |           |   Microsoft.AspNetCore.Authentication.JwtBearer.dll
-    |   |           |   Microsoft.AspNetCore.Authorization.dll
-    |   |           |   Microsoft.AspNetCore.Metadata.dll
-    |   |           |   Microsoft.Bcl.AsyncInterfaces.dll
-    |   |           |   Microsoft.CodeAnalysis.CSharp.dll
-    |   |           |   Microsoft.CodeAnalysis.CSharp.Workspaces.dll
-    |   |           |   Microsoft.CodeAnalysis.dll
-    |   |           |   Microsoft.CodeAnalysis.Workspaces.dll
-    |   |           |   Microsoft.Data.SqlClient.dll
-    |   |           |   Microsoft.EntityFrameworkCore.Abstractions.dll
-    |   |           |   Microsoft.EntityFrameworkCore.Design.dll
-    |   |           |   Microsoft.EntityFrameworkCore.dll
-    |   |           |   Microsoft.EntityFrameworkCore.Relational.dll
-    |   |           |   Microsoft.EntityFrameworkCore.SqlServer.dll
-    |   |           |   Microsoft.Extensions.Caching.Memory.dll
-    |   |           |   Microsoft.Extensions.DependencyInjection.Abstractions.dll
-    |   |           |   Microsoft.Extensions.DependencyInjection.dll
-    |   |           |   Microsoft.Extensions.DependencyModel.dll
-    |   |           |   Microsoft.Extensions.Diagnostics.Abstractions.dll
-    |   |           |   Microsoft.Extensions.Diagnostics.dll
-    |   |           |   Microsoft.Extensions.Http.dll
-    |   |           |   Microsoft.Extensions.Logging.Abstractions.dll
-    |   |           |   Microsoft.Extensions.Logging.dll
-    |   |           |   Microsoft.Extensions.Options.dll
-    |   |           |   Microsoft.Extensions.Primitives.dll
-    |   |           |   Microsoft.Identity.Client.dll
-    |   |           |   Microsoft.Identity.Client.Extensions.Msal.dll
-    |   |           |   Microsoft.IdentityModel.Abstractions.dll
-    |   |           |   Microsoft.IdentityModel.JsonWebTokens.dll
-    |   |           |   Microsoft.IdentityModel.Logging.dll
-    |   |           |   Microsoft.IdentityModel.Protocols.dll
-    |   |           |   Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
-    |   |           |   Microsoft.IdentityModel.Tokens.dll
-    |   |           |   Microsoft.OpenApi.dll
-    |   |           |   Microsoft.SqlServer.Server.dll
-    |   |           |   Microsoft.Win32.SystemEvents.dll
-    |   |           |   Mono.TextTemplating.dll
-    |   |           |   Newtonsoft.Json.dll
-    |   |           |   Polly.dll
-    |   |           |   Svix.dll
-    |   |           |   Swashbuckle.AspNetCore.Swagger.dll
-    |   |           |   Swashbuckle.AspNetCore.SwaggerGen.dll
-    |   |           |   Swashbuckle.AspNetCore.SwaggerUI.dll
-    |   |           |   System.ClientModel.dll
-    |   |           |   System.CodeDom.dll
-    |   |           |   System.Composition.AttributedModel.dll
-    |   |           |   System.Composition.Convention.dll
-    |   |           |   System.Composition.Hosting.dll
-    |   |           |   System.Composition.Runtime.dll
-    |   |           |   System.Composition.TypedParts.dll
-    |   |           |   System.Configuration.ConfigurationManager.dll
-    |   |           |   System.Diagnostics.DiagnosticSource.dll
-    |   |           |   System.Drawing.Common.dll
-    |   |           |   System.IdentityModel.Tokens.Jwt.dll
-    |   |           |   System.IO.Hashing.dll
-    |   |           |   System.Memory.Data.dll
-    |   |           |   System.Runtime.Caching.dll
-    |   |           |   System.Security.Cryptography.ProtectedData.dll
-    |   |           |   System.Security.Permissions.dll
-    |   |           |   System.Windows.Extensions.dll
-    |   |           |   Yarp.ReverseProxy.dll
-    |   |           |   
-    |   |           +---cs
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---de
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---es
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---fr
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---it
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---ja
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---ko
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---pl
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---pt-BR
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---ru
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---runtimes
-    |   |           |   +---unix
-    |   |           |   |   \---lib
-    |   |           |   |       \---net6.0
-    |   |           |   |               Microsoft.Data.SqlClient.dll
-    |   |           |   |               System.Drawing.Common.dll
-    |   |           |   |               
-    |   |           |   +---win
-    |   |           |   |   \---lib
-    |   |           |   |       \---net6.0
-    |   |           |   |               Microsoft.Data.SqlClient.dll
-    |   |           |   |               Microsoft.Win32.SystemEvents.dll
-    |   |           |   |               System.Drawing.Common.dll
-    |   |           |   |               System.Runtime.Caching.dll
-    |   |           |   |               System.Security.Cryptography.ProtectedData.dll
-    |   |           |   |               System.Windows.Extensions.dll
-    |   |           |   |               
-    |   |           |   +---win-arm
-    |   |           |   |   \---native
-    |   |           |   |           Microsoft.Data.SqlClient.SNI.dll
-    |   |           |   |           
-    |   |           |   +---win-arm64
-    |   |           |   |   \---native
-    |   |           |   |           Microsoft.Data.SqlClient.SNI.dll
-    |   |           |   |           
-    |   |           |   +---win-x64
-    |   |           |   |   \---native
-    |   |           |   |           Microsoft.Data.SqlClient.SNI.dll
-    |   |           |   |           
-    |   |           |   \---win-x86
-    |   |           |       \---native
-    |   |           |               Microsoft.Data.SqlClient.SNI.dll
-    |   |           |               
-    |   |           +---tr
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           +---zh-Hans
-    |   |           |       Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.resources.dll
-    |   |           |       Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |           |       
-    |   |           \---zh-Hant
-    |   |                   Microsoft.CodeAnalysis.CSharp.resources.dll
-    |   |                   Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
-    |   |                   Microsoft.CodeAnalysis.resources.dll
-    |   |                   Microsoft.CodeAnalysis.Workspaces.resources.dll
-    |   |                   
-    |   +---Controllers
-    |   |       AccountController.cs
-    |   |       AdminBookController.cs
-    |   |       AdminBooksTypeController.cs
-    |   |       AdminController.cs
-    |   |       AdminLecturerController.cs
-    |   |       AdminNewsController.cs
-    |   |       AdminPlanFilesController.cs
-    |   |       AdminPlanworkController.cs
-    |   |       AdminUsersController.cs
-    |   |       BookController.cs
-    |   |       CartController.cs
-    |   |       CategoriesController.cs
-    |   |       CheckoutController.cs
-    |   |       ClerkWebhookController.cs
-    |   |       CourseController.cs
-    |   |       LecturerController.cs
-    |   |       NewsController.cs
-    |   |       PermissionsController.cs
-    |   |       RefundController.cs
-    |   |       UserPermissionsController.cs
-    |   |       UserPermissionsMeController.cs
-    |   |       
-    |   +---DTOs
-    |   |   |   AssignPermissionDto.cs
-    |   |   |   AxisDto.cs
-    |   |   |   BookResponseDto.cs
-    |   |   |   CartDto.cs
-    |   |   |   CartItemDto.cs
-    |   |   |   CourseCardDto.cs
-    |   |   |   CourseDto.cs
-    |   |   |   CourseFileDto.cs
-    |   |   |   NewsDetailsDto.cs
-    |   |   |   NewsImageDto.cs
-    |   |   |   NewsListDto.cs
-    |   |   |   ProgramCoursesDto.cs
-    |   |   |   
-    |   |   \---PaymentDtos
-    |   |           CheckoutRequestDto.cs
-    |   |           OrderDto.cs
-    |   |           PaymentResponseDto.cs
-    |   |           RefundRequestResponseDto.cs
-    |   |           
-    |   +---Helpers
-    |   |       MappingProfiles.cs
-    |   |       NewsPictureUrlResolver.cs
-    |   |       NewsPictureUrlsResolver.cs
-    |   |       Pagination.cs
-    |   |       
-    |   +---obj
-    |   |   |   Institute.API.csproj.nuget.dgspec.json
-    |   |   |   Institute.API.csproj.nuget.g.props
-    |   |   |   Institute.API.csproj.nuget.g.targets
-    |   |   |   project.assets.json
-    |   |   |   project.nuget.cache
-    |   |   |   
-    |   |   \---Debug
-    |   |       \---net8.0
-    |   |           |   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
-    |   |           |   ApiEndpoints.json
-    |   |           |   apphost.exe
-    |   |           |   AppSettingsSchema.json
-    |   |           |   CombinedComponentSchema.json
-    |   |           |   Institut.755799FA.Up2Date
-    |   |           |   Institute.API.AssemblyInfo.cs
-    |   |           |   Institute.API.AssemblyInfoInputs.cache
-    |   |           |   Institute.API.assets.cache
-    |   |           |   Institute.API.csproj.AssemblyReference.cache
-    |   |           |   Institute.API.csproj.BuildWithSkipAnalyzers
-    |   |           |   Institute.API.csproj.CoreCompileInputs.cache
-    |   |           |   Institute.API.csproj.FileListAbsolute.txt
-    |   |           |   Institute.API.dll
-    |   |           |   Institute.API.GeneratedMSBuildEditorConfig.editorconfig
-    |   |           |   Institute.API.genruntimeconfig.cache
-    |   |           |   Institute.API.GlobalUsings.g.cs
-    |   |           |   Institute.API.MvcApplicationPartsAssemblyInfo.cache
-    |   |           |   Institute.API.MvcApplicationPartsAssemblyInfo.cs
-    |   |           |   Institute.API.pdb
-    |   |           |   Institute.API.sourcelink.json
-    |   |           |   rjimswa.dswa.cache.json
-    |   |           |   rjsmcshtml.dswa.cache.json
-    |   |           |   rjsmrazor.dswa.cache.json
-    |   |           |   rpswa.dswa.cache.json
-    |   |           |   staticwebassets.build.endpoints.json
-    |   |           |   staticwebassets.build.json
-    |   |           |   staticwebassets.build.json.cache
-    |   |           |   staticwebassets.development.json
-    |   |           |   staticwebassets.references.upToDateCheck.txt
-    |   |           |   staticwebassets.removed.txt
-    |   |           |   staticwebassets.upToDateCheck.txt
-    |   |           |   swae.build.ex.cache
-    |   |           |   
-    |   |           +---EndpointInfo
-    |   |           |       Institute.API.json
-    |   |           |       Institute.API.OpenApiFiles.cache
-    |   |           |       
-    |   |           +---ref
-    |   |           |       Institute.API.dll
-    |   |           |       
-    |   |           +---refint
-    |   |           |       Institute.API.dll
-    |   |           |       
-    |   |           \---staticwebassets
-    |   +---Properties
-    |   |       launchSettings.json
-    |   |       
-    |   \---wwwroot
-    |       +---certificates
-    |       |       1b083ffd-4f1d-4996-86fc-1cac4b4c258c.pdf
-    |       |       53facd75-39fb-42ca-ba46-9b6dd23a1196.pdf
-    |       |       
-    |       \---images
-    |           \---lecturers
-    |                   2c7aede9-970d-44a7-8208-b920cc9fd746.png
-    |                   
-    +---Institute.Application
-    |   |   Institute.Application.csproj
-    |   |   
-    |   +---bin
-    |   |   \---Debug
-    |   |       \---net8.0
-    |   |               Institute.Application.deps.json
-    |   |               Institute.Application.dll
-    |   |               Institute.Application.pdb
-    |   |               Institute.Domain.dll
-    |   |               Institute.Domain.pdb
-    |   |               
-    |   +---Configurations
-    |   |       AzureStorageSettings.cs
-    |   |       
-    |   +---DTOs
-    |   |   |   CategoryTreeDto.cs
-    |   |   |   CheckoutDtos.cs
-    |   |   |   ClerkUserDto.cs
-    |   |   |   LecturerCreateUpdateDto.cs
-    |   |   |   LecturerResponseDto.cs
-    |   |   |   NewsCreateUpdateDto.cs
-    |   |   |   PaymentSettings.cs
-    |   |   |   
-    |   |   \---AdminDtos
-    |   |           AdminStatsDto.cs
-    |   |           BookDto.cs
-    |   |           BooksTypeDto.cs
-    |   |           CertificateDto.cs
-    |   |           CreateBookDto.cs
-    |   |           CreateBooksTypeDto.cs
-    |   |           CreatePlanFileDto.cs
-    |   |           CreatePlanworkDto.cs
-    |   |           EnrollmentWithCertificateDto.cs
-    |   |           PaidOrderDto.cs
-    |   |           PlanFileDto.cs
-    |   |           PlanworkDto.cs
-    |   |           PlanworkTreeDto.cs
-    |   |           PlanworkWithUsersDto.cs
-    |   |           UpdateBookDto.cs
-    |   |           UpdateBooksTypeDto.cs
-    |   |           UpdateCertificateDto.cs
-    |   |           UploadCertificateDto.cs
-    |   |           UserCourseDto.cs
-    |   |           UserEnrollmentDto.cs
-    |   |           UserWithCoursesDto.cs
-    |   |           
-    |   +---Interfaces
-    |   |   |   IRepository.cs
-    |   |   |   
-    |   |   \---IService
-    |   |           IAdminService.cs
-    |   |           IBankPaymentService.cs
-    |   |           IBlobStorage.cs
-    |   |           IBookService.cs
-    |   |           IBooksTypeService.cs
-    |   |           ICartService.cs
-    |   |           ICategoryService.cs
-    |   |           ICheckoutService.cs
-    |   |           IClerkService.cs
-    |   |           ICurrentUserService.cs
-    |   |           ILecturerService.cs
-    |   |           INewsService.cs
-    |   |           IPermissionService.cs
-    |   |           IPlanFileService.cs
-    |   |           IPlanworkService.cs
-    |   |           IReadOnlyService.cs
-    |   |           IRefundService.cs
-    |   |           IUserPermissionService.cs
-    |   |           
-    |   +---obj
-    |   |   |   Institute.Application.csproj.nuget.dgspec.json
-    |   |   |   Institute.Application.csproj.nuget.g.props
-    |   |   |   Institute.Application.csproj.nuget.g.targets
-    |   |   |   project.assets.json
-    |   |   |   project.nuget.cache
-    |   |   |   
-    |   |   \---Debug
-    |   |       \---net8.0
-    |   |           |   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
-    |   |           |   Institut.9B08C9F1.Up2Date
-    |   |           |   Institute.Application.AssemblyInfo.cs
-    |   |           |   Institute.Application.AssemblyInfoInputs.cache
-    |   |           |   Institute.Application.assets.cache
-    |   |           |   Institute.Application.csproj.AssemblyReference.cache
-    |   |           |   Institute.Application.csproj.BuildWithSkipAnalyzers
-    |   |           |   Institute.Application.csproj.CoreCompileInputs.cache
-    |   |           |   Institute.Application.csproj.FileListAbsolute.txt
-    |   |           |   Institute.Application.dll
-    |   |           |   Institute.Application.GeneratedMSBuildEditorConfig.editorconfig
-    |   |           |   Institute.Application.GlobalUsings.g.cs
-    |   |           |   Institute.Application.pdb
-    |   |           |   Institute.Application.sourcelink.json
-    |   |           |   
-    |   |           +---ref
-    |   |           |       Institute.Application.dll
-    |   |           |       
-    |   |           \---refint
-    |   |                   Institute.Application.dll
-    |   |                   
-    |   +---Security
-    |   |       HasPermissionAttribute.cs
-    |   |       ManagerAuthorizationHandler.cs
-    |   |       ManagerRequirement.cs
-    |   |       PermissionHandler.cs
-    |   |       PermissionRequirement.cs
-    |   |       
-    |   \---Services
-    |           AdminService.cs
-    |           BankPaymentService.cs
-    |           BlobStorage.cs
-    |           BookService.cs
-    |           BooksTypeService.cs
-    |           CartService.cs
-    |           CategoryService.cs
-    |           CheckoutService.cs
-    |           ClerkService.cs
-    |           CurrentUserService.cs
-    |           LecturerService.cs
-    |           NewsService.cs
-    |           PermissionService.cs
-    |           PlanFileService.cs
-    |           PlanworkService.cs
-    |           ReadOnlyService.cs
-    |           RefundService.cs
-    |           UserPermissionService.cs
-    |           
-    +---Institute.Domain
-    |   |   Institute.Domain.csproj
-    |   |   
-    |   +---bin
-    |   |   \---Debug
-    |   |       \---net8.0
-    |   |               Institute.Domain.deps.json
-    |   |               Institute.Domain.dll
-    |   |               Institute.Domain.pdb
-    |   |               
-    |   +---Entities
-    |   |       Action.cs
-    |   |       AppUser.cs
-    |   |       Book.cs
-    |   |       BooksType.cs
-    |   |       BooksView.cs
-    |   |       Cart.cs
-    |   |       CartItem.cs
-    |   |       Certificate.cs
-    |   |       CoursePurchase.cs
-    |   |       Dailynews.cs
-    |   |       Enrollment.cs
-    |   |       ErrorDesc.cs
-    |   |       Form.cs
-    |   |       FormsCategory.cs
-    |   |       GetNewsDetailsView.cs
-    |   |       Lecturer.cs
-    |   |       NewsPic.cs
-    |   |       Order.cs
-    |   |       OrderItem.cs
-    |   |       Payment.cs
-    |   |       Permission.cs
-    |   |       PlanFile.cs
-    |   |       Planwork.cs
-    |   |       RefundResult.cs
-    |   |       SitePic.cs
-    |   |       SiteVideo.cs
-    |   |       SiteVideoType.cs
-    |   |       User.cs
-    |   |       UserPermission.cs
-    |   |       UsersForm.cs
-    |   |       UsersFormsView.cs
-    |   |       UsersLog.cs
-    |   |       
-    |   +---Enums
-    |   |       OrderStatus.cs
-    |   |       PaymentMethod.cs
-    |   |       PaymentStatus.cs
-    |   |       
-    |   +---obj
-    |   |   |   Institute.Domain.csproj.nuget.dgspec.json
-    |   |   |   Institute.Domain.csproj.nuget.g.props
-    |   |   |   Institute.Domain.csproj.nuget.g.targets
-    |   |   |   project.assets.json
-    |   |   |   project.nuget.cache
-    |   |   |   
-    |   |   \---Debug
-    |   |       \---net8.0
-    |   |           |   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
-    |   |           |   Institute.Domain.AssemblyInfo.cs
-    |   |           |   Institute.Domain.AssemblyInfoInputs.cache
-    |   |           |   Institute.Domain.assets.cache
-    |   |           |   Institute.Domain.csproj.AssemblyReference.cache
-    |   |           |   Institute.Domain.csproj.BuildWithSkipAnalyzers
-    |   |           |   Institute.Domain.csproj.CoreCompileInputs.cache
-    |   |           |   Institute.Domain.csproj.FileListAbsolute.txt
-    |   |           |   Institute.Domain.dll
-    |   |           |   Institute.Domain.GeneratedMSBuildEditorConfig.editorconfig
-    |   |           |   Institute.Domain.GlobalUsings.g.cs
-    |   |           |   Institute.Domain.pdb
-    |   |           |   Institute.Domain.sourcelink.json
-    |   |           |   
-    |   |           +---ref
-    |   |           |       Institute.Domain.dll
-    |   |           |       
-    |   |           \---refint
-    |   |                   Institute.Domain.dll
-    |   |                   
-    |   \---specifications
-    |       |   BaseSpecification.cs
-    |       |   Ispecification.cs
-    |       |   SpecificationEvaluator.cs
-    |       |   
-    |       +---AdminSpec
-    |       |   |   AttendedEnrollmentsSpec.cs
-    |       |   |   
-    |       |   +---Certificates
-    |       |   |       AllCertificateWithUserAndPlanworkSpec.cs
-    |       |   |       CertificateWithUserAndPlanworkSpec.cs
-    |       |   |       EnrollmentWithUserAndPlanworkSpec.cs
-    |       |   |       UserByClerkIdSpec.cs
-    |       |   |       
-    |       |   +---Course
-    |       |   |       PlanworkCount.cs
-    |       |   |       PlanworkSearchSpec.cs
-    |       |   |       PlanworkSpecParams.cs
-    |       |   |       PlanworksWithEnrollmentsSpec.cs
-    |       |   |       
-    |       |   +---Planfiles
-    |       |   |       PlanFileByIdSpec.cs
-    |       |   |       PlanFilesByPlanIdSpec.cs
-    |       |   |       
-    |       |   \---User
-    |       |           UserSearchSpec.cs
-    |       |           UserSpecParams.cs
-    |       |           UsersWithEnrollmentsSpec.cs
-    |       |           
-    |       +---BookSpec
-    |       |       Book&LoadNafigationProperty.cs
-    |       |       BookSpecParams.cs
-    |       |       BooksWithFiltersForCountSpec.cs
-    |       |       
-    |       +---CourseSpec
-    |       |       EnrollmentsByUserSpecification.cs
-    |       |       LatestCoursesSpecification.cs
-    |       |       TrainingPlanSpec.cs
-    |       |       
-    |       +---NewsSpec
-    |       |       AdminNewsWithMainPicSpec.cs
-    |       |       NewsSpecParames.cs
-    |       |       NewsWithDetailsSpec.cs
-    |       |       NewsWithFiltersForCountSpec.cs
-    |       |       NewsWithMainPicSpec.cs
-    |       |       
-    |       \---PermissionsSpec
-    |               UserPermissionByUserAndPermissionSpec.cs
-    |               UserPermissionsSpec.cs
-    |               
-    \---Institute.Infrastructure
-        |   AppDbContext.cs
-        |   Institute.Infrastructure.csproj
-        |   SpecificationEvaluator.cs
-        |   
-        +---bin
-        |   \---Debug
-        |       \---net8.0
-        |               Institute.Application.dll
-        |               Institute.Application.pdb
-        |               Institute.Domain.dll
-        |               Institute.Domain.pdb
-        |               Institute.Infrastructure.deps.json
-        |               Institute.Infrastructure.dll
-        |               Institute.Infrastructure.pdb
-        |               Institute.Infrastructure.runtimeconfig.json
-        |               
-        +---Migrations
-        +---obj
-        |   |   Institute.Infrastructure.csproj.nuget.dgspec.json
-        |   |   Institute.Infrastructure.csproj.nuget.g.props
-        |   |   Institute.Infrastructure.csproj.nuget.g.targets
-        |   |   project.assets.json
-        |   |   project.nuget.cache
-        |   |   
-        |   \---Debug
-        |       \---net8.0
-        |           |   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
-        |           |   Institut.2F878E52.Up2Date
-        |           |   Institute.Infrastructure.AssemblyInfo.cs
-        |           |   Institute.Infrastructure.AssemblyInfoInputs.cache
-        |           |   Institute.Infrastructure.assets.cache
-        |           |   Institute.Infrastructure.csproj.AssemblyReference.cache
-        |           |   Institute.Infrastructure.csproj.BuildWithSkipAnalyzers
-        |           |   Institute.Infrastructure.csproj.CoreCompileInputs.cache
-        |           |   Institute.Infrastructure.csproj.FileListAbsolute.txt
-        |           |   Institute.Infrastructure.dll
-        |           |   Institute.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
-        |           |   Institute.Infrastructure.genruntimeconfig.cache
-        |           |   Institute.Infrastructure.GlobalUsings.g.cs
-        |           |   Institute.Infrastructure.pdb
-        |           |   Institute.Infrastructure.sourcelink.json
-        |           |   
-        |           +---ref
-        |           |       Institute.Infrastructure.dll
-        |           |       
-        |           \---refint
-        |                   Institute.Infrastructure.dll
-        |                   
-        \---Repositories
-                BaseRepository.cs
-                
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\git-structure.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\README.md
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\structure.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Web.sln
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\ngrok.exe
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\tree.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\config\applicationhost.config
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\DesignTimeBuild\.dtbcache.v2
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\FileContentIndex\1f9ad769-9cf0-4dc5-a525-27576b818854.vsidx
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\FileContentIndex\8a8df60b-4e6f-4ef2-a208-7900471245fe.vsidx
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\FileContentIndex\934cdeb6-c3d1-4d24-a226-27509e1ead36.vsidx
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\FileContentIndex\9c755635-027c-41bd-a2c5-e22cd2affdc1.vsidx
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\FileContentIndex\c1c7a454-926f-4c55-b53d-7f0ac0a54dfd.vsidx
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\v18\.futdcache.v2
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\v18\DocumentLayout.backup.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\v18\DocumentLayout.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\Institute.Web\v18\HierarchyCache.v1.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\ProjectEvaluation\institute.web.metadata.v10.bin
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\ProjectEvaluation\institute.web.projects.v10.bin
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\.vs\ProjectEvaluation\institute.web.strings.v10.bin
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Domain\Entities\AppDbContext.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Domain\Entities\AppUser.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Domain\Entities\CoursePurchase.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Domain\Entities\Payment.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\appsettings.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Institute.API.csproj
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Institute.API.csproj.user
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Institute.API.http
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Program.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\appsettings.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\AutoMapper.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Azure.Core.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Azure.Identity.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Azure.Storage.Blobs.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Azure.Storage.Common.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Humanizer.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.deps.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.exe
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.runtimeconfig.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.staticwebassets.endpoints.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.API.staticwebassets.runtime.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.Application.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.Application.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.Domain.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.Infrastructure.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Institute.Infrastructure.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\MailKit.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.AspNetCore.Authorization.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.AspNetCore.Metadata.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Http.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Identity.Client.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Identity.Client.Extensions.Msal.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.OpenApi.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\MimeKit.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Mono.TextTemplating.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Newtonsoft.Json.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Polly.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Svix.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.ClientModel.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.CodeDom.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Composition.AttributedModel.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Composition.Convention.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Composition.Hosting.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Composition.Runtime.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Composition.TypedParts.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Drawing.Common.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.IO.Hashing.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Memory.Data.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Runtime.Caching.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Security.Permissions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\System.Windows.Extensions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\Yarp.ReverseProxy.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\Microsoft.Data.SqlClient.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AccountController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminBookController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminBooksTypeController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminLecturerController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminNewsController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminPlanFilesController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminPlanworkController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\AdminUsersController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\BookController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\CartController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\CategoriesController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\CheckoutController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\ClerkWebhookController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\CourseController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\DevTestController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\LecturerController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\NewsController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\PermissionsController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\RefundController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\UserPermissionsController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Controllers\UserPermissionsMeController.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\AssignPermissionDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\AxisDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\BookResponseDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\CartDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\CartItemDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\CourseCardDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\CourseDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\CourseFileDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\NewsDetailsDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\NewsImageDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\NewsListDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\ProgramCoursesDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\PaymentDtos\CheckoutRequestDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\PaymentDtos\OrderDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\PaymentDtos\PaymentResponseDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\DTOs\PaymentDtos\RefundRequestResponseDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Helpers\MappingProfiles.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Helpers\NewsPictureUrlResolver.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Helpers\NewsPictureUrlsResolver.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Helpers\Pagination.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Institute.API.csproj.nuget.dgspec.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Institute.API.csproj.nuget.g.props
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Institute.API.csproj.nuget.g.targets
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\project.assets.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\project.nuget.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\ApiEndpoints.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\apphost.exe
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\AppSettingsSchema.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\CombinedComponentSchema.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institut.755799FA.Up2Date
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.AssemblyInfo.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.AssemblyInfoInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.assets.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.csproj.AssemblyReference.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.csproj.BuildWithSkipAnalyzers
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.csproj.CoreCompileInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.csproj.FileListAbsolute.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.GeneratedMSBuildEditorConfig.editorconfig
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.genruntimeconfig.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.GlobalUsings.g.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.MvcApplicationPartsAssemblyInfo.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.MvcApplicationPartsAssemblyInfo.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\Institute.API.sourcelink.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\rjimswa.dswa.cache.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\rpswa.dswa.cache.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.build.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.build.json.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.development.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.references.upToDateCheck.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.removed.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\swae.build.ex.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\EndpointInfo\Institute.API.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\EndpointInfo\Institute.API.OpenApiFiles.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\ref\Institute.API.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\obj\Debug\net8.0\refint\Institute.API.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\Properties\launchSettings.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\wwwroot\certificates\1b083ffd-4f1d-4996-86fc-1cac4b4c258c.pdf
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\wwwroot\certificates\53facd75-39fb-42ca-ba46-9b6dd23a1196.pdf
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.API\wwwroot\images\lecturers\2c7aede9-970d-44a7-8208-b920cc9fd746.png
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Institute.Application.csproj
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\bin\Debug\net8.0\Institute.Application.deps.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\bin\Debug\net8.0\Institute.Application.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\bin\Debug\net8.0\Institute.Application.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\bin\Debug\net8.0\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\bin\Debug\net8.0\Institute.Domain.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Configurations\AzureStorageSettings.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Configurations\Emailsettings.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\CategoryTreeDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\CheckoutDtos.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\ClerkUserDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\LecturerCreateUpdateDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\LecturerResponseDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\NewsCreateUpdateDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\PaymentSettings.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\AdminStatsDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\BookDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\BooksTypeDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\CertificateDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\CreateBookDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\CreateBooksTypeDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\CreatePlanFileDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\CreatePlanworkDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\EnrollmentWithCertificateDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\PaidOrderDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\PlanFileDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\PlanworkDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\PlanworkTreeDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\PlanworkWithUsersDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UpdateBookDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UpdateBooksTypeDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UpdateCertificateDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UploadCertificateDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UserCourseDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UserEnrollmentDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\DTOs\AdminDtos\UserWithCoursesDto.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IRepository.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IAdminService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IBankPaymentService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IBlobStorage.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IBookService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IBooksTypeService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\ICartService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\ICategoryService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\ICheckoutService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IClerkService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\ICurrentUserService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IEmailService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\ILecturerService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\INewsService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IOrderNotificationService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IPermissionService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IPlanFileService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IPlanworkService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IReadOnlyService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IRefundService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Interfaces\IService\IUserPermissionService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Institute.Application.csproj.nuget.dgspec.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Institute.Application.csproj.nuget.g.props
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Institute.Application.csproj.nuget.g.targets
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\project.assets.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\project.nuget.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institut.9B08C9F1.Up2Date
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.AssemblyInfo.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.AssemblyInfoInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.assets.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.csproj.AssemblyReference.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.csproj.BuildWithSkipAnalyzers
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.csproj.CoreCompileInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.csproj.FileListAbsolute.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.GlobalUsings.g.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\Institute.Application.sourcelink.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\ref\Institute.Application.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\obj\Debug\net8.0\refint\Institute.Application.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Security\HasPermissionAttribute.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Security\ManagerAuthorizationHandler.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Security\ManagerRequirement.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Security\PermissionHandler.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Security\PermissionRequirement.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\AdminService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\BankPaymentService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\BlobStorage.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\BookService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\BooksTypeService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\CartService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\CategoryService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\CheckoutService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\ClerkService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\CurrentUserService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\LecturerService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\NewsService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\OrderNotificationService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\PermissionService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\PlanFileService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\PlanworkService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\ReadOnlyService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\RefundService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\SmtpEmailService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Application\Services\UserPermissionService.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Institute.Domain.csproj
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\bin\Debug\net8.0\Institute.Domain.deps.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\bin\Debug\net8.0\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\bin\Debug\net8.0\Institute.Domain.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Action.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\AppUser.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Book.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\BooksType.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\BooksView.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Cart.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\CartItem.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Certificate.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\CoursePurchase.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Dailynews.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Enrollment.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\ErrorDesc.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Form.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\FormsCategory.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\GetNewsDetailsView.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Lecturer.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\NewsPic.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Order.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\OrderItem.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Payment.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Permission.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\PlanFile.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\Planwork.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\RefundResult.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\SitePic.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\SiteVideo.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\SiteVideoType.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\User.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\UserPermission.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\UsersForm.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\UsersFormsView.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Entities\UsersLog.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Enums\OrderStatus.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Enums\PaymentMethod.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\Enums\PaymentStatus.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Institute.Domain.csproj.nuget.dgspec.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Institute.Domain.csproj.nuget.g.props
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Institute.Domain.csproj.nuget.g.targets
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\project.assets.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\project.nuget.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.AssemblyInfo.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.AssemblyInfoInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.assets.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.csproj.AssemblyReference.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.csproj.BuildWithSkipAnalyzers
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.csproj.CoreCompileInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.csproj.FileListAbsolute.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.GlobalUsings.g.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\Institute.Domain.sourcelink.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\ref\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\obj\Debug\net8.0\refint\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\BaseSpecification.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\Ispecification.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\SpecificationEvaluator.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\AttendedEnrollmentsSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Certificates\AllCertificateWithUserAndPlanworkSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Certificates\CertificateWithUserAndPlanworkSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Certificates\EnrollmentWithUserAndPlanworkSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Certificates\UserByClerkIdSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Course\PlanworkCount.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Course\PlanworkSearchSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Course\PlanworkSpecParams.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Course\PlanworksWithEnrollmentsSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Planfiles\PlanFileByIdSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\Planfiles\PlanFilesByPlanIdSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\User\UserSearchSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\User\UserSpecParams.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\AdminSpec\User\UsersWithEnrollmentsSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\BookSpec\Book&LoadNafigationProperty.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\BookSpec\BookSpecParams.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\BookSpec\BooksWithFiltersForCountSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\CourseSpec\EnrollmentsByUserSpecification.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\CourseSpec\LatestCoursesSpecification.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\CourseSpec\TrainingPlanSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\NewsSpec\AdminNewsWithMainPicSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\NewsSpec\NewsSpecParames.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\NewsSpec\NewsWithDetailsSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\NewsSpec\NewsWithFiltersForCountSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\NewsSpec\NewsWithMainPicSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\PermissionsSpec\UserPermissionByUserAndPermissionSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Domain\specifications\PermissionsSpec\UserPermissionsSpec.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\AppDbContext.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\Institute.Infrastructure.csproj
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\SpecificationEvaluator.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Application.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Application.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Domain.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Domain.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Infrastructure.deps.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Infrastructure.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Infrastructure.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\bin\Debug\net8.0\Institute.Infrastructure.runtimeconfig.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Institute.Infrastructure.csproj.nuget.dgspec.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Institute.Infrastructure.csproj.nuget.g.props
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Institute.Infrastructure.csproj.nuget.g.targets
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\project.assets.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\project.nuget.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institut.2F878E52.Up2Date
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.AssemblyInfo.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.AssemblyInfoInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.assets.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.csproj.AssemblyReference.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.csproj.BuildWithSkipAnalyzers
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.csproj.FileListAbsolute.txt
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.genruntimeconfig.cache
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.GlobalUsings.g.cs
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.pdb
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\Institute.Infrastructure.sourcelink.json
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\ref\Institute.Infrastructure.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\obj\Debug\net8.0\refint\Institute.Infrastructure.dll
+D:\Work\nageeb work\ICEMT\new clone ICEMT\Institute-Technology-ArabContractor\src\Backend\Institute.Web\Institute.Infrastructure\Repositories\BaseRepository.cs
