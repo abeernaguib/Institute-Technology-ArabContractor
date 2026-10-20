@@ -4,7 +4,7 @@ import { T } from "../../components/admin/constants";
 
 // ── API base ──────────────────────────────────────────────────────────────────
 const API_BASE = 'https://icemt.arabcont.com/api/admin/AdminLecturer';
-const IMAGE_BASE_URL = 'https://www.arabcont.com/icemt/assets/images/';
+// IMAGE_BASE_URL = 'https://www.arabcont.com/icemt/assets/images/';
 
 // ── Base64 encode/decode for rich-text fields ──────────────────────────────────
 // WORKAROUND for a WAF-level 403 (Azure Application Gateway), not a backend bug:
