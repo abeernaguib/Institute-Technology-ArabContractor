@@ -32,6 +32,16 @@ namespace Institute.Application.Services
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 
+            // Phone is stored by the sign-up form in Clerk's unsafe_metadata.phone
+            string? phone = null;
+            if (root.TryGetProperty("unsafe_metadata", out var meta)
+                && meta.ValueKind == JsonValueKind.Object
+                && meta.TryGetProperty("phone", out var phoneEl)
+                && phoneEl.ValueKind == JsonValueKind.String)
+            {
+                phone = phoneEl.GetString();
+            }
+
             return new ClerkUserDto
             {
                 ClerkUserId = clerkUserId,
@@ -39,7 +49,8 @@ namespace Institute.Application.Services
                             .GetProperty("email_address").GetString()!,
                 FirstName = root.GetProperty("first_name").GetString(),
                 LastName = root.GetProperty("last_name").GetString(),
-                Username = root.GetProperty("username").GetString()
+                Username = root.GetProperty("username").GetString(),
+                Phone = phone
             };
         }
 

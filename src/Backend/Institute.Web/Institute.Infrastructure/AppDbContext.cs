@@ -71,14 +71,14 @@ public partial class AppDbContext : DbContext
 
 
 
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseSqlServer("Server=acdbweb-ac.fefc023eb221.database.windows.net;Database=ACicmet;User Id=ICadmin;Password=ICacdb#95_icemt;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+    // NOTE: the connection string must NOT live in source code.
+    // Keep it in appsettings / environment variables / Azure Key Vault and
+    // configure it with services.AddDbContext<AppDbContext>(o => o.UseSqlServer(...)).
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {//Book - BooksType relationship
 
-        
+
         modelBuilder.Entity<Book>()
             .HasOne(b => b.BooksType)        // كل Book له BookType واحد
             .WithMany(t => t.Books)          // كل BookType له مجموعة Books
@@ -116,6 +116,10 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
+                .IsRequired(false);  // optional
+
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20)
                 .IsRequired(false);  // optional
 
             //entity.Property(e => e.PasswordHash)
@@ -453,7 +457,7 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => new { e.PlanId, e.FileId });
             entity.HasOne(d => d.Planwork).WithMany(p => p.Files)
                 .HasForeignKey(d => d.PlanId);
-                
+
             entity.Property(e => e.PlanId).HasColumnName("Plan_id");
             entity.Property(e => e.FileName).HasColumnName("File_name");
             entity.Property(e => e.FilePeriorty).HasColumnName("File_periorty");
@@ -498,7 +502,7 @@ public partial class AppDbContext : DbContext
                   .HasForeignKey(f => f.PlanId);
         });
 
-        
+
         modelBuilder.Entity<SitePic>(entity =>
         {
             entity.HasKey(e => e.ImageId);

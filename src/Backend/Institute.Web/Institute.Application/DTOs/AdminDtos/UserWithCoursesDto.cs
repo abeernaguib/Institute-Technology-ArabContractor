@@ -7,6 +7,7 @@ namespace Institute.API.DTOs.AdminDtos
         public int Id { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
+        public string? Phone { get; set; }
 
         public int CoursesCount { get; set; }
         public List<UserCourseDto> Courses { get; set; }

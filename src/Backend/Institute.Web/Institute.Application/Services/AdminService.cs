@@ -56,6 +56,7 @@ namespace Institute.Application.Services
                 Id = u.Id,
                 Username = u.Username,
                 Email = u.Email,
+                Phone = u.Phone,
                 CoursesCount = u.Enrollments
                     .Count(e =>
                         (!param.FromDate.HasValue || e.EnrolledAt >= param.FromDate.Value) &&
@@ -123,7 +124,7 @@ namespace Institute.Application.Services
             // ← فلتر المرتجعات من النهارده بس
             var totalRefunds = allRefunds
                 .Where(r => (r.Status == "Approved" || r.Status == "Sent")
-                         &&  r.RequestedAt.Date >= today)
+                         && r.RequestedAt.Date >= today)
                 .Sum(r => r.Amount);
 
 
@@ -167,7 +168,7 @@ namespace Institute.Application.Services
         }
 
         // ── باقي الميثودز كما هي ─────────────────────────────────────────────
-        public async Task<bool> UploadCertificateAsync(UploadCertificateDto dto,string uploadsFolder)
+        public async Task<bool> UploadCertificateAsync(UploadCertificateDto dto, string uploadsFolder)
         {
             if (dto.File == null || dto.File.Length == 0)
                 return false;
@@ -254,7 +255,7 @@ namespace Institute.Application.Services
             };
         }
 
-        public async Task<bool> UpdateCertificateAsync(UpdateCertificateDto dto,string uploadsFolder)
+        public async Task<bool> UpdateCertificateAsync(UpdateCertificateDto dto, string uploadsFolder)
         {
             var certificate =
                 await _certificateRepository

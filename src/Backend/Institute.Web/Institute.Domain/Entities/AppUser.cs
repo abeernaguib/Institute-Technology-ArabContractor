@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,9 @@ namespace Institute.Domain.Entities
         public string? LastName { get; set; }
         public string? Email { get; set; }
 
+        [MaxLength(20)]
+        public string? Phone { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; }
         public bool IsManager { get; set; }
@@ -26,7 +30,5 @@ namespace Institute.Domain.Entities
         public ICollection<Order> Orders { get; set; } = new HashSet<Order>();
         public ICollection<Enrollment> Enrollments { get; set; } = new HashSet<Enrollment>();
         public ICollection<UserPermission> Permissions { get; set; } = new HashSet<UserPermission>();
-
-
     }
 }
