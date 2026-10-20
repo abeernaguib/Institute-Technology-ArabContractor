@@ -126,6 +126,11 @@ builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>()
 
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
 
+// Email notifications
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IOrderNotificationService, OrderNotificationService>();
+
 builder.Services.AddHttpClient("BankClient", client =>
 {
     var paymentSettings = builder.Configuration

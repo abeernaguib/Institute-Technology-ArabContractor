@@ -23,19 +23,22 @@ namespace Institute.API.Controllers
         private readonly ICurrentUserService _currentUser;
         private readonly PaymentSettings _settings;
         private readonly ILogger<CheckoutController> _logger;
+        private readonly IOrderNotificationService _orderNotification;
 
         public CheckoutController(
             ICheckoutService checkoutService,
             BankPaymentService bankPaymentService,
             ICurrentUserService currentUser,
             IOptions<PaymentSettings> options,
-            ILogger<CheckoutController> logger)
+            ILogger<CheckoutController> logger,
+            IOrderNotificationService orderNotification)
         {
             _checkoutService = checkoutService;
             _bankPaymentService = bankPaymentService;
             _currentUser = currentUser;
             _settings = options.Value;
             _logger = logger;
+            _orderNotification = orderNotification;
         }
 
         /// <summary>
@@ -210,6 +213,16 @@ namespace Institute.API.Controllers
             _logger.LogInformation(
                 "✅ Payment Success. OrderId={OrderId}, TransactionRef={Ref}, UserId={UserId}, Amount={Amount}",
                 orderId, refToUse, order.UserId, order.TotalAmount);
+
+            // Email notification — a failure here must never affect the payment
+            try
+            {
+                await _orderNotification.NotifyOrderPaidAsync(order.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Order-paid email failed. OrderId={OrderId}", order.Id);
+            }
 
             return Ok(new PaymentResponseDto
             {
