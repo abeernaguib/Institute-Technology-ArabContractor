@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
-using System.Text;
 
 namespace Institute.Application.Services
 {
@@ -46,7 +45,7 @@ namespace Institute.Application.Services
 
             // 1) Claim in memory: only ONE caller per order gets TryAdd == true
             if (!_sent.TryAdd(orderId, 0))
-                return; // already sent (or being sent)
+                return;
 
             try
             {
@@ -66,8 +65,7 @@ namespace Institute.Application.Services
                     return;
                 }
 
-                var subject = $"عملية دفع جديدة – طلب #{order.Id} – {Money(order.TotalAmount)} جنيه";
-                await _email.SendAsync(recipients, subject, BuildHtml(order));
+                await _email.SendAsync(recipients, BuildSubject(order), BuildHtml(order), LoadInlineImages());
 
                 _logger.LogInformation("Order-paid email sent. OrderId={OrderId}", orderId);
             }
@@ -79,12 +77,11 @@ namespace Institute.Application.Services
             }
         }
 
-        // ── Email body (RTL, Arabic) ──────────────────────────────────
+        // ── Email body: collects the data, the design lives in OrderPaidEmailRenderer ──
         private static string BuildHtml(Order order)
         {
             var user = order.User;
-            var fullName = $"{user?.FirstName} {user?.LastName}".Trim();
-            if (string.IsNullOrEmpty(fullName)) fullName = user?.Username ?? "-";
+            var fullName = FullNameOf(order);
 
             var payment = order.Payments
                               .Where(pay => pay.Status == PaymentStatus.Success)
@@ -106,88 +103,96 @@ namespace Institute.Application.Services
             if (itemsSum != order.TotalAmount)
                 warnings.Add($"مجموع أسعار الكورسات ({Money(itemsSum)} جنيه) لا يساوي إجمالي الطلب ({Money(order.TotalAmount)} جنيه).");
 
-            var warningHtml = warnings.Count == 0
-                ? ""
-                : "<div style='background:#fff4e5;border:1px solid #f0b95a;padding:10px;margin:12px 0'>" +
-                  "<b>⚠ تنبيه للمراجعة:</b><br/>" +
-                  string.Join("<br/>", warnings.Select(w => Enc(w))) + "</div>";
-
-            // Courses table
-            var rows = new StringBuilder();
+            var itemRows = new List<IReadOnlyDictionary<string, string>>();
             var no = 0;
             foreach (var item in items)
             {
                 no++;
                 var plan = item.Planwork;
-                rows.Append(
-                    "<tr>" +
-                    Td(no.ToString(CultureInfo.InvariantCulture)) +
-                    Td(Enc(plan?.ServiceTitle)) +
-                    Td(Enc(plan?.CourseDate)) +
-                    Td(Enc(plan?.CourseDays)) +
-                    Td(Enc(plan?.CoursePlace)) +
-                    Td(item.IsOnline ? "أونلاين" : "حضوري") +
-                    Td($"{Money(item.Price)} جنيه") +
-                    "</tr>");
+                itemRows.Add(new Dictionary<string, string>
+                {
+                    ["No"] = no.ToString(CultureInfo.InvariantCulture),
+                    ["Title"] = Dash(plan?.ServiceTitle),
+                    ["Date"] = Dash(plan?.CourseDate),
+                    ["Days"] = Dash(plan?.CourseDays),
+                    ["Place"] = Dash(plan?.CoursePlace),
+                    ["Type"] = item.IsOnline ? "أونلاين" : "حضوري",
+                    ["Price"] = $"{Money(item.Price)} جنيه",
+                });
             }
 
-            var buyer =
-                Row("الاسم", fullName) +
-                Row("الإيميل", user?.Email) +
-                Row("اسم المستخدم", user?.Username) +
-                Row("رقم المستخدم", user != null ? $"#{user.Id}" : null);
+            // Everything below is already HTML-encoded
+            var values = new Dictionary<string, string>
+            {
+                ["FullName"] = Dash(fullName),
+                ["WhatBought"] = Enc(WhatBought(order, 80)),
+                ["Email"] = Dash(user?.Email),
+                ["Username"] = Dash(user?.Username),
+                ["UserId"] = user != null ? user.Id.ToString(CultureInfo.InvariantCulture) : "-",
+                ["OrderId"] = order.Id.ToString(CultureInfo.InvariantCulture),
+                ["OrderNumber"] = Dash(order.OrderNumber),
+                ["OrderStatus"] = Dash(OrderStatusName(order.Status)),
+                ["CreatedAt"] = Fmt(ToCairo(order.CreatedAt)),
+                ["PaymentMethod"] = Dash(MethodName(payment?.Method)),
+                ["PaymentStatus"] = Dash(PaymentStatusName(payment?.Status)),
+                ["PaidAmount"] = payment != null ? $"{Money(payment.Amount)} جنيه" : "-",
+                ["PaidAt"] = Fmt(ToCairo(payment?.PaymentDate ?? DateTime.UtcNow)),
+                ["PaymentRef"] = Dash(payment?.TransactionRef),
+                ["SessionId"] = Dash(order.GatewaySessionId),
+                ["CourseCount"] = items.Count.ToString(CultureInfo.InvariantCulture),
+                ["OnsiteCount"] = onsiteCount.ToString(CultureInfo.InvariantCulture),
+                ["OnlineCount"] = onlineCount.ToString(CultureInfo.InvariantCulture),
+                ["Total"] = $"{Money(order.TotalAmount)} جنيه",
+                // no "Phone" key → the phone row is skipped (this version has no Clerk lookup)
+            };
 
-            var orderInfo =
-                Row("رقم الطلب", $"#{order.Id}") +
-                Row("المرجع", order.OrderNumber) +
-                Row("حالة الطلب", OrderStatusName(order.Status)) +
-                Row("تاريخ إنشاء الطلب", Fmt(ToCairo(order.CreatedAt)));
-
-            var paymentInfo =
-                Row("طريقة الدفع", MethodName(payment?.Method)) +
-                Row("حالة الدفع", PaymentStatusName(payment?.Status)) +
-                Row("المبلغ المدفوع", payment != null ? $"{Money(payment.Amount)} جنيه" : null) +
-                Row("تاريخ الدفع", Fmt(ToCairo(payment?.PaymentDate ?? DateTime.UtcNow))) +
-                Row("مرجع الدفع", payment?.TransactionRef) +
-                Row("رقم جلسة الدفع", order.GatewaySessionId);
-
-            return
-                "<div dir='rtl' style='font-family:Tahoma,Arial,sans-serif;font-size:14px;color:#222;max-width:720px'>" +
-                "<h2 style='margin:0 0 4px'>تم دفع طلب جديد ✅</h2>" +
-                $"<p style='margin:0 0 8px;color:#666'>طلب #{order.Id} – {Enc(fullName)}</p>" +
-                warningHtml +
-                Section("بيانات المشتري", buyer) +
-                Section("بيانات الطلب", orderInfo) +
-                Section("بيانات الدفع", paymentInfo) +
-                "<h3 style='margin:18px 0 6px;font-size:15px;color:#1a3c6e'>الكورسات</h3>" +
-                "<table style='border-collapse:collapse;width:100%'>" +
-                "<thead><tr style='background:#f3f3f3'>" +
-                Th("#") + Th("الكورس") + Th("التاريخ") + Th("الأيام") + Th("المكان") + Th("النوع") + Th("السعر") +
-                "</tr></thead>" +
-                $"<tbody>{rows}</tbody></table>" +
-                $"<p style='font-size:13px;color:#555'>عدد الكورسات: {items.Count} (حضوري: {onsiteCount} • أونلاين: {onlineCount})</p>" +
-                $"<p style='font-size:17px'><b>الإجمالي: {Money(order.TotalAmount)} جنيه</b></p>" +
-                "</div>";
+            return OrderPaidEmailRenderer.Render(values, itemRows, warnings.Select(Enc).ToList());
         }
 
+        // ── logo (embedded resource icemt-logo.png → inline image, cid:icemt-logo@icemt) ──
+        private const string LogoContentId = "icemt-logo@icemt";
+        private static byte[]? _logo;
+
+        private static IReadOnlyList<EmailInlineImage> LoadInlineImages()
+        {
+            if (_logo == null)
+            {
+                var asm = typeof(OrderNotificationService).Assembly;
+                var name = asm.GetManifestResourceNames()
+                    .FirstOrDefault(n => n.EndsWith("icemt-logo.png", StringComparison.OrdinalIgnoreCase));
+                if (name == null) return Array.Empty<EmailInlineImage>(); // no logo → email still works
+
+                using var stream = asm.GetManifestResourceStream(name)!;
+                using var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                _logo = ms.ToArray();
+            }
+            return new[] { new EmailInlineImage(LogoContentId, _logo, "image/png") };
+        }
+
+        // ── subject + "who bought what" ───────────────────────────────
+        private static string FullNameOf(Order order)
+        {
+            var user = order.User;
+            var name = $"{user?.FirstName} {user?.LastName}".Trim();
+            return string.IsNullOrEmpty(name) ? (user?.Username ?? "-") : name;
+        }
+
+        private static string WhatBought(Order order, int max)
+        {
+            var items = order.Items.ToList();
+            return items.Count == 1
+                ? $"كورس «{Trunc(items[0].Planwork?.ServiceTitle, max)}»"
+                : $"{items.Count} كورسات";
+        }
+
+        private static string BuildSubject(Order order) =>
+            $"اشترى {FullNameOf(order)} {WhatBought(order, 50)} – {Money(order.TotalAmount)} جنيه";
+
+        private static string Trunc(string? s, int max) =>
+            string.IsNullOrWhiteSpace(s) ? "-" : (s.Length <= max ? s : s[..max] + "…");
+
         // ── helpers ───────────────────────────────────────────────────
-        private static string Section(string title, string rowsHtml) =>
-            $"<h3 style='margin:18px 0 6px;font-size:15px;color:#1a3c6e'>{title}</h3>" +
-            $"<table style='border-collapse:collapse;width:100%'>{rowsHtml}</table>";
-
-        private static string Row(string label, string? value) =>
-            "<tr>" +
-            $"<td style='padding:6px 10px;color:#666;width:32%;border-bottom:1px solid #eee'>{label}</td>" +
-            $"<td style='padding:6px 10px;border-bottom:1px solid #eee'>{Enc(string.IsNullOrWhiteSpace(value) ? "-" : value)}</td>" +
-            "</tr>";
-
-        // html is already encoded by the caller
-        private static string Td(string html) =>
-            $"<td style='padding:7px;border:1px solid #ddd'>{html}</td>";
-
-        private static string Th(string text) =>
-            $"<th style='padding:7px;border:1px solid #ddd;text-align:right'>{text}</th>";
-
         private static string OrderStatusName(OrderStatus s) => s switch
         {
             OrderStatus.Pending => "قيد الانتظار",
@@ -218,6 +223,9 @@ namespace Institute.Application.Services
             d.ToString("yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture);
 
         private static string Enc(string? s) => WebUtility.HtmlEncode(s ?? "");
+
+        private static string Dash(string? s) =>
+            Enc(string.IsNullOrWhiteSpace(s) ? "-" : s);
 
         private static string Money(decimal v) =>
             v.ToString("N2", CultureInfo.InvariantCulture);

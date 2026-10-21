@@ -5,7 +5,6 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-
 namespace Institute.Application.Services
 {
     public class SmtpEmailService : IEmailService
@@ -15,6 +14,7 @@ namespace Institute.Application.Services
         public SmtpEmailService(IOptions<EmailSettings> options) => _s = options.Value;
 
         public async Task SendAsync(IEnumerable<string> to, string subject, string htmlBody,
+                                    IEnumerable<EmailInlineImage>? inlineImages = null,
                                     CancellationToken ct = default)
         {
             var msg = new MimeMessage();
@@ -22,7 +22,18 @@ namespace Institute.Application.Services
             foreach (var r in to)
                 msg.To.Add(MailboxAddress.Parse(r));
             msg.Subject = subject;
-            msg.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
+
+            var builder = new BodyBuilder { HtmlBody = htmlBody };
+            if (inlineImages != null)
+            {
+                foreach (var img in inlineImages)
+                {
+                    var res = builder.LinkedResources.Add(
+                        img.ContentId + ".png", img.Data, ContentType.Parse(img.MimeType));
+                    res.ContentId = img.ContentId;
+                }
+            }
+            msg.Body = builder.ToMessageBody();
 
             using var client = new SmtpClient();
             client.Timeout = 15000;
