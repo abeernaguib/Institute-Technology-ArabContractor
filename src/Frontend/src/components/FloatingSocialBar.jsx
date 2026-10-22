@@ -40,14 +40,21 @@ const FloatingSocialBar = () => {
     return (
         <Box sx={{
             position: 'fixed',
-            right: isRTL ? 16 : 'auto',
-            left: isRTL ? 'auto' : 16,
+            right: isRTL ? { xs: 8, sm: 16 } : 'auto',
+            left: isRTL ? 'auto' : { xs: 8, sm: 16 },
             top: '50%',
             transform: 'translateY(-50%)',
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: { xs: 1, sm: 2 },
             zIndex: 1300,
+            '& .floating-social-button': {
+                width: { xs: 40, sm: 50 },
+                height: { xs: 40, sm: 50 },
+            },
+            '& .floating-social-button svg': {
+                fontSize: { xs: 22, sm: 35 },
+            },
         }}>
             {socials.map(({ titleKey, href, icon, color }) => (
                 <Tooltip
@@ -56,6 +63,7 @@ const FloatingSocialBar = () => {
                     placement={isRTL ? 'left' : 'right'}
                 >
                     <IconButton
+                        className="floating-social-button"
                         component="a"
                         href={href}
                         target="_blank"
@@ -64,8 +72,6 @@ const FloatingSocialBar = () => {
                             bgcolor: 'white',
                             color,
                             boxShadow: 3,
-                            width: 50,
-                            height: 50,
                             '&:hover': { bgcolor: color, color: 'white' },
                         }}
                     >

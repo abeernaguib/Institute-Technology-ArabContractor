@@ -31,7 +31,7 @@ const ADMIN_TABS = [
     { id: 'lecturers', label: '🎓 المحاضرون', permissionName: 'Lecturers' },
     { id: 'news', label: '📰 الأخبار', permissionName: 'News' },
     { id: 'books', label: '📖 الكتب', permissionName: 'Books' },
-    { id: 'workplan', label: '📋 خطة العمل', permissionName: 'Workplan' },
+    { id: 'workplan', label: '📋 الدورات التدريبية', permissionName: 'Workplan' },
     { id: 'settings', label: '⚙️ الإعدادات', permissionName: 'Settings' },
 ];
 
