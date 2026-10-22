@@ -15,5 +15,6 @@
         public List<CourseFileDto> Files { get; set; } = new();
         public bool IsOnline { get; set; }
         public decimal? OnlineCost { get; set; }
+        public List<RoundDto> Rounds { get; set; } = new();
     }
 }

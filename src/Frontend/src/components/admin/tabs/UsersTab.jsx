@@ -3,9 +3,10 @@
 import React, { useRef, useState } from 'react';
 import logoSrc from '../../../assets/white.webp';
 import { T, ITEMS_PER_PAGE } from '../constants';
-import { rtlExport } from '../helpers';
+import { rtlExport, getAttendanceModeUI } from '../helpers';
 import { exportExcel, exportPDF, exportWord, buildUsersRows, withExport } from '../exportHelpers';
 import { Pagination } from '../Pagination';
+
 export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, dateFrom, setDateFrom, dateTo, setDateTo, currentPage, setCurrentPage, expandedRow, setExpandedRow, attendance, certificates, setExporting, setExportError }) {
     const exportRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -70,10 +71,14 @@ export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, da
                                                                 <div className="adm-xin">
                                                                     {u.enrolledCourses.map(c => {
                                                                         const ck = String(c.enrollmentId ?? `${u.id}-${c.id}`);
+                                                                        const mode = getAttendanceModeUI(c.attendanceMode);
                                                                         return (
                                                                             <div className="adm-mc" key={ck}>
                                                                                 <div className="adm-mt">📚 {c.title}</div>
                                                                                 {c.date && <div className="adm-md">📅 {c.date}</div>}
+                                                                                <div className="adm-md">
+                                                                                    طريقة الحضور: <span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span>
+                                                                                </div>
                                                                                 <div style={{ marginTop: 5, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                                                                                     <span className={`adm-att-badge ${attendance[String(c.enrollmentId)] ? 'on' : 'off'}`} style={{ fontSize: '.62rem' }}>{attendance[String(c.enrollmentId)] ? '✅ حضر' : '❌ غائب'}</span>
                                                                                     {(certificates[ck] ?? certificates[`${u.id}-${c.id}`]) ? <span style={{ fontSize: '.62rem', color: T.orange, fontWeight: 700 }}>📜 شهادة</span> : null}

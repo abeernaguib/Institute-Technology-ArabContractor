@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
     FaHardHat,
     FaCalendarAlt,
@@ -8,6 +8,10 @@ import {
     FaArrowLeft,
     FaChalkboardTeacher,
     FaBuilding,
+    FaUserTie,
+    FaBookOpen,
+    FaMapMarkerAlt,
+    FaChair,
 } from 'react-icons/fa';
 import './overview.css';
 
@@ -39,6 +43,39 @@ const serviceCards = [
     },
 ];
 
+// المحتوى المنقول من صفحة "أساليب التدريب" (اقرأ المزيد سابقًا)
+const trainingMethods = [
+    {
+        title: 'الثروة البشرية',
+        description:
+            'لدينا ثروة بشرية هائلة لديها خبرات تراكمية تكونت عبر سنوات من العمل الطويل في المشروعات القومية سواء كان ذلك في داخل جمهورية مصر العربية أو خارجها.',
+        icon: <FaUserTie aria-hidden="true" className="my-custom-class" />,
+    },
+    {
+        title: 'المواد العلمية والتدريبية',
+        description:
+            'نمتلك مجموعة كبيرة من المواد العلمية والتدريبية (حوالي 2500 مادة تدريبية) موضوعة من خلال مجموعة منتقاة من الخبراء وأساتذة الجامعات، ومن خلالها يمكن تنفيذ دورات تدريبية محددة طبقًا لخطة المعهد أو طبقًا لاحتياجات العميل.',
+        icon: <FaBuilding aria-hidden="true" className="my-custom-class" />,
+    },
+    {
+        title: 'مركز المعلومات والمكتبة',
+        description:
+            'نمتلك مركزًا للمعلومات ومكتبة متخصصة في العلوم (الهندسية - المالية - الإدارية) بكافة أنواعها لخدمة قطاع البناء والتشييد والقطاعات الأخرى بالدولة.',
+        icon: <FaBookOpen aria-hidden="true" className="my-custom-class" />,
+    },
+    {
+        title: 'التدريب في الموقع',
+        description:
+            'لدينا ميزة التدريب في الموقع والمشروعات التابعة للشركة والمنتشرة في جميع أنحاء الجمهورية.',
+        icon: <FaMapMarkerAlt aria-hidden="true" className="my-custom-class" />,
+    },
+    {
+        title: 'قاعات التدريب',
+        description: 'نمتلك قاعات تدريب مجهزة بأحدث وسائل العرض والمساعدات التدريبية.',
+        icon: <FaChair aria-hidden="true" className="my-custom-class" />,
+    },
+];
+
 const stats = [
     {
         value: '176,418',
@@ -58,6 +95,18 @@ const stats = [
 ];
 
 function Overview() {
+    const { hash } = useLocation();
+
+    // Scroll to a section when the URL has a hash, e.g. /overview#training-methods
+    useEffect(() => {
+        if (!hash) return undefined;
+        const timer = setTimeout(() => {
+            const el = document.getElementById(hash.slice(1));
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [hash]);
+
     return (
         <main className="page-root" dir="rtl">
             <div className="overview-bar-wrapper">
@@ -156,6 +205,28 @@ function Overview() {
                                 </article>
                             ))}
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* قسم أساليب التدريب (منقول من صفحة "اقرأ المزيد") */}
+            <section className="section_5 section_methods" id="training-methods" aria-labelledby="methods-title">
+                <div className="section-inner">
+                    <h2 id="methods-title" className="section-heading">
+                        أحدث <span>طرق التدريب</span>
+                    </h2>
+                    <p className="section-intro">
+                        يمتلك المعهد مجموعة من المقومات التي تأهله لتقديم خدمات تدريبية مميزة.
+                    </p>
+                    <div className="heading-bar" />
+                    <div className="cards_sec_5">
+                        {trainingMethods.map((item) => (
+                            <article className="card_sec_5" key={item.title}>
+                                <div className="div_icon">{item.icon}</div>
+                                <div className="div_title"><h3>{item.title}</h3></div>
+                                <p className="div_dis_txt">{item.description}</p>
+                            </article>
+                        ))}
                     </div>
                 </div>
             </section>

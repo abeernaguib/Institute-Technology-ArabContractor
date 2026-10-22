@@ -1,4 +1,5 @@
-﻿using Institute.Application.Interfaces;
+﻿using Institute.Application.Exceptions;
+using Institute.Application.Interfaces;
 using Institute.Application.Interfaces.IService;
 using Institute.Domain.Entities;
 using Institute.Domain.Enums;
@@ -17,6 +18,7 @@ namespace Institute.Application.Services
         private readonly IRepository<OrderItem> _orderItemRepository;
         private readonly IRepository<Payment> _paymentRepository;
         private readonly IRepository<Enrollment> _enrollmentRepository;
+        private readonly IRoundSelectionService _roundSelection;
 
         public CheckoutService(
             IRepository<AppUser> userRepository,
@@ -24,7 +26,8 @@ namespace Institute.Application.Services
             IRepository<Order> orderRepository,
             IRepository<OrderItem> orderItemRepository,
             IRepository<Payment> paymentRepository,
-            IRepository<Enrollment> enrollmentRepository)
+            IRepository<Enrollment> enrollmentRepository,
+            IRoundSelectionService roundSelection)
         {
             _userRepository = userRepository;
             _cartRepository = cartRepository;
@@ -32,6 +35,7 @@ namespace Institute.Application.Services
             _orderItemRepository = orderItemRepository;
             _paymentRepository = paymentRepository;
             _enrollmentRepository = enrollmentRepository;
+            _roundSelection = roundSelection;
         }
 
         // ── GET USER ──────────────────────────────────────────────────
@@ -47,6 +51,7 @@ namespace Institute.Application.Services
             var spec = new BaseSpecification<Order>(o => o.Id == orderId);
             spec.AddInclude(o => o.Items);
             spec.AddInclude("Items.Planwork");
+            spec.AddInclude("Items.Round");
             return (await _orderRepository.GetAllWithSpecAsync(spec)).FirstOrDefault();
         }
 
@@ -56,6 +61,7 @@ namespace Institute.Application.Services
             // Read cart BEFORE the transaction (read-only, no lock needed)
             var cartSpec = new BaseSpecification<Cart>(c => c.UserId == userId);
             cartSpec.AddInclude(c => c.Items);
+            cartSpec.AddInclude("Items.Planwork");
             var allCarts = await _cartRepository.GetAllWithSpecAsync(cartSpec);
 
             var cart = allCarts
@@ -65,6 +71,24 @@ namespace Institute.Application.Services
 
             if (cart == null || !cart.Items.Any())
                 throw new Exception("Cart is empty");
+
+            // Revalidate every item (carts go stale: a round may have started, or the user may have enrolled elsewhere)
+            foreach (var item in cart.Items)
+            {
+                var title = item.Planwork?.ServiceTitle ?? $"#{item.PlanworkId}";
+
+                if (await _enrollmentRepository.AnyAsync(e => e.UserId == userId && e.PlanworkId == item.PlanworkId))
+                    throw new BusinessRuleException($"أنت مسجل بالفعل في دورة «{title}». احذفها من السلة للمتابعة.");
+
+                try
+                {
+                    await _roundSelection.ResolveAsync(item.PlanworkId, item.RoundId);
+                }
+                catch (BusinessRuleException ex)
+                {
+                    throw new BusinessRuleException($"دورة «{title}»: {ex.Message} احذفها من السلة وأضفها مرة أخرى.");
+                }
+            }
 
             var total = cart.Items.Sum(i => i.Price);
 
@@ -102,7 +126,8 @@ namespace Institute.Application.Services
                         OrderId = order.Id,
                         PlanworkId = item.PlanworkId,
                         Price = item.Price,
-                        IsOnline = item.IsOnline
+                        IsOnline = item.IsOnline,
+                        RoundId = item.RoundId,
                     });
                 }
 
@@ -143,6 +168,8 @@ namespace Institute.Application.Services
         }
 
         // ── MARK AS PAID  [W5 FIX: single DB transaction] ─────────────
+        // NOTE: deliberately NO round revalidation here. If a round starts between
+        // order creation and the bank confirming payment, an already-paid order must not fail.
         public async Task<Payment> MarkOrderAsPaidAsync(
             Order order, string transactionRef, string gatewayResponse)
         {
@@ -194,7 +221,8 @@ namespace Institute.Application.Services
                             PlanworkId = item.PlanworkId,
                             OrderId = order.Id,
                             EnrolledAt = DateTime.UtcNow,
-                            IsOnline = item.IsOnline
+                            IsOnline = item.IsOnline,
+                            RoundId = item.RoundId,
                         });
                     }
                 }

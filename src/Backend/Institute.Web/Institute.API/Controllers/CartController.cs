@@ -1,5 +1,7 @@
 ﻿using Institute.API.DTOs;
+using Institute.Application.Exceptions;
 using Institute.Application.Interfaces.IService;
+using Institute.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,6 +42,10 @@ namespace Institute.API.Controllers
                     IsOnline = i.IsOnline,                                          // ✅
                     Cost = i.Planwork?.PlanCost,  // ← السعر الأصلي دايماً
                     OnlineCost = i.Planwork?.OnlineCost,                            // ✅
+                    RoundId = i.RoundId,
+                    RoundStart = i.Round?.StartDate.ToString("yyyy-MM-dd"),
+                    RoundEnd = i.Round?.EndDate.ToString("yyyy-MM-dd"),
+                    RoundIsBookable = i.Round != null ? RoundRules.IsBookable(i.Round) : (bool?)null,
                 }).ToList()
             };
 
@@ -48,13 +54,20 @@ namespace Institute.API.Controllers
 
         /// <summary>
         /// POST /api/cart/add/{planworkId}
-        /// Body: { "isOnline": true/false }
+        /// Body: { "isOnline": true/false, "roundId": 12 (optional) }
         /// </summary>
         [HttpPost("add/{planworkId}")]
         public async Task<IActionResult> AddToCart(int planworkId, [FromBody] AddToCartDto dto)
         {
-            await _cartService.AddToCartAsync(_currentUser.UserId, planworkId, dto.IsOnline);
-            return Ok();
+            try
+            {
+                await _cartService.AddToCartAsync(_currentUser.UserId, planworkId, dto.IsOnline, dto.RoundId);
+                return Ok();
+            }
+            catch (BusinessRuleException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("remove/{planworkId}")]
@@ -68,5 +81,6 @@ namespace Institute.API.Controllers
     public class AddToCartDto
     {
         public bool IsOnline { get; set; }
+        public int? RoundId { get; set; }
     }
 }

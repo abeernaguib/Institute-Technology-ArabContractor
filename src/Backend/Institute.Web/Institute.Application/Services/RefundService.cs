@@ -1,5 +1,6 @@
 ﻿using Institute.Application.Interfaces;
 using Institute.Application.Interfaces.IService;
+using Institute.Domain;
 using Institute.Domain.Entities;
 using Institute.Domain.specifications;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ namespace Institute.Application.Services
         private readonly IRepository<Payment> _paymentRepo;
         private readonly IRepository<Planwork> _planworkRepo;
         private readonly ILogger<RefundService> _logger;
+        private readonly IRepository<PlanworkRound> _roundRepo;
 
         public RefundService(
             IRepository<RefundRequest> refundRepo,
@@ -21,7 +23,8 @@ namespace Institute.Application.Services
             IRepository<Enrollment> enrollmentRepo,
             IRepository<Payment> paymentRepo,
             IRepository<Planwork> planworkRepo,
-            ILogger<RefundService> logger)
+            ILogger<RefundService> logger,
+            IRepository<PlanworkRound> roundRepo)
         {
             _refundRepo = refundRepo;
             _orderRepo = orderRepo;
@@ -29,6 +32,7 @@ namespace Institute.Application.Services
             _paymentRepo = paymentRepo;
             _planworkRepo = planworkRepo;
             _logger = logger;
+            _roundRepo = roundRepo;
         }
 
         // ─── Create ───────────────────────────────────────────────────────
@@ -45,10 +49,25 @@ namespace Institute.Application.Services
             if (planwork == null)
                 throw new InvalidOperationException("الكورس غير موجود.");
 
-            if (!TryParseCourseStartDate(planwork.CourseDate, out var courseStartDate))
-                throw new InvalidOperationException("تاريخ بدء الكورس غير محدد أو غير صحيح.");
+            // The round the user bought decides the start date.
+            // Old enrollments (no round) fall back to the legacy course date text.
+            var enrollment = (await _enrollmentRepo.GetAllWithSpecAsync(
+                new BaseSpecification<Enrollment>(e => e.UserId == userId && e.PlanworkId == planworkId)))
+                .FirstOrDefault();
 
-            var daysLeft = (courseStartDate.Date - DateTime.UtcNow.Date).TotalDays;
+            DateTime courseStartDate;
+            if (enrollment?.RoundId != null)
+            {
+                var round = await _roundRepo.GetByIdAsync(enrollment.RoundId.Value)
+                    ?? throw new InvalidOperationException("موعد الكورس غير موجود.");
+                courseStartDate = round.StartDate;
+            }
+            else if (!TryParseCourseStartDate(planwork.CourseDate, out courseStartDate))
+            {
+                throw new InvalidOperationException("تاريخ بدء الكورس غير محدد أو غير صحيح.");
+            }
+
+            var daysLeft = (courseStartDate.Date - RoundRules.TodayCairo()).TotalDays;
 
             if (daysLeft < 2)
                 throw new InvalidOperationException(

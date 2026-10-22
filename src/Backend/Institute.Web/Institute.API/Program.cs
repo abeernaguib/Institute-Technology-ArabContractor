@@ -126,6 +126,10 @@ builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>()
 
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
 
+// Rounds
+builder.Services.Configure<RoundsOptions>(builder.Configuration.GetSection("Rounds"));
+builder.Services.AddScoped<IRoundSelectionService, RoundSelectionService>();
+builder.Services.AddScoped<IPlanworkRoundService, PlanworkRoundService>();
 // Email notifications
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
@@ -277,6 +281,36 @@ app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
+app.UseAuthentication();
+
+// ⚠ DEV ONLY – remove after testing. Never active outside the Development environment.
+if (app.Environment.IsDevelopment())
+{
+    var devClerkUserId = app.Configuration["DevAuth:ClerkUserId"];
+    if (!string.IsNullOrWhiteSpace(devClerkUserId))
+    {
+        app.Use(async (ctx, next) =>
+        {
+            if (ctx.User.Identity?.IsAuthenticated != true)
+            {
+                var identity = new System.Security.Claims.ClaimsIdentity(
+                    new[]
+                    {
+                        new System.Security.Claims.Claim("sub", devClerkUserId),
+                        new System.Security.Claims.Claim(
+                            System.Security.Claims.ClaimTypes.NameIdentifier, devClerkUserId)
+                    },
+                    authenticationType: "DevAuth",
+                    nameType: "sub",
+                    roleType: null);
+                ctx.User = new System.Security.Claims.ClaimsPrincipal(identity);
+            }
+            await next();
+        });
+    }
+}
+
+app.UseAuthorization();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.Map("/clerk-proxy", proxyApp =>

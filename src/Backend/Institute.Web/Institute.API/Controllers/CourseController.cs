@@ -1,5 +1,6 @@
 ﻿using Institute.API.DTOs;
 using Institute.API.Helpers;
+using Institute.Application.Exceptions;
 using Institute.Application.Interfaces;
 using Institute.Application.Interfaces.IService;
 using Institute.Domain.Entities;
@@ -8,7 +9,9 @@ using Institute.Domain.specifications.CourseSpec;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Security.Claims;
+using Institute.Domain;
 
 namespace Institute.API.Controllers
 {
@@ -23,6 +26,8 @@ namespace Institute.API.Controllers
         private readonly IRepository<AppUser> _userRepo;
         private readonly ICategoryService _categoryService;
         private readonly IRepository<Order> _orderRepo;
+        private readonly IRepository<PlanworkRound> _roundRepo;
+        private readonly IRoundSelectionService _roundSelection;
 
         public CourseController(
             IRepository<Planwork> planRepo,
@@ -31,7 +36,9 @@ namespace Institute.API.Controllers
             IClerkService clerkService,
             IRepository<AppUser> userRepo,
             ICategoryService categoryService,
-            IRepository<Order> orderRepo)
+            IRepository<Order> orderRepo,
+            IRepository<PlanworkRound> roundRepo,
+            IRoundSelectionService roundSelection)
         {
             _planRepo = planRepo;
             _fileRepo = fileRepo;
@@ -40,7 +47,31 @@ namespace Institute.API.Controllers
             _userRepo = userRepo;
             _categoryService = categoryService;
             _orderRepo = orderRepo;
+            _roundRepo = roundRepo;
+            _roundSelection = roundSelection;
         }
+
+        // ══════════════════════════════════════════════════════════════
+        // HELPERS — Rounds
+        // LoadRoundsLookupAsync: بيجيب كل الدورات الفعّالة مجمّعة بالـ PlanworkId
+        // ToRoundDtos: بيحوّل الدورات لـ DTO مرتبة بتاريخ البداية
+        // ══════════════════════════════════════════════════════════════
+        private async Task<ILookup<int, PlanworkRound>> LoadRoundsLookupAsync()
+        {
+            var all = await _roundRepo.GetAllAsync();
+            return all.Where(r => r.IsActive).ToLookup(r => r.PlanworkId);
+        }
+
+        private static List<RoundDto> ToRoundDtos(IEnumerable<PlanworkRound> rounds) =>
+            rounds.OrderBy(r => r.StartDate)
+                  .Select(r => new RoundDto
+                  {
+                      Id = r.Id,
+                      StartDate = r.StartDate.ToString("yyyy-MM-dd"),
+                      EndDate = r.EndDate.ToString("yyyy-MM-dd"),
+                      IsBookable = RoundRules.IsBookable(r)
+                  })
+                  .ToList();
 
         // ══════════════════════════════════════════════════════════════
         // GET /api/course/programs/{slug}/courses
@@ -64,6 +95,11 @@ namespace Institute.API.Controllers
 
             // جمع الكورسات Recursive من كل المستويات
             var courses = GetCoursesRecursive(planworks, files, programId);
+
+            // ضيف الدورات (Rounds) لكل كورس
+            var roundsLookup = await LoadRoundsLookupAsync();
+            foreach (var c in courses)
+                c.Rounds = ToRoundDtos(roundsLookup[c.Id]);
 
             return Ok(new ProgramCoursesDto
             {
@@ -208,6 +244,8 @@ namespace Institute.API.Controllers
                 OnlineCost = course.OnlineCost
             };
 
+            dto.Rounds = ToRoundDtos((await LoadRoundsLookupAsync())[course.ChildId]);
+
             return Ok(dto);
         }
 
@@ -280,6 +318,7 @@ namespace Institute.API.Controllers
         // سواء كانت مدفوعة (ليها OrderId) أو مجانية (OrderId = null)
         // ✱ CHANGED: بيرجع كمان UserId و PurchasedOnline و OnlineLink
         // رابط الاجتماع بيتبعت بس لو اليوزر اشترى أونلاين
+        // ✱ NEW: بيرجع كمان RoundId و RoundStart و RoundEnd
         // ══════════════════════════════════════════════════════════════
         [HttpGet("my-courses")]
         public async Task<IActionResult> GetMyCourses()
@@ -301,6 +340,10 @@ namespace Institute.API.Controllers
 
             var allPlanworks = (await _planRepo.GetAllAsync()).ToList();
 
+            // Lookup للدورات بالـ Id (بتشمل كل الدورات حتى غير الفعّالة
+            // عشان اليوزر المسجل يشوف دورته حتى لو اتقفلت)
+            var roundsById = (await _roundRepo.GetAllAsync()).ToDictionary(r => r.Id);
+
             // عمل Join يدوي بين Enrollment و Planwork
             // IsFree = true لو مفيش OrderId (كورس مجاني)
             var courses = userEnrollments
@@ -308,6 +351,10 @@ namespace Institute.API.Controllers
                 {
                     var plan = allPlanworks.FirstOrDefault(p => p.ChildId == e.PlanworkId);
                     if (plan == null) return null;
+
+                    PlanworkRound? round = null;
+                    if (e.RoundId.HasValue) roundsById.TryGetValue(e.RoundId.Value, out round);
+
                     return new
                     {
                         ChildId = plan.ChildId,
@@ -323,7 +370,10 @@ namespace Institute.API.Controllers
                         IsOnline = plan.IsOnline,                            // الكورس متاح أونلاين
                         OnlineCost = plan.OnlineCost,
                         PurchasedOnline = e.IsOnline,                        // ✱ NEW: اليوزر اشترى أونلاين
-                        OnlineLink = e.IsOnline ? plan.OnlineLink : null     // ✱ NEW: الرابط لمشتري الأونلاين فقط
+                        OnlineLink = e.IsOnline ? plan.OnlineLink : null,    // ✱ NEW: الرابط لمشتري الأونلاين فقط
+                        RoundId = e.RoundId,                                 // NEW
+                        RoundStart = round?.StartDate.ToString("yyyy-MM-dd"),// NEW
+                        RoundEnd = round?.EndDate.ToString("yyyy-MM-dd")     // NEW
                     };
                 })
                 .Where(c => c != null)
@@ -337,10 +387,14 @@ namespace Institute.API.Controllers
         // [Authorize] — محتاج يكون اليوزر مسجل دخول
         // بيسجل اليوزر في كورس مجاني مباشرة من غير Cart أو Payment
         // بيعمل Order وهمي بـ 0 جنيه عشان الـ DB مش بتقبل OrderId = null
+        // Body (اختياري): { "roundId": 12 } — EmptyBodyBehavior.Allow
+        // بيخلي الـ Frontend القديم (من غير Body) يشتغل زي ما هو
         // ══════════════════════════════════════════════════════════════
         [HttpPost("enroll-free/{planworkId}")]
         [Authorize]
-        public async Task<IActionResult> EnrollInFreeCourse(int planworkId)
+        public async Task<IActionResult> EnrollInFreeCourse(
+            int planworkId,
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] EnrollFreeDto? dto)
         {
             // جيب الـ User الحالي
             var clerkUserId = _clerkService.GetAuthenticatedUserId(User);
@@ -369,6 +423,17 @@ namespace Institute.API.Controllers
             if (alreadyEnrolled)
                 return Ok(new { message = "أنت مسجل في هذا الكورس بالفعل.", alreadyEnrolled = true });
 
+            // تحقق من الدورة (Round) المختارة
+            PlanworkRound? round;
+            try
+            {
+                round = await _roundSelection.ResolveAsync(planworkId, dto?.RoundId);
+            }
+            catch (BusinessRuleException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
             // أنشئ Order وهمي بـ 0 جنيه
             var freeOrder = new Order
             {
@@ -386,6 +451,7 @@ namespace Institute.API.Controllers
                 UserId = appUser.Id,
                 PlanworkId = planworkId,
                 OrderId = freeOrder.Id,
+                RoundId = round?.Id,
                 EnrolledAt = DateTime.UtcNow,
                 IsOnline = false                                             // الكورسات المجانية دائماً حضوري
             });

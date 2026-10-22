@@ -10,6 +10,7 @@ using Institute.Domain.specifications.AdminSpec.Course;
 using Institute.Domain.specifications.AdminSpec.User;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ namespace Institute.Application.Services
         private readonly IRepository<RefundRequest> _refundRepository;
         private readonly IRepository<Order> _orderRepository; // ← جديد
         private readonly IBlobStorage _blobStorage;
+        private readonly IRepository<PlanworkRound> _roundRepository;
         private const string Container = "icemt";
         private const string Folder = "certificates";
 
@@ -35,7 +37,8 @@ namespace Institute.Application.Services
             IRepository<Certificate> certificateRepository,
             IRepository<RefundRequest> refundRepository,
             IRepository<Order> orderRepository,
-            IBlobStorage blobStorage) // ← جديد
+            IBlobStorage blobStorage,
+            IRepository<PlanworkRound> roundRepository)
         {
             _userRepository = userRepository;
             _enrollmentRepository = enrollmentRepository;
@@ -44,12 +47,26 @@ namespace Institute.Application.Services
             _refundRepository = refundRepository;
             _orderRepository = orderRepository; // ← جديد
             _blobStorage = blobStorage;
+            _roundRepository = roundRepository;
         }
+
+        // ── Round helpers ────────────────────────────────────────────────────
+        private async Task<Dictionary<int, PlanworkRound>> LoadRoundsByIdAsync() =>
+            (await _roundRepository.GetAllAsync()).ToDictionary(r => r.Id);
+
+        private static string? RoundStart(int? id, Dictionary<int, PlanworkRound> d) =>
+            id.HasValue && d.TryGetValue(id.Value, out var r)
+                ? r.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+
+        private static string? RoundEnd(int? id, Dictionary<int, PlanworkRound> d) =>
+            id.HasValue && d.TryGetValue(id.Value, out var r)
+                ? r.EndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
 
         public async Task<IReadOnlyList<UserWithCoursesDto>> GetAllUsersAsync(UserSpecParams param)
         {
             var spec = new UserSearchSpec(param);
             var users = await _userRepository.GetAllWithSpecAsync(spec);
+            var roundsById = await LoadRoundsByIdAsync();
 
             return users.Select(u => new UserWithCoursesDto
             {
@@ -71,7 +88,9 @@ namespace Institute.Application.Services
                         Title = e.Planwork.ServiceTitle,
                         CoursePrice = e.Planwork.PlanCost,
                         EnrolledAt = e.EnrolledAt,
-                        Attended = e.Attended
+                        Attended = e.Attended,
+                        RoundStart = RoundStart(e.RoundId, roundsById),
+                        RoundEnd = RoundEnd(e.RoundId, roundsById)
                     })
                     .ToList()
             }).ToList();
@@ -81,6 +100,7 @@ namespace Institute.Application.Services
         {
             var spec = new PlanworkSearchSpec(param);
             var planworks = await _planworkRepository.GetAllWithSpecAsync(spec);
+            var roundsById = await LoadRoundsByIdAsync();
 
             return planworks.Select(p =>
             {
@@ -100,7 +120,9 @@ namespace Institute.Application.Services
                     {
                         Username = e.User.Username,
                         Email = e.User.Email,
-                        EnrolledAt = e.EnrolledAt
+                        EnrolledAt = e.EnrolledAt,
+                        RoundStart = RoundStart(e.RoundId, roundsById),
+                        RoundEnd = RoundEnd(e.RoundId, roundsById)
                     }).ToList()
                 };
             }).ToList();
@@ -319,6 +341,7 @@ namespace Institute.Application.Services
         public async Task<IReadOnlyList<EnrollmentWithCertificateDto>> GetEnrollmentsWithCertificatesAsync()
         {
             var enrollments = await _enrollmentRepository.GetAllAsync();
+            var roundsById = await LoadRoundsByIdAsync();
             var result = new List<EnrollmentWithCertificateDto>();
 
             foreach (var e in enrollments)
@@ -334,7 +357,9 @@ namespace Institute.Application.Services
                     PlanworkId = e.PlanworkId,
                     PlanworkTitle = e.Planwork.ServiceTitle,
                     Attended = e.Attended,
-                    HasCertificate = hasCertificate
+                    HasCertificate = hasCertificate,
+                    RoundStart = RoundStart(e.RoundId, roundsById),
+                    RoundEnd = RoundEnd(e.RoundId, roundsById)
                 });
             }
 

@@ -55,6 +55,7 @@ namespace Institute.Application.Services
                 spec.AddInclude(o => o.User);
                 spec.AddInclude(o => o.Items);
                 spec.AddInclude("Items.Planwork");
+                spec.AddInclude("Items.Round");
                 spec.AddInclude(o => o.Payments);
 
                 var order = (await _orders.GetAllWithSpecAsync(spec)).FirstOrDefault()
@@ -123,7 +124,9 @@ namespace Institute.Application.Services
                     "<tr>" +
                     Td(no.ToString(CultureInfo.InvariantCulture)) +
                     Td(Enc(plan?.ServiceTitle)) +
-                    Td(Enc(plan?.CourseDate)) +
+                    Td(Enc(item.Round != null
+                        ? $"{item.Round.StartDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)} - {item.Round.EndDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}"
+                        : plan?.CourseDate)) +
                     Td(Enc(plan?.CourseDays)) +
                     Td(Enc(plan?.CoursePlace)) +
                     Td(item.IsOnline ? "أونلاين" : "حضوري") +

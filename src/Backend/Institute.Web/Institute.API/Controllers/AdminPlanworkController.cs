@@ -1,6 +1,8 @@
 ﻿using Institute.Application.DTOs.AdminDtos;
+using Institute.Application.Exceptions;
 using Institute.Application.Interfaces.IService;
 using Institute.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,15 +14,15 @@ namespace Institute.API.Controllers
     public class AdminPlanworkController : ControllerBase
     {
         private readonly IPlanworkService _service;
+        private readonly IPlanworkRoundService _rounds;
 
-        public AdminPlanworkController(IPlanworkService service)
+        public AdminPlanworkController(IPlanworkService service, IPlanworkRoundService rounds)
         {
             _service = service;
+            _rounds = rounds;
         }
 
-        // =========================
-        // 🌳 GET TREE (الأهم)
-        // =========================
+        // 🌳 GET TREE
         [HttpGet("tree")]
         public async Task<IActionResult> GetAdminTree()
         {
@@ -28,9 +30,7 @@ namespace Institute.API.Controllers
             return Ok(tree);
         }
 
-        // =========================
         // 🔍 GET BY ID
-        // =========================
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -42,9 +42,7 @@ namespace Institute.API.Controllers
             return Ok(result);
         }
 
-        // =========================
         // ➕ CREATE
-        // =========================
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePlanworkDto dto)
         {
@@ -54,29 +52,17 @@ namespace Institute.API.Controllers
             try
             {
                 await _service.CreateAsync(dto);
-
-                return Ok(new
-                {
-                    message = "Created successfully",
-                    //data = result
-                });
+                return Ok(new { message = "Created successfully" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // =========================
         // ✏️ UPDATE
-        // =========================
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(
-    int id,
-    [FromBody] CreatePlanworkDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] CreatePlanworkDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -86,17 +72,9 @@ namespace Institute.API.Controllers
                 var updated = await _service.UpdateAsync(id, dto);
 
                 if (!updated)
-                {
-                    return NotFound(new
-                    {
-                        message = "Planwork not found"
-                    });
-                }
+                    return NotFound(new { message = "Planwork not found" });
 
-                return Ok(new
-                {
-                    message = "Updated successfully"
-                });
+                return Ok(new { message = "Updated successfully" });
             }
             catch (Exception ex)
             {
@@ -109,9 +87,8 @@ namespace Institute.API.Controllers
                 });
             }
         }
-        // =========================
+
         // ❌ DELETE
-        // =========================
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -122,19 +99,50 @@ namespace Institute.API.Controllers
                 if (!deleted)
                     return NotFound(new { message = "Planwork not found" });
 
-                return Ok(new
-                {
-                    message = "Deleted successfully"
-                });
+                return Ok(new { message = "Deleted successfully" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
+                return BadRequest(new { message = ex.Message });
             }
         }
-    
+
+        // =========================
+        // 🔁 ROUNDS
+        // =========================
+        [HttpGet("{id}/rounds")]
+        [Authorize(Policy = "Courses")]
+        public async Task<IActionResult> GetRounds(int id)
+        {
+            try { return Ok(await _rounds.GetRoundsAsync(id)); }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        }
+
+        [HttpPost("{id}/rounds")]
+        [Authorize(Policy = "Courses")]
+        public async Task<IActionResult> AddRound(int id, [FromBody] SaveRoundDto dto)
+        {
+            try { return Ok(await _rounds.AddRoundAsync(id, dto)); }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (BusinessRuleException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpPut("rounds/{roundId}")]
+        [Authorize(Policy = "Courses")]
+        public async Task<IActionResult> UpdateRound(int roundId, [FromBody] SaveRoundDto dto)
+        {
+            try { return Ok(await _rounds.UpdateRoundAsync(roundId, dto)); }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (BusinessRuleException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpDelete("rounds/{roundId}")]
+        [Authorize(Policy = "Courses")]
+        public async Task<IActionResult> DeleteRound(int roundId)
+        {
+            try { await _rounds.DeleteRoundAsync(roundId); return Ok(new { message = "Deleted successfully" }); }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (BusinessRuleException ex) { return BadRequest(new { message = ex.Message }); }
+        }
     }
 }

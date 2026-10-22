@@ -1,6 +1,6 @@
 // normalizers.js
 // ─────────────────────────────────────────────────────────────────────────────
-import { fmtDate, toStatusKey } from './helpers';
+import { fmtDate, toStatusKey, normalizeAttendanceMode } from './helpers';
 
 export function normalizeUser(u) {
     return {
@@ -16,6 +16,7 @@ export function normalizeUser(u) {
             title: c.title ?? c.serviceTitle ?? '—',
             date: fmtDate(c.enrolledAt),
             attended: !!(c.attended),
+            attendanceMode: normalizeAttendanceMode(c),
             certificateUrl: c.certificateUrl ?? null,
             certificateName: c.certificateName ?? null,
             _userId: u.id,
@@ -41,6 +42,7 @@ export function normalizeCourse(c) {
                 phone: u.phone ?? '',
                 date: fmtDate(u.enrolledAt),
                 attended: !!(u.attended ?? false),
+                attendanceMode: normalizeAttendanceMode(u),
                 certificateUrl: u.certificateUrl ?? null,
                 certificateName: u.certificateName ?? null,
             };
@@ -55,6 +57,8 @@ export function normalizeRefund(r) {
         orderId: r.orderId ?? r.OrderId ?? r.order_id ?? '',
         userId: r.userId ?? r.UserId ?? r.user_id,
         courseId: r.planworkId ?? r.PlanworkId ?? r.planwork_id ?? r.courseId ?? r.CourseId,
+        enrollmentId: r.enrollmentId ?? r.EnrollmentId ?? null,
+        attendanceMode: normalizeAttendanceMode(r),
         amount: r.amount ?? r.Amount ?? 0,
         currency: r.currency ?? r.Currency ?? 'EGP',
         reason: r.reason ?? r.Reason ?? '',

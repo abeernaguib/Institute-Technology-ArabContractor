@@ -277,7 +277,10 @@ namespace Institute.API.Controllers
                     items = order.Items.Select(i => new
                     {
                         planworkId = i.PlanworkId,
-                        price = i.Price
+                        price = i.Price,
+                        roundId = i.RoundId,
+                        roundStart = i.Round?.StartDate.ToString("yyyy-MM-dd"),
+                        roundEnd = i.Round?.EndDate.ToString("yyyy-MM-dd")
                     })
                 }
             });

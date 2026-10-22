@@ -591,3 +591,47 @@ body {
 .section_5 .section-heading .why-title-prefix {
     color: #fff !important;
 }
+/* ===== قسم أحدث طرق التدريب (أضفه في آخر overview.css) ===== */
+.section_methods {
+    padding-bottom: 40px;
+    scroll-margin-top: 130px; /* 70px navbar + 48px breadcrumb bar + spacing */
+}
+
+    .section_methods + .section_5 {
+        padding-top: 40px;
+    }
+
+    .section_methods .section-heading {
+        color: #fff;
+    }
+
+        .section_methods .section-heading span {
+            color: var(--orange-light);
+        }
+
+    .section_methods .section-intro {
+        color: rgba(255,255,255,.65);
+    }
+
+    /* 5 كروت: 3 في الصف الأول و2 متوسّطين في الثاني */
+    .section_methods .cards_sec_5 {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .section_methods .card_sec_5 {
+        flex: 0 1 calc((100% - 44px) / 3);
+    }
+
+@media (max-width: 1050px) {
+    .section_methods .card_sec_5 {
+        flex-basis: calc((100% - 22px) / 2);
+    }
+}
+
+@media (max-width: 680px) {
+    .section_methods .card_sec_5 {
+        flex-basis: 100%;
+    }
+}

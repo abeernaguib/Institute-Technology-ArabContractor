@@ -11,5 +11,7 @@ namespace Institute.Application.DTOs.AdminDtos
         public string Username { get; set; } = null!;
         public string? Email { get; set; }
         public DateTime EnrolledAt { get; set; }
+        public string? RoundStart { get; set; }
+        public string? RoundEnd { get; set; }
     }
 }

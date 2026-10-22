@@ -11,5 +11,6 @@
         public decimal? Cost { get; set; }
         public bool IsOnline { get; set; }
         public decimal? OnlineCost { get; set; }
+        public List<RoundDto> Rounds { get; set; } = new();
     }
 }

@@ -19,5 +19,7 @@ namespace Institute.Application.DTOs.AdminDtos
         public bool Attended { get; set; }
 
         public bool HasCertificate { get; set; }  // 🔥 ده المهم
+        public string? RoundStart { get; set; }
+        public string? RoundEnd { get; set; }
     }
 }

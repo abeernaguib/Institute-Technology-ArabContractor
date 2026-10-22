@@ -69,7 +69,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Certificate> Certificates { get; set; }
     public virtual DbSet<RefundRequest> RefundRequests { get; set; }
 
-
+    public virtual DbSet<PlanworkRound> PlanworkRounds { get; set; }
 
     // NOTE: the connection string must NOT live in source code.
     // Keep it in appsettings / environment variables / Azure Key Vault and
@@ -614,6 +614,32 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.UserIp).HasColumnName("User_IP");
         });
+        // PlanworkRound
+        modelBuilder.Entity<PlanworkRound>(entity =>
+        {
+            entity.ToTable("PlanworkRounds", t =>
+                t.HasCheckConstraint("CK_PlanworkRounds_Dates", "[EndDate] >= [StartDate]"));
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.StartDate).HasColumnType("date");
+            entity.Property(r => r.EndDate).HasColumnType("date");
+            entity.Property(r => r.IsActive).HasDefaultValue(true);
+            entity.HasIndex(r => new { r.PlanworkId, r.StartDate, r.EndDate }).IsUnique();
+            entity.HasOne(r => r.Planwork)
+                  .WithMany(p => p.Rounds)
+                  .HasForeignKey(r => r.PlanworkId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // RoundId on purchase chain: Restrict so a round with purchases can't be deleted
+        modelBuilder.Entity<CartItem>()
+            .HasOne(x => x.Round).WithMany().HasForeignKey(x => x.RoundId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<OrderItem>()
+            .HasOne(x => x.Round).WithMany().HasForeignKey(x => x.RoundId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Enrollment>()
+            .HasOne(x => x.Round).WithMany().HasForeignKey(x => x.RoundId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         OnModelCreatingPartial(modelBuilder);
     }

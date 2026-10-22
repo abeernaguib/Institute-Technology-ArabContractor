@@ -1506,7 +1506,11 @@ export const ADMIN_STYLES = `
     .pw-files-tbl tbody tr:nth-child(even):hover  { background:rgba(8,101,168,0.05); }
     .pw-files-tbl tbody tr.active:nth-child(even) { background:rgba(124,58,237,0.08); }
     .pw-files-tbl td { padding:8px 14px; font-size:.74rem; color:#374151; text-align:right; }
-
+    .adm-mode-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.66rem;font-weight:700}
+.adm-mode-badge.online{background:#e0f2fe;color:#0369a1}
+.adm-mode-badge.inperson{background:#dcfce7;color:#15803d}
+.adm-mode-badge.none{background:#f3f4f6;color:#6b7280}
+    .adm-md { font-size:clamp(.6rem,1vw,.66rem); color:${T.gray300}; margin-top:4px; }
     /* ══ RESPONSIVE 300px → 2000px ══ */
 
     /* ≥ 2000px */

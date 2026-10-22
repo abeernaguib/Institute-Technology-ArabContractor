@@ -5,7 +5,7 @@ namespace Institute.Application.Interfaces.IService
     public interface ICartService
     {
         Task<Cart> GetUserCartAsync(string clerkUserId);
-        Task AddToCartAsync(string clerkUserId, int planworkId, bool isOnline = false);  // ✅
+        Task AddToCartAsync(string clerkUserId, int planworkId, bool isOnline = false, int? roundId = null);
         Task RemoveFromCartAsync(string clerkUserId, int planworkId);
     }
 }

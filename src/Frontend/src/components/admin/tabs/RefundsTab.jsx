@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import logoSrc from '../../../assets/white.webp';
 import { T, ITEMS_PER_PAGE, REFUND_STATUS_META } from '../constants';
-import { rtlExport } from '../helpers';
+import { rtlExport, getAttendanceModeUI } from '../helpers';
 import { exportExcel, exportPDF, exportWord, buildRefundRows, withExport } from '../exportHelpers';
 import { Pagination } from '../Pagination';
 export function RefundsTab({ refunds, allRefunds, loading, error, setError, search, setSearch, statusFilter, setStatusFilter, currentPage, setCurrentPage, usersData, coursesData, bankResultBanner, setBankResultBanner, onViewDetail, onAction, setExporting, setExportError }) {
@@ -90,6 +90,7 @@ export function RefundsTab({ refunds, allRefunds, loading, error, setError, sear
                                     <thead><tr>
                                         <th className="rd c" style={{ width: 36 }}>#</th>
                                         <th className="rd">رقم الطلب</th><th className="rd">المستخدم</th>
+                                        <th className="rd c">طريقة الحضور</th>
                                         <th className="rd c">المبلغ</th><th className="rd">السبب</th>
                                         <th className="rd c">الحالة</th><th className="rd">تاريخ الطلب</th>
                                         <th className="rd c">الإجراءات</th>
@@ -97,13 +98,19 @@ export function RefundsTab({ refunds, allRefunds, loading, error, setError, sear
                                     <tbody>
                                         {paginated.map((r, idx) => {
                                             const rowNum = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
-                                            const u = usersData.find(u => u.id === r.userId) ?? { firstName: '—', lastName: '', email: '—' };
+                                            const u = usersData.find(u => u.id === r.userId) ?? { firstName: '—', lastName: '', email: '—', enrolledCourses: [] };
                                             const sm = REFUND_STATUS_META[r.status] || REFUND_STATUS_META.Pending;
+                                            // Attendance mode: from the refund itself, else from the user's matching enrollment
+                                            const enr = (u.enrolledCourses || []).find(ec =>
+                                                (r.enrollmentId != null && ec.enrollmentId === r.enrollmentId) || ec.id === r.courseId
+                                            );
+                                            const mode = getAttendanceModeUI(r.attendanceMode ?? enr?.attendanceMode);
                                             return (
                                                 <tr key={r.id}>
                                                     <td style={{ color: T.gray500, fontSize: '.68rem', textAlign: 'center' }}>{rowNum}</td>
                                                     <td><span style={{ fontFamily: 'Courier New', fontSize: '.76rem', fontWeight: 700, color: T.blue }}>{r.refNumber || r.id}</span></td>
                                                     <td><div className="adm-uc"><div className="adm-av rd">{u.firstName?.[0]}{u.lastName?.[0]}</div><div><div style={{ fontWeight: 700, fontSize: '.78rem' }}>{`${u.firstName} ${u.lastName}`.trim() || '—'}</div><div className="adm-email">{u.email}</div></div></div></td>
+                                                    <td style={{ textAlign: 'center' }}><span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span></td>
                                                     <td style={{ textAlign: 'center' }}><span className="rf-amount">{Number(r.amount || 0).toLocaleString()}</span><span style={{ fontSize: '.6rem', color: T.gray500, marginRight: 3 }}>{r.currency}</span></td>
                                                     <td style={{ maxWidth: 150 }}><div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '.74rem', color: T.gray500 }} title={r.reason}>{r.reason || '—'}</div></td>
                                                     <td style={{ textAlign: 'center' }}><span className="rf-status" style={{ background: sm.bg, color: sm.color, borderColor: sm.border }}>{sm.icon} {sm.label}</span></td>

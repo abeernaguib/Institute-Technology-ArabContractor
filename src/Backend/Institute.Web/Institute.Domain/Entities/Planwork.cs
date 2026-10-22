@@ -49,4 +49,5 @@ public partial class Planwork
 
     public ICollection<PlanFile> Files { get; set; } = new List<PlanFile>();
     public ICollection<Enrollment> Enrollments { get; set; } = new HashSet<Enrollment>();
+    public ICollection<PlanworkRound> Rounds { get; set; } = new List<PlanworkRound>();
 }

@@ -1,11 +1,18 @@
 // modals/RefundDetailModal.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 import { REFUND_STATUS_META } from '../constants';
+import { getAttendanceModeUI } from '../helpers';
 
 export function RefundDetailModal({ refund: r, usersData, coursesData, onClose, onAction }) {
-    const u = usersData.find(u => u.id === r.userId) ?? { firstName: '—', lastName: '', email: '—' };
+    const u = usersData.find(u => u.id === r.userId) ?? { firstName: '—', lastName: '', email: '—', enrolledCourses: [] };
     const c = coursesData.find(c => c.id === r.courseId) ?? { title: '—' };
     const sm = REFUND_STATUS_META[r.status] || REFUND_STATUS_META.Pending;
+
+    // Attendance mode: from the refund itself, else from the user's matching enrollment
+    const enr = (u.enrolledCourses || []).find(ec =>
+        (r.enrollmentId != null && ec.enrollmentId === r.enrollmentId) || ec.id === r.courseId
+    );
+    const mode = getAttendanceModeUI(r.attendanceMode ?? enr?.attendanceMode);
 
     return (
         <div className="adm-modal-bg" onClick={onClose}>
@@ -27,6 +34,10 @@ export function RefundDetailModal({ refund: r, usersData, coursesData, onClose, 
                     <div><div className="rf-field-lbl">المستخدم</div><div className="rf-field-val">{`${u.firstName} ${u.lastName}`.trim() || '—'}</div></div>
                     <div><div className="rf-field-lbl">البريد الإلكتروني</div><div className="rf-field-val mono" style={{ fontSize: '.68rem' }}>{u.email || '—'}</div></div>
                     <div><div className="rf-field-lbl">الدورة</div><div className="rf-field-val">{c.title || '—'}</div></div>
+                    <div>
+                        <div className="rf-field-lbl">طريقة الحضور</div>
+                        <div className="rf-field-val"><span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span></div>
+                    </div>
                     <div><div className="rf-field-lbl">تاريخ الطلب</div><div className="rf-field-val mono">{r.requestedAt || '—'}</div></div>
                     <div className="rf-full"><div className="rf-field-lbl">سبب الاسترداد</div><div className="rf-field-val" style={{ fontWeight: 400 }}>{r.reason || '—'}</div></div>
                     {r.details && <div className="rf-full"><div className="rf-field-lbl">تفاصيل إضافية</div><div className="rf-field-val" style={{ fontWeight: 400, fontSize: '.72rem', lineHeight: 1.5 }}>{r.details}</div></div>}

@@ -4,7 +4,7 @@
 import React, { useRef, useState } from 'react';
 import logoSrc from '../../../assets/white.webp';
 import { T, ITEMS_PER_PAGE } from '../constants';
-import { rtlExport } from '../helpers';
+import { rtlExport, getAttendanceModeUI } from '../helpers';
 import { exportExcel, exportPDF, exportWord, buildAttRows, withExport } from '../exportHelpers';
 import { Pagination } from '../Pagination';
 export function AttendanceTab({ rows, loading, attendance, attendanceSaving, error, setError, courseFilter, setCourseFilter, userSearch, setUserSearch, currentPage, setCurrentPage, coursesData, toggleAttendance, setExporting, setExportError }) {
@@ -57,6 +57,7 @@ export function AttendanceTab({ rows, loading, attendance, attendanceSaving, err
                                     <thead><tr>
                                         <th className="c" style={{ width: 40 }}>#</th>
                                         <th>المستخدم</th><th>البريد الإلكتروني</th><th>الدورة</th>
+                                        <th className="c">طريقة الحضور</th>
                                         <th className="gr c">تسجيل الحضور</th><th className="gr c">الحالة</th>
                                     </tr></thead>
                                     <tbody>
@@ -66,12 +67,14 @@ export function AttendanceTab({ rows, loading, attendance, attendanceSaving, err
                                             const k = String(eid);
                                             const attended = !!attendance[k];
                                             const saving = !!attendanceSaving[k];
+                                            const mode = getAttendanceModeUI(row.course.attendanceMode);
                                             return (
                                                 <tr key={k + idx}>
                                                     <td style={{ color: T.gray500, fontSize: '.68rem', textAlign: 'center' }}>{rowNum}</td>
                                                     <td><div className="adm-uc"><div className="adm-av">{(row.user.firstName || row.user.username || '?')[0]}{(row.user.lastName || '')[0]}</div><span className="adm-uname">{row.user.firstName || row.user.username} {row.user.lastName}</span></div></td>
                                                     <td className="adm-email">{row.user.email}</td>
                                                     <td style={{ color: T.blue, fontWeight: 700 }}>{row.course.title}</td>
+                                                    <td style={{ textAlign: 'center' }}><span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span></td>
                                                     <td style={{ textAlign: 'center' }}>
                                                         <div className={`adm-chk${saving ? ' spin' : attended ? ' on' : ''}`} onClick={() => !saving && toggleAttendance(eid, attended)}>{!saving && attended && '✓'}</div>
                                                     </td>

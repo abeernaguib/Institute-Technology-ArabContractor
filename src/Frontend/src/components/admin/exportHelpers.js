@@ -1,6 +1,5 @@
-import { getLogoBase64, triggerDownload } from './helpers';
+import { getLogoBase64, triggerDownload, getAttendanceModeUI } from './helpers';
 import { REFUND_STATUS_META } from './constants';
-
 // ════════════════════════════════════════════════════════════════════════════
 // Canvas helper — renders Arabic text to a PNG data-URL for jsPDF cells
 // ════════════════════════════════════════════════════════════════════════════
@@ -276,18 +275,19 @@ export async function exportWord(filename, reportTitle, subtitle, headers, rows,
 // Row builders  (called by each tab to produce export data)
 // ════════════════════════════════════════════════════════════════════════════
 export function buildUsersRows(users) {
-    const headers = ['#', 'الاسم الكامل', 'البريد الإلكتروني', 'رقم الموبايل', 'اسم الدورة', 'تاريخ التسجيل'];
+    const headers = ['#', 'الاسم الكامل', 'البريد الإلكتروني', 'رقم الموبايل', 'اسم الدورة', 'طريقة الحضور', 'تاريخ التسجيل'];
     const rows = [];
     let n = 1;
     users.forEach(u => {
         const phone = u.phone || '—';
         if (!u.enrolledCourses.length) {
-            rows.push([n++, `${u.firstName} ${u.lastName}`, u.email, phone, '—', '—']);
+            rows.push([n++, `${u.firstName} ${u.lastName}`, u.email, phone, '—', '—', '—']);
         } else {
             u.enrolledCourses.forEach((c, i) => {
+                const mode = getAttendanceModeUI(c.attendanceMode).text;
                 rows.push(i === 0
-                    ? [n++, `${u.firstName} ${u.lastName}`, u.email, phone, c.title, c.date || '—']
-                    : ['', '', '', '', c.title, c.date || '—']);
+                    ? [n++, `${u.firstName} ${u.lastName}`, u.email, phone, c.title, mode, c.date || '—']
+                    : ['', '', '', '', c.title, mode, c.date || '—']);
             });
         }
     });
@@ -295,17 +295,18 @@ export function buildUsersRows(users) {
 }
 
 export function buildCoursesRows(courses) {
-    const headers = ['#', 'اسم الدورة', 'الفئة', 'اسم المستخدم', 'البريد الإلكتروني', 'تاريخ التسجيل'];
+    const headers = ['#', 'اسم الدورة', 'الفئة', 'اسم المستخدم', 'البريد الإلكتروني', 'طريقة الحضور', 'تاريخ التسجيل'];
     const rows = [];
     let n = 1;
     courses.forEach(c => {
         if (!c.enrolledUsers.length) {
-            rows.push([n++, c.title, c.category, '—', '—', '—']);
+            rows.push([n++, c.title, c.category, '—', '—', '—', '—']);
         } else {
             c.enrolledUsers.forEach((u, i) => {
+                const mode = getAttendanceModeUI(u.attendanceMode).text;
                 rows.push(i === 0
-                    ? [n++, c.title, c.category, `${u.firstName} ${u.lastName}`, u.email, u.date || '—']
-                    : ['', '', '', `${u.firstName} ${u.lastName}`, u.email, u.date || '—']);
+                    ? [n++, c.title, c.category, `${u.firstName} ${u.lastName}`, u.email, mode, u.date || '—']
+                    : ['', '', '', `${u.firstName} ${u.lastName}`, u.email, mode, u.date || '—']);
             });
         }
     });
@@ -313,12 +314,13 @@ export function buildCoursesRows(courses) {
 }
 
 export function buildAttRows(attRows, attendance) {
-    const headers = ['#', 'اسم المستخدم', 'البريد الإلكتروني', 'الدورة', 'الحضور'];
+    const headers = ['#', 'اسم المستخدم', 'البريد الإلكتروني', 'الدورة', 'طريقة الحضور', 'الحضور'];
     const rows = attRows.map((r, i) => [
         i + 1,
         `${r.user.firstName || r.user.username} ${r.user.lastName}`.trim(),
         r.user.email,
         r.course.title,
+        getAttendanceModeUI(r.course.attendanceMode).text,
         attendance[String(r.course.enrollmentId)] ? 'حضر' : 'غائب',
     ]);
     return { headers, rows };
@@ -342,12 +344,16 @@ export function buildCertRows(certRows, certificates, attendance) {
 }
 
 export function buildRefundRows(filteredRefunds, usersData, coursesData) {
-    const headers = ['#', 'رقم الطلب', 'المستخدم', 'البريد الإلكتروني', 'الدورة', 'المبلغ', 'العملة', 'الحالة', 'السبب', 'تاريخ الطلب'];
+    const headers = ['#', 'رقم الطلب', 'المستخدم', 'البريد الإلكتروني', 'الدورة', 'طريقة الحضور', 'المبلغ', 'العملة', 'الحالة', 'السبب', 'تاريخ الطلب'];
     const rows = filteredRefunds.map((r, i) => {
-        const u = usersData.find(u => u.id === r.userId) ?? { firstName: '—', lastName: '', email: '—' };
+        const u = usersData.find(u => u.id === r.userId) ?? { firstName: '—', lastName: '', email: '—', enrolledCourses: [] };
         const c = coursesData.find(c => c.id === r.courseId) ?? { title: '—' };
         const sm = REFUND_STATUS_META[r.status] || REFUND_STATUS_META.Pending;
-        return [i + 1, r.refNumber || r.id, `${u.firstName} ${u.lastName}`.trim(), u.email, c.title, r.amount, r.currency, sm.label, r.reason || '', r.requestedAt || ''];
+        const enr = (u.enrolledCourses || []).find(ec =>
+            (r.enrollmentId != null && ec.enrollmentId === r.enrollmentId) || ec.id === r.courseId
+        );
+        const mode = getAttendanceModeUI(r.attendanceMode ?? enr?.attendanceMode).text;
+        return [i + 1, r.refNumber || r.id, `${u.firstName} ${u.lastName}`.trim(), u.email, c.title, mode, r.amount, r.currency, sm.label, r.reason || '', r.requestedAt || ''];
     });
     return { headers, rows };
 }

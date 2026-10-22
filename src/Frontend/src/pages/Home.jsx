@@ -49,7 +49,7 @@ const SponsoredCategorySection = React.lazy(() =>
     import('./SponsoredCategorySection')
 );
 const slides = [
-    { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/training-methods', image: '/images/banner6.jpg' },
+    { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/overview#training-methods', image: '/images/banner6.jpg' },
     { title: 'التدريب الفني على المهن\nالميكانيكية والكهربائية', subtitle: 'تأهيل الكوادر الفنية', tag: 'تدريب تقني', link: '/shobra', image: '/images/banner3.jpg' },
     { title: 'التدريب الحرفي على\nمهن التشييد والبناء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/gesr-el-suez', image: '/images/finalherfy.jpg' },
     { title: 'التدريب في موقع العمل', subtitle: 'تدريب ميداني احترافي', tag: 'ميداني', link: '/onsite-training', image: '/images/banner4.jpg' },
@@ -963,7 +963,6 @@ export default function Home() {
                                     <div style={{ width: 56, height: 3, background: C.o, margin: '0 auto 28px', borderRadius: 2 }} />
                                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
                                         <SolidBtn to={sl.link} orange>اقرأ المزيد <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn>
-                                        <ArrowBtn to="/overview" inv>تعرف على المعهد</ArrowBtn>
                                     </div>
                                 </div>
                                 <div className="scroll-ind">

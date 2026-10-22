@@ -23,5 +23,9 @@
         public decimal DiscountPercent => (Cost ?? 0) > 0
             ? Math.Round((DiscountAmount / Cost!.Value) * 100, 2)
             : 0;
+        public int? RoundId { get; set; }
+        public string? RoundStart { get; set; }
+        public string? RoundEnd { get; set; }
+        public bool? RoundIsBookable { get; set; }   // so the cart page can flag a round that has since started
     }
 }

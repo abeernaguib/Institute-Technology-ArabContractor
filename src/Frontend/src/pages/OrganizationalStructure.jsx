@@ -138,7 +138,7 @@ export default function OrganizationalStructure() {
                     <article className="org-director">
                         <div className="org-director-icon"><FaUserTie aria-hidden="true" /></div>
                         <div>
-                            <span className="first-course-kicker">رأس الهيكل التنظيمي</span>
+                            
                             <h3>{director.title}</h3>
                             <p>{director.name}</p>
                         </div>

@@ -24,6 +24,33 @@ export function toStatusKey(s) {
 }
 
 /**
+ * Normalises the trainee's attendance choice (in-person / online) from any shape the API returns.
+ * Returns 'online' | 'inperson' | null (null = not specified).
+ */
+export function normalizeAttendanceMode(raw) {
+    const v = raw?.attendanceMode ?? raw?.AttendanceMode
+        ?? raw?.attendanceType ?? raw?.AttendanceType
+        ?? raw?.attendMode ?? raw?.mode
+        ?? raw?.isOnline ?? raw?.IsOnline ?? null;
+    if (v == null || v === '') return null;
+    if (typeof v === 'boolean') return v ? 'online' : 'inperson';
+    const s = String(v).trim().toLowerCase();
+    if (['online', 'أونلاين', 'اونلاين', 'اون لاين', 'عن بعد', 'remote', 'virtual', '1', 'true'].includes(s)) return 'online';
+    if (['inperson', 'in-person', 'in_person', 'onsite', 'offline', 'حضوري', 'حضورى', '0', 'false'].includes(s)) return 'inperson';
+    return null;
+}
+
+export const ATTENDANCE_MODE_UI = {
+    online: { label: '💻 أونلاين', text: 'أونلاين', cls: 'online' },
+    inperson: { label: '🏫 حضوري', text: 'حضوري', cls: 'inperson' },
+    none: { label: '— لم يُحدَّد', text: 'لم يُحدَّد', cls: 'none' },
+};
+
+export function getAttendanceModeUI(mode) {
+    return ATTENDANCE_MODE_UI[mode] ?? ATTENDANCE_MODE_UI.none;
+}
+
+/**
  * Resolves a certificate URL from the API.
  *
  * The backend now returns fileUrl in two forms:
