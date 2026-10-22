@@ -950,7 +950,7 @@ const PlanworkTab = () => {
                 <div className="lec-panel pw-left-panel" style={{ height: 'calc(100vh - 120px)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                     <div className="lec-panel-hdr" style={{ flexShrink: 0 }}>
                         <span className="lec-count-badge">{shownCount}</span>
-                        <span style={{ fontWeight: 800, fontSize: '.8rem', color: '#0a0a0a', flex: 1, textAlign: 'center' }}>خطة العمل</span>
+                        <span style={{ fontWeight: 800, fontSize: '.8rem', color: '#0a0a0a', flex: 1, textAlign: 'center' }}>الدورات التدريبية</span>
                         <button className="lec-new-btn" onClick={handleNew}>+ جديد</button>
                     </div>
 
@@ -1019,7 +1019,7 @@ const PlanworkTab = () => {
                                     {isNew ? 'سجل جديد' : `ID: #${selected?.id}`}
                                     {form.parentId != null && <span style={{ marginRight: 8, fontSize: '.72rem', opacity: .8 }}>↳ {parentName}</span>}
                                 </div>
-                                <h2 className="lec-form-title">{isNew ? '➕ إضافة سجل جديد' : '✏️ تعديل بيانات خطة العمل'}</h2>
+                                <h2 className="lec-form-title">{isNew ? '➕ إضافة سجل جديد' : '✏️ تعديل بيانات الدورات التدريبية'}</h2>
                                 {!isNew && selected && <p className="lec-form-sub">{selected.name}</p>}
                             </div>
                             <div className="lec-stat-pill">📋 {totalCourses} دورة</div>

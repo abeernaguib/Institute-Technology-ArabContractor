@@ -41,7 +41,7 @@ const TABS = [
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓', permissionName: 'Lecturers' },
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
-    { id: 'planwork', label: 'خطة العمل', icon: '📋', permissionName: 'Workplan' },
+    { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan' },
     { id: 'settings', label: 'الإعدادات', icon: '⚙️', permissionName: 'Settings' },
 ];
 
