@@ -8,8 +8,64 @@ import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
 import { getCategoryTrailForCourse } from '../utils/categoryPath';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
+const API_ORIGIN = API_BASE.replace('/api', '');
+
+// 👈 The API returns plan files as bare names (e.g. "180805_الهيكل الخرساني.pdf").
+// Put the public folder that serves them here (must end with "/"), e.g. `${API_ORIGIN}/uploads/plans/`.
+// While it is empty, bare names are listed but not clickable.
+const PLAN_FILES_BASE = '';
 
 const font = '"Noto Kufi Arabic",serif';
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Text / HTML helpers  (work for BOTH clean and HTML-encoded text from the API)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Decodes text that arrives HTML-encoded (&lt;p&gt;… or even &amp;lt;p&amp;gt;…).
+// Clean HTML (real tags) is returned as is.
+function decodeHtml(str) {
+    if (str == null) return '';
+    let out = String(str);
+    if (typeof document === 'undefined') return out;
+    const ta = document.createElement('textarea');
+    for (let i = 0; i < 3 && /&(lt|#0*60|#x0*3c);/i.test(out) && !/<[a-z!/]/i.test(out); i++) {
+        ta.innerHTML = out;
+        out = ta.value;
+    }
+    return out;
+}
+
+const BLOCK_CLOSE = /<\/(p|div|li|h[1-6]|ul|ol|tr|blockquote)>/gi;
+
+// (Encoded or clean) HTML -> array of clean text lines, one per block element
+function htmlToLines(str) {
+    const html = decodeHtml(str);
+    if (!html) return [];
+    const prepared = html.replace(/<\s*br\s*\/?>/gi, '\n').replace(BLOCK_CLOSE, '$&\n');
+    const doc = new DOMParser().parseFromString(prepared, 'text/html');
+    return (doc.body.textContent || '')
+        .split(/\n+/)
+        .map(s => s.replace(/[\u00a0\s]+/g, ' ').trim())
+        .filter(Boolean);
+}
+
+// (Encoded or clean) HTML -> clean text, paragraph breaks kept as "\n"
+const htmlToText = (str) => htmlToLines(str).join('\n');
+
+const pick = (a, ...keys) => {
+    for (const k of keys) {
+        const v = a?.[k];
+        if (v !== undefined && v !== null && v !== '') return v;
+    }
+    return null;
+};
+
+function resolveAssetUrl(raw) {
+    if (!raw || typeof raw !== 'string') return null;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/')) return `${API_ORIGIN}${raw}`;
+    return null;
+}
 
 function resolveCertUrl(url) {
     if (!url) return null;
@@ -36,7 +92,7 @@ function normaliseCert(raw) {
 async function fetchBlobUrl(relativeOrAbsoluteUrl, token) {
     const fullUrl = relativeOrAbsoluteUrl.startsWith('http')
         ? relativeOrAbsoluteUrl
-        : `${API_BASE.replace('/api', '')}${relativeOrAbsoluteUrl}`;
+        : `${API_ORIGIN}${relativeOrAbsoluteUrl}`;
     const res = await fetch(fullUrl, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -46,9 +102,10 @@ async function fetchBlobUrl(relativeOrAbsoluteUrl, token) {
 }
 
 function resolvePlanFileUrl(raw) {
-    if (!raw) return null;
+    if (!raw || typeof raw !== 'string') return null;
     if (raw.startsWith('https://') || raw.startsWith('http://')) return raw;
-    if (raw.startsWith('/')) return `${API_BASE.replace('/api', '')}${raw}`;
+    if (raw.startsWith('/')) return `${API_ORIGIN}${raw}`;
+    if (PLAN_FILES_BASE) return `${PLAN_FILES_BASE}${encodeURIComponent(raw)}`;
     return null;
 }
 
@@ -57,11 +114,122 @@ function mapOtherCourse(a) {
     return {
         id: a.id ?? a.Id ?? a.childId ?? a.ChildId,
         slug: a.slug ?? a.Slug,
-        title: a.title ?? a.Title ?? a.serviceTitle ?? a.ServiceTitle ?? '',
+        title: htmlToLines(a.title ?? a.Title ?? a.serviceTitle ?? a.ServiceTitle ?? '').join(' '),
         isFree: !cost || cost === 0,
         price: cost,
         currency: 'جنيه',
-        image: a.image ?? a.Image ?? 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800',
+        image: resolveAssetUrl(pick(a, 'image', 'Image', 'imageUrl', 'ImageUrl', 'thumbnail', 'Thumbnail')),
+    };
+}
+
+// ── Course content sections ─────────────────────────────────────────────────
+// The backend `content` field comes in different shapes:
+//   (1) <h6>heading</h6><ul><li>…</li></ul>        (2) <div>heading</div><div>line</div>…
+// So instead of relying on tags, the content is flattened to text lines and cut at the
+// known headings. Works for clean or encoded HTML.
+const SECTION_ALIASES = {
+    topics: ['محتويات البرنامج', 'محتوى البرنامج', 'محتويات الدورة'],
+    objectives: ['فائدة حضور البرنامج', 'فوائد حضور البرنامج', 'أهداف البرنامج'],
+    prerequisites: ['لمن يعقد البرنامج', 'الفئة المستهدفة'],
+    implementationMethods: ['طريقة تنفيذ البرنامج', 'طرق تنفيذ البرنامج'],
+    programDates: ['تاريخ انعقاد البرنامج', 'مواعيد انعقاد البرنامج'],
+};
+
+const stripMarks = (s) => s.replace(/[\s.:：…\-–—•*_]+/g, ' ').trim();
+
+function headingKey(line) {
+    const n = stripMarks(line);
+    for (const [key, names] of Object.entries(SECTION_ALIASES)) {
+        if (names.includes(n)) return key;
+    }
+    return null;
+}
+
+function parseContentSections(rawContent) {
+    const lines = htmlToLines(rawContent);
+    const out = { topics: [], objectives: [], prerequisites: [], implementationMethods: [], programDates: [] };
+    let current = null;
+    let found = false;
+    for (const line of lines) {
+        const key = headingKey(line);
+        if (key) { current = key; found = true; continue; }
+        if (!current) continue;
+        if (/[:：]$/.test(line)) continue;   // intro lines such as "بانتهاء البرنامج سيكون المشارك قادراً على :"
+        out[current].push(line);
+    }
+    return { ...out, lines, found };
+}
+
+function extractDates(s) {
+    if (!s) return { startDate: '', endDate: '' };
+    const p = s.split(' - ');
+    return { startDate: p[0]?.trim() || '', endDate: p[1]?.trim() || p[0]?.trim() || '' };
+}
+
+function fmtDays(d) {
+    const n = Number(d);
+    if (!n || n < 1) return null;
+    if (n === 1) return 'يوم واحد';
+    if (n === 2) return 'يومان';
+    return `${n} ${n <= 10 ? 'أيام' : 'يومًا'}`;
+}
+
+// Everything on the page comes from the API response — nothing is hard-coded.
+function transformCourse(a) {
+    const { startDate, endDate } = extractDates(a.date);
+    const isFree = !a.cost || a.cost === 0;
+    const onsitePrice = a.cost || 0;
+    const onsiteOriginalPrice = a.originalPrice ?? a.onSale ?? (a.cost ? Math.round(a.cost / (1 - (a.discountPercent || 0) / 100)) : 0);
+    const onsiteDiscountPercent = a.discountPercent ?? a.DiscountPercent ?? 0;
+    const onsiteDiscountAmount = a.discountAmount ?? a.DiscountAmount ?? 0;
+
+    // ── Online ──────────────────────────────────────────────────────────────
+    const onlineCostRaw = a.onlineCost ?? a.online_cost ?? a.OnlineCost ?? null;
+    const hasOnlineCost = onlineCostRaw != null && Number(onlineCostRaw) > 0;
+    const onlineFlag = a.isOnlineAvailable ?? a.IsOnlineAvailable ?? a.onlineAvailable ?? a.OnlineAvailable ?? a.isOnline ?? a.IsOnline ?? null;
+    const isOnlineAvailable = !isFree && (onlineFlag != null ? !!onlineFlag : hasOnlineCost);
+    const onlineLink = a.onlineLink ?? a.OnlineLink ?? a.meetingLink ?? a.MeetingLink ?? '';
+    const rawOnlineOriginal = a.onlineOriginalPrice ?? a.onlineOldCost ?? null;
+    const rawOnlineDiscount = a.onlineDiscountPercent ?? a.OnlineDiscountPercent ?? 0;
+    const onlineDiscountAmount = a.onlineDiscountAmount ?? a.OnlineDiscountAmount ?? 0;
+
+    const sections = parseContentSections(a.content);
+
+    return {
+        id: a.id,
+        slug: a.slug,
+        title: htmlToLines(a.title).join(' '),
+        description: htmlToText(a.description),
+        place: htmlToLines(a.place).join(' '),
+        days: pick(a, 'days', 'Days'),
+        categorySlug: a.categorySlug ?? a.CategorySlug ?? a.programSlug ?? a.ProgramSlug ?? a.category?.slug ?? null,
+        price: onsitePrice, originalPrice: onsiteOriginalPrice,
+        discountPercent: onsiteDiscountPercent, discountAmount: onsiteDiscountAmount,
+        onlineCost: onlineCostRaw,
+        isOnlineAvailable,
+        onlineLink,
+        onlinePrice: hasOnlineCost ? Number(onlineCostRaw) : onsitePrice,
+        onlineOriginalPrice: hasOnlineCost ? (rawOnlineOriginal ?? 0) : onsiteOriginalPrice,
+        onlineDiscountPercent: hasOnlineCost ? rawOnlineDiscount : onsiteDiscountPercent,
+        onlineDiscountAmount,
+        currency: 'جنيه', isFree,
+        // Optional fields — null (and hidden in the UI) when the API doesn't send them
+        image: resolveAssetUrl(pick(a, 'image', 'Image', 'imageUrl', 'ImageUrl', 'thumbnail', 'Thumbnail', 'coverImage', 'CoverImage')),
+        language: pick(a, 'language', 'Language'),
+        files: (Array.isArray(a.files) ? a.files : []).map((f, i) => ({
+            id: f.id ?? f.fileId ?? `f${i}`,
+            title: htmlToLines(f.title ?? f.fileTitle ?? f.fileName ?? 'ملف').join(' '),
+            url: resolvePlanFileUrl(f.fileName ?? f.fileUrl ?? null),
+        })),
+        // Parsed content sections
+        topics: sections.topics,
+        objectives: sections.objectives,
+        prerequisites: sections.prerequisites,
+        implementationMethods: sections.implementationMethods,
+        programDates: sections.programDates,
+        contentLines: sections.found ? [] : sections.lines,   // fallback when no known heading was found
+        rounds: Array.isArray(a.rounds) ? a.rounds : [],
+        startDate, endDate, date: a.date,
     };
 }
 
@@ -130,7 +298,7 @@ const S = {
     ownedBadge: { display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.9)', color: '#4a4a8a', fontWeight: 800, fontSize: '1rem', padding: '4px 16px', borderRadius: '20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' },
     freeBadge: { display: 'inline-block', backgroundColor: '#fff', color: '#1a7a3c', fontWeight: 800, fontSize: '1rem', padding: '4px 16px', borderRadius: '20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' },
     heroTitle: { fontSize: '36px', fontWeight: 'bold', marginBottom: '16px', lineHeight: '1.4', color: '#fff' },
-    heroDesc: { fontSize: '18px', marginBottom: '24px', lineHeight: '1.6', color: '#fff', opacity: 0.95 },
+    heroDesc: { fontSize: '18px', marginBottom: '24px', lineHeight: '1.6', color: '#fff', opacity: 0.95, whiteSpace: 'pre-line' },
     heroInfo: { display: 'flex', gap: '24px', flexWrap: 'wrap' },
     infoItem: { display: 'flex', alignItems: 'center', fontSize: '15px', color: '#fff' },
     loadingWrap: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '500px', fontSize: '20px', color: '#0865a8', marginTop: '100px' },
@@ -153,6 +321,7 @@ const S = {
     dateItem: { padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px', borderRight: '3px solid #0865a8' },
     dateLabel: { fontSize: '14px', color: '#000', fontWeight: 'bold', opacity: 0.7 },
     dateValue: { fontSize: '15px', color: '#000' },
+    contentFallback: { display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '15px', color: '#000', lineHeight: '1.8' },
     filesList: { display: 'flex', flexDirection: 'column', gap: '10px' },
     fileLink: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', backgroundColor: '#f0f7ff', borderRadius: '8px', border: '2px solid #cce0ff', color: '#0865a8', fontSize: '15px', textDecoration: 'none', transition: 'all 0.2s', cursor: 'pointer' },
     fileLocked: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '2px solid #e0e0e0', color: '#aaa', fontSize: '15px' },
@@ -162,6 +331,7 @@ const S = {
     rightSidebar: { display: 'flex', flexDirection: 'column', gap: '24px', alignSelf: 'flex-start', position: 'sticky', top: '100px' },
     priceCard: { backgroundColor: '#fff', borderRadius: '12px', border: '2px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', overflow: 'hidden' },
     pricePreview: { width: '100%', height: '200px', overflow: 'hidden', position: 'relative' },
+    pricePreviewEmpty: { height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' },
     previewImg: { width: '100%', height: '100%', objectFit: 'cover' },
     certPreviewRibbon: {
         position: 'absolute', bottom: '12px', left: '12px',
@@ -215,6 +385,7 @@ const S = {
     otherList: { display: 'flex', flexDirection: 'column', gap: '16px' },
     otherCourseCard: { display: 'flex', gap: '12px', padding: '12px', borderRadius: '8px', textDecoration: 'none', color: 'inherit', transition: 'all 0.2s', backgroundColor: '#f9f9f9', border: '2px solid transparent' },
     otherCourseImg: { width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 },
+    otherCoursePlaceholder: { width: '80px', height: '80px', borderRadius: '8px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', background: 'linear-gradient(135deg,#0865a8 0%,#f57c00 100%)' },
     otherCourseName: { fontSize: '14px', fontWeight: 'bold', color: '#000', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0 },
     otherCoursePrice: { fontSize: '16px', fontWeight: 'bold' },
     notFoundWrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '100px' },
@@ -685,7 +856,7 @@ const CourseDetails = () => {
                 const url = resolvePlanFileUrl(rawUrl);
                 return {
                     id: f.fileId ?? f.FileId ?? null,
-                    title: f.fileTitle ?? f.FileTitle ?? f.planworkName ?? f.PlanworkName ?? 'ملف',
+                    title: htmlToLines(f.fileTitle ?? f.FileTitle ?? f.planworkName ?? f.PlanworkName ?? 'ملف').join(' '),
                     url,
                     priority: f.filePeriority ?? f.FilePeriority ?? 0,
                 };
@@ -795,75 +966,6 @@ const CourseDetails = () => {
         }
     }, [isSignedIn, safeGetToken]);
 
-    const extractList = (html, heading) => {
-        if (!html) return [];
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        const items = [];
-        const h = Array.from(doc.querySelectorAll('h6')).find(n => n.textContent.includes(heading));
-        if (h) {
-            let el = h.nextElementSibling;
-            while (el && el.tagName !== 'H6') {
-                if (el.tagName === 'UL') el.querySelectorAll('li').forEach(li => { const t = li.textContent.trim(); if (t) items.push(t); });
-                el = el.nextElementSibling;
-            }
-        }
-        return items;
-    };
-
-    const extractDates = (s) => {
-        if (!s) return { startDate: '', endDate: '' };
-        const p = s.split(' - ');
-        return { startDate: p[0]?.trim() || '', endDate: p[1]?.trim() || p[0]?.trim() || '' };
-    };
-
-    const transform = (a) => {
-        const { startDate, endDate } = extractDates(a.date);
-        const isFree = !a.cost || a.cost === 0;
-        const onsitePrice = a.cost || 0;
-        const onsiteOriginalPrice = a.originalPrice ?? a.onSale ?? (a.cost ? Math.round(a.cost / (1 - (a.discountPercent || 0) / 100)) : 0);
-        const onsiteDiscountPercent = a.discountPercent ?? a.DiscountPercent ?? 0;
-        const onsiteDiscountAmount = a.discountAmount ?? a.DiscountAmount ?? 0;
-
-        // ── Online ──────────────────────────────────────────────────────────
-        const onlineCostRaw = a.onlineCost ?? a.online_cost ?? a.OnlineCost ?? null;
-        const hasOnlineCost = onlineCostRaw != null && Number(onlineCostRaw) > 0;
-        // Admin "متاح أونلاين" checkbox 👈 adjust field name if your API differs
-        const onlineFlag = a.isOnlineAvailable ?? a.IsOnlineAvailable ?? a.onlineAvailable ?? a.OnlineAvailable ?? a.isOnline ?? a.IsOnline ?? null;
-        const isOnlineAvailable = !isFree && (onlineFlag != null ? !!onlineFlag : hasOnlineCost);
-        const onlineLink = a.onlineLink ?? a.OnlineLink ?? a.meetingLink ?? a.MeetingLink ?? '';
-        const rawOnlineOriginal = a.onlineOriginalPrice ?? a.onlineOldCost ?? null;
-        const rawOnlineDiscount = a.onlineDiscountPercent ?? a.OnlineDiscountPercent ?? 0;
-        const onlineDiscountAmount = a.onlineDiscountAmount ?? a.OnlineDiscountAmount ?? 0;
-
-        return {
-            id: a.id, slug: a.slug, title: a.title, description: a.description, place: a.place,
-            // category slug, if the API returns it (used by the breadcrumb)
-            categorySlug: a.categorySlug ?? a.CategorySlug ?? a.programSlug ?? a.ProgramSlug ?? a.category?.slug ?? null,
-            price: onsitePrice, originalPrice: onsiteOriginalPrice,
-            discountPercent: onsiteDiscountPercent, discountAmount: onsiteDiscountAmount,
-            onlineCost: onlineCostRaw,
-            isOnlineAvailable,
-            onlineLink,
-            // online price if admin set one, otherwise same as onsite
-            onlinePrice: hasOnlineCost ? Number(onlineCostRaw) : onsitePrice,
-            onlineOriginalPrice: hasOnlineCost ? (rawOnlineOriginal ?? 0) : onsiteOriginalPrice,
-            onlineDiscountPercent: hasOnlineCost ? rawOnlineDiscount : onsiteDiscountPercent,
-            onlineDiscountAmount,
-            currency: 'جنيه', isFree,
-            duration: 26, videoDuration: 26,
-            articlesCount: a.files?.length || 0,
-            hasCertificate: true, language: 'العربية', level: 'مبتدئ',
-            topics: extractList(a.content, 'محتويات البرنامج'),
-            objectives: extractList(a.content, 'فائدة حضور البرنامج'),
-            prerequisites: extractList(a.content, 'لمن يعقد البرنامج'),
-            implementationMethods: extractList(a.content, 'طريقة تنفيذ البرنامج'),
-            programDates: extractList(a.content, 'تاريخ انعقاد البرنامج'),
-            rounds: Array.isArray(a.rounds) ? a.rounds : [],
-            startDate, endDate, date: a.date,
-            image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800',
-        };
-    };
-
     useEffect(() => {
         if (!slug) return;
         (async () => {
@@ -871,7 +973,7 @@ const CourseDetails = () => {
                 setLoading(true); setError(null);
                 const res = await fetch(`${API_BASE}/Course/${slug}`);
                 if (!res.ok) throw new Error('not found');
-                const c = transform(await res.json());
+                const c = transformCourse(await res.json());
                 setCourse(c);
                 setMode('onsite');
                 const open = c.rounds.filter(r => r.isBookable);
@@ -1130,7 +1232,11 @@ const CourseDetails = () => {
 
     const hasCert = !!(cert?.url);
 
-    const showFilesSection = planFilesLoading || planFiles.length > 0;
+    // Files: the admin endpoint first; if it returns nothing, the `files` list that came with the course
+    const displayFiles = planFiles.length > 0 ? planFiles : (course?.files ?? []);
+    const showFilesSection = planFilesLoading || displayFiles.length > 0;
+
+    const durationText = fmtDays(course?.days);
 
     // Meeting link priority: online-settings → /my-courses → /Course/{slug}
     const meetingLink = onlineSetting?.link || ownedLinks.get(course?.id) || course?.onlineLink || '';
@@ -1201,20 +1307,32 @@ const CourseDetails = () => {
                             {isOwned && <div style={S.ownedBadge}>✅ مسجل في هذه الدورة</div>}
                             {!isOwned && course.isFree && <div style={S.freeBadge}>مجاناً</div>}
                             <h1 style={S.heroTitle}>{course.title}</h1>
-                            <p style={S.heroDesc}>{course.description}</p>
+                            {course.description && <p style={S.heroDesc}>{course.description}</p>}
                             <div style={S.heroInfo}>
-                                <span style={S.infoItem}>
-                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z" /><path d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H5.5a.5.5 0 010-1H7.5V4a.5.5 0 01.5-.5z" /></svg>
-                                    تاريخ البدء: {heroStart}
-                                </span>
-                                <span style={S.infoItem}>
-                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
-                                    {course.place}
-                                </span>
-                                <span style={S.infoItem}>
-                                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
-                                    {course.language}
-                                </span>
+                                {heroStart && (
+                                    <span style={S.infoItem}>
+                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z" /><path d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H5.5a.5.5 0 010-1H7.5V4a.5.5 0 01.5-.5z" /></svg>
+                                        تاريخ البدء: {heroStart}
+                                    </span>
+                                )}
+                                {durationText && (
+                                    <span style={S.infoItem}>
+                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
+                                        المدة: {durationText}
+                                    </span>
+                                )}
+                                {course.place && (
+                                    <span style={S.infoItem}>
+                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
+                                        {course.place}
+                                    </span>
+                                )}
+                                {course.language && (
+                                    <span style={S.infoItem}>
+                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
+                                        {course.language}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1230,7 +1348,7 @@ const CourseDetails = () => {
                                         {course.topics.map((t, i) => (
                                             <div key={i} style={S.topicCard} className="topicCard">
                                                 <div style={S.topicIcon}><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M9.293 0H4a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4.707A1 1 0 0013.707 4L10 .293A1 1 0 009.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 01-1-1zM4.5 9a.5.5 0 010-1h7a.5.5 0 010 1h-7zM4 10.5a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm.5 2.5a.5.5 0 010-1h4a.5.5 0 010 1h-4z" /></svg></div>
-                                                <p style={S.topicText}>{t}</p>
+                                                <p style={S.topicText} dir="auto">{t}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -1243,7 +1361,7 @@ const CourseDetails = () => {
                                         {course.objectives.map((o, i) => (
                                             <div key={i} style={S.objItem}>
                                                 <svg style={S.checkIcon} width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" /></svg>
-                                                <span>{o}</span>
+                                                <span dir="auto">{o}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -1289,6 +1407,16 @@ const CourseDetails = () => {
                                 </div>
                             )}
 
+                            {/* Fallback: content with none of the known headings is shown as plain lines (no raw HTML) */}
+                            {course.contentLines.length > 0 && (
+                                <div style={S.section}>
+                                    <h2 style={S.sectionHeading}>تفاصيل البرنامج</h2>
+                                    <div style={S.contentFallback}>
+                                        {course.contentLines.map((l, i) => <p key={i} style={{ margin: 0 }} dir="auto">{l}</p>)}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* ── PLAN FILES SECTION ── */}
                             {showFilesSection && (
                                 <div style={S.section}>
@@ -1310,7 +1438,7 @@ const CourseDetails = () => {
                                         </div>
                                     ) : (
                                         <div style={S.filesList}>
-                                            {planFiles.map((file, i) => isOwned ? (
+                                            {displayFiles.map((file, i) => isOwned ? (
                                                 file.url ? (
                                                     <a
                                                         key={file.id ?? i}
@@ -1355,8 +1483,11 @@ const CourseDetails = () => {
                         {/* ── RIGHT SIDEBAR ── */}
                         <div style={S.rightSidebar} className="right-sidebar">
                             <div style={S.priceCard}>
-                                <div style={S.pricePreview}>
-                                    <img src={course.image} alt={course.title} style={S.previewImg} />
+                                {/* Image comes from the API; when there is none, a neutral banner is shown instead */}
+                                <div style={{ ...S.pricePreview, ...(course.image ? {} : { ...S.pricePreviewEmpty, background: heroBg }) }}>
+                                    {course.image
+                                        ? <img src={course.image} alt={course.title} style={S.previewImg} />
+                                        : <span aria-hidden="true">🎓</span>}
 
                                     {isOwned && (
                                         certLoading ? (
@@ -1525,16 +1656,6 @@ const CourseDetails = () => {
                                             </>
                                         )}
                                     </div>
-
-                                    <div style={S.includesSec}>
-                                        <h3 style={S.includesTitle}>هذه الدورة تتضمن:</h3>
-                                        <ul style={S.includesList}>
-                                            <li style={S.includesItem}><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H2a2 2 0 01-2-2V4zm2-1a1 1 0 00-1 1v8a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H2z" /></svg> {course.videoDuration} ساعة محتوى تدريبي</li>
-                                            <li style={S.includesItem}><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M14 1a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1h12z" /></svg> {planFiles.length || course.articlesCount} ملف تدريبي</li>
-                                            <li style={S.includesItem}><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 008 1z" /></svg> وصول كامل للمحتوى</li>
-                                            {course.hasCertificate && <li style={S.includesItem}><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M14 1a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1h12z" /></svg> شهادة إتمام</li>}
-                                        </ul>
-                                    </div>
                                 </div>
                             </div>
 
@@ -1544,11 +1665,13 @@ const CourseDetails = () => {
                                     <div style={S.otherList}>
                                         {otherCourses.map(o => (
                                             <Link key={o.id} to={`/course/${o.slug}`} style={S.otherCourseCard} className="otherCourseCard">
-                                                <img src={o.image} alt={o.title} style={S.otherCourseImg} />
+                                                {o.image
+                                                    ? <img src={o.image} alt={o.title} style={S.otherCourseImg} />
+                                                    : <div style={S.otherCoursePlaceholder} aria-hidden="true">🎓</div>}
                                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                     <h4 style={S.otherCourseName}>{o.title}</h4>
                                                     <span style={{ ...S.otherCoursePrice, color: o.isFree ? '#1a7a3c' : '#f57c00' }}>
-                                                        {o.isFree ? 'مجاناً' : `${o.price.toLocaleString('ar-EG')} ${o.currency}`}
+                                                        {o.isFree ? 'مجاناً' : `${Number(o.price).toLocaleString('ar-EG')} ${o.currency}`}
                                                     </span>
                                                 </div>
                                             </Link>
