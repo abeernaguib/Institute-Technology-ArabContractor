@@ -434,12 +434,24 @@ const Navbar = () => {
     // ── Desktop programs menu: open/close is controlled by state (hover, click, route change, Escape) ──
     const [coursesMenuOpen, setCoursesMenuOpen] = useState(false);
     const closeTimer = useRef(null);
+    const openTimer = useRef(null);
 
+    // Hover-intent: the menu opens only if the mouse STAYS on the button for ~100ms,
+    // so sweeping across it on the way to another menu doesn't flash it open.
     const openCoursesMenu = () => {
         clearTimeout(closeTimer.current);
+        clearTimeout(openTimer.current);
+        openTimer.current = setTimeout(() => setCoursesMenuOpen(true), 100);
+    };
+    // Opens right away (used by click / keyboard).
+    const openCoursesMenuNow = () => {
+        clearTimeout(closeTimer.current);
+        clearTimeout(openTimer.current);
         setCoursesMenuOpen(true);
     };
-    const closeCoursesMenu = (delay = 120) => {
+    // Closes almost immediately (tiny grace period); cancels a pending open.
+    const closeCoursesMenu = (delay = 40) => {
+        clearTimeout(openTimer.current);
         clearTimeout(closeTimer.current);
         closeTimer.current = setTimeout(() => setCoursesMenuOpen(false), delay);
     };
@@ -497,6 +509,8 @@ const Navbar = () => {
 
     // Close the programs menu on every page change and drop keyboard focus from inside it
     useEffect(() => {
+        clearTimeout(openTimer.current);
+        clearTimeout(closeTimer.current);
         setCoursesMenuOpen(false);
         const el = document.activeElement;
         if (el && el.closest && el.closest('.courses-dropdown-wrapper')) el.blur();
@@ -525,6 +539,7 @@ const Navbar = () => {
     useEffect(() => () => {
         clearTimeout(hoverTimer.current);
         clearTimeout(closeTimer.current);
+        clearTimeout(openTimer.current);
     }, []);
 
     const saveRecentSearch = useCallback((term) => {
@@ -727,7 +742,7 @@ const Navbar = () => {
                 }
 
                 /* ── Programs mega menu ── */
-                .courses-dropdown-wrapper::after {      /* invisible bridge so hover isn't lost */
+                .courses-dropdown-wrapper.is-open::after {      /* invisible bridge so hover isn't lost (only while open) */
                     content: '';
                     position: absolute;
                     top: 100%; left: 0; right: 0;
@@ -745,7 +760,8 @@ const Navbar = () => {
                     border: 1px solid #e0e0e0;
                     opacity: 0;
                     visibility: hidden;
-                    transition: opacity 0.25s, visibility 0.25s, transform 0.25s;
+                    pointer-events: none;
+                    transition: none;               /* closing is instant: no lingering menu */
                     z-index: 1300;
                 }
                 .courses-dropdown-menu::before {
@@ -759,14 +775,18 @@ const Navbar = () => {
                 .courses-dropdown-wrapper.is-open .courses-dropdown-menu {
                     opacity: 1;
                     visibility: visible;
+                    pointer-events: auto;
                     transform: translateX(-50%) translateY(0);
+                    transition: opacity 0.15s ease, transform 0.15s ease;   /* fade in only */
                 }
 
                 /* Keyboard users (Tab key) can still open it; mouse clicks no longer keep it open */
                 .courses-dropdown-wrapper:has(:focus-visible) .courses-dropdown-menu {
                     opacity: 1;
                     visibility: visible;
+                    pointer-events: auto;
                     transform: translateX(-50%) translateY(0);
+                    transition: opacity 0.15s ease, transform 0.15s ease;
                 }
 
                 /* Two independent columns: a long group no longer pushes the next group out of view */
@@ -849,7 +869,8 @@ const Navbar = () => {
                     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
                     border: 1px solid #e0e0e0;
                     opacity: 0; visibility: hidden;
-                    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+                    pointer-events: none;
+                    transition: none;               /* closing is instant */
                     transform: translateY(-10px);
                     z-index: 1300;
                     padding: 8px 0;
@@ -860,6 +881,8 @@ const Navbar = () => {
                 .services-dropdown-wrapper:hover .services-dropdown-menu,
                 .media-dropdown-wrapper:hover .media-dropdown-menu {
                     opacity: 1; visibility: visible; transform: translateY(0);
+                    pointer-events: auto;
+                    transition: opacity 0.15s ease, transform 0.15s ease;   /* fade in only */
                 }
                 .dropdown-menu-item {
                     padding: 10px 16px;
@@ -973,7 +996,7 @@ const Navbar = () => {
                                         }
                                     }}
                                 >
-                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx}>
+                                    <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={navBtnSx} onClick={openCoursesMenuNow}>
                                         {trainingPlanLabel}
                                     </Button>
                                     <div
