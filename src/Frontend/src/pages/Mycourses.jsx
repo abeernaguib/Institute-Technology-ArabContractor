@@ -1,4 +1,13 @@
-// MyCourses.jsx
+// MyCourses.jsx  — fully responsive 300px → 3000px
+// ─────────────────────────────────────────────────────────────────────────────
+// What changed vs. the old version:
+//  • Every size that must change with the screen now lives in CSS classes
+//    (inline styles can't use media queries) and uses clamp() so it scales smoothly.
+//  • Container width grows with the screen (1200 → 2500px) instead of stopping at 1200.
+//  • Course grid: 1 → 2 → 3 → 4 → 5 → 6 columns as the screen gets wider.
+//  • Stats are a 3‑column grid that shrinks (no more wrapping/orphan card).
+//  • Breadcrumb / hero offset use ONE variable: --mc-hdr (height of your site header).
+//  • flex/grid children got min-width:0 so nothing is pushed outside the screen.
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -111,10 +120,6 @@ const MyCourses = () => {
     }, [isSignedIn, getToken]);
 
     // ── Fetch ALL certificates with ONE request, then match by planworkId ────
-    // The per-course routes (/certificates/{courseId} and
-    // /certificates/{userId}/{courseId}) don't work for this backend and were
-    // producing a 404/400 per course. GET /Admin/certificates is the route that
-    // actually resolves, so we call it once and filter client-side.
     const fetchAllCerts = useCallback(async (courseList) => {
         if (!isSignedIn || !courseList?.length) return;
         const loadingMap = {};
@@ -173,26 +178,26 @@ const MyCourses = () => {
 
     return (
         <>
-            <link href="https://fonts.googleapis.com/css2?family=Droid+Arabic+Kufi:wght@400;700&display=swap" rel="stylesheet" />
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet" />
             <style>{css}</style>
-            <div dir="rtl" style={styles.page}>
+            <div dir="rtl" className="mc-page" style={styles.page}>
 
                 {/* Breadcrumb */}
-                <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
-                    <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
-                        <a href="/" style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none', marginLeft: '8px' }}
+                <div className="mc-crumb">
+                    <div className="mc-crumb-inner">
+                        <a href="/" className="mc-crumb-link"
                             onMouseEnter={e => e.target.style.color = '#f57c00'}
                             onMouseLeave={e => e.target.style.color = '#0865a8'}>
                             الصفحة الرئيسية
                         </a>
-                        <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                        <span style={{ color: '#374151', marginRight: '8px' }}>دوراتي التدريبية</span>
+                        <span style={{ color: '#6b7280' }}>•</span>
+                        <span className="mc-crumb-current">دوراتي التدريبية</span>
                     </div>
                 </div>
 
                 <SignedOut>
-                    <div style={styles.authGate}>
-                        <div style={styles.authGateCard}>
+                    <div className="mc-auth-gate">
+                        <div className="mc-auth-card">
                             <div style={styles.authGateIcon}>🔒</div>
                             <h2 style={styles.authGateTitle}>تسجيل الدخول مطلوب</h2>
                             <p style={styles.authGateSub}>يجب تسجيل الدخول أولاً لعرض دوراتك التدريبية</p>
@@ -210,26 +215,26 @@ const MyCourses = () => {
 
                 <SignedIn>
                     {/* Hero */}
-                    <div style={styles.hero} className="mc-hero">
+                    <div className="mc-hero">
                         <div style={styles.heroDeco1} />
                         <div style={styles.heroDeco2} />
                         <div style={styles.heroDeco3} />
-                        <div style={styles.heroInner}>
-                            <div style={styles.heroTopRow} className="mc-hero-top">
-                                <div style={styles.heroAvatar}>📚</div>
+                        <div className="mc-container">
+                            <div className="mc-hero-top">
+                                <div className="mc-avatar">📚</div>
                                 <div>
-                                    <p style={styles.heroGreeting}>مرحباً {userName}،</p>
-                                    <h1 style={styles.heroTitle}>دوراتك التدريبية</h1>
+                                    <p className="mc-greeting">مرحباً {userName}،</p>
+                                    <h1 className="mc-hero-title">دوراتك التدريبية</h1>
                                 </div>
                             </div>
-                            <p style={styles.heroSub}>تابع رحلتك التعليمية — كل دوراتك في مكان واحد</p>
+                            <p className="mc-hero-sub">تابع رحلتك التعليمية — كل دوراتك في مكان واحد</p>
                             <div style={styles.heroDivider} />
-                            <div style={styles.statsRow} className="mc-stats-row">
+                            <div className="mc-stats-row">
                                 {stats.map((s, i) => (
-                                    <div key={i} style={styles.statCard} className="mc-stat-card">
-                                        <span style={styles.statIcon}>{s.icon}</span>
-                                        <span style={styles.statValue}>{s.value}</span>
-                                        <span style={styles.statLabel}>{s.label}</span>
+                                    <div key={i} className="mc-stat-card">
+                                        <span className="mc-stat-icon">{s.icon}</span>
+                                        <span className="mc-stat-value">{s.value}</span>
+                                        <span className="mc-stat-label">{s.label}</span>
                                     </div>
                                 ))}
                             </div>
@@ -237,65 +242,67 @@ const MyCourses = () => {
                     </div>
 
                     {/* Main */}
-                    <div style={styles.main} className="mc-main">
-                        <div style={styles.toolbar} className="mc-toolbar">
-                            <div style={styles.searchWrap}>
-                                <svg style={styles.searchIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
-                                </svg>
-                                <input
-                                    style={styles.searchInput}
-                                    placeholder="ابحث في دوراتك..."
-                                    value={search}
-                                    onChange={e => setSearch(e.target.value)}
-                                />
+                    <div className="mc-main">
+                        <div className="mc-container">
+                            <div className="mc-toolbar">
+                                <div className="mc-search">
+                                    <svg style={styles.searchIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+                                    </svg>
+                                    <input
+                                        className="mc-search-input"
+                                        placeholder="ابحث في دوراتك..."
+                                        value={search}
+                                        onChange={e => setSearch(e.target.value)}
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => fetchMyCourses().then(list => fetchAllCerts(list))}
+                                    className="mc-refresh-btn"
+                                >
+                                    🔄 تحديث
+                                </button>
                             </div>
-                            <button
-                                onClick={() => fetchMyCourses().then(list => fetchAllCerts(list))}
-                                style={styles.refreshBtn}
-                            >
-                                🔄 تحديث
-                            </button>
+
+                            {loading ? (
+                                <div style={styles.loadingWrap}>
+                                    <div style={styles.spinner} />
+                                    <p style={styles.loadingText}>جاري تحميل دوراتك...</p>
+                                </div>
+                            ) : error ? (
+                                <div style={styles.errorWrap}>
+                                    <div style={styles.emptyIcon}>⚠️</div>
+                                    <h3 style={styles.emptyTitle}>{error}</h3>
+                                    <button style={styles.emptyBtn} onClick={() => fetchMyCourses()}>إعادة المحاولة</button>
+                                </div>
+                            ) : filtered.length === 0 ? (
+                                <EmptyState search={search} navigate={navigate} />
+                            ) : (
+                                <div className="mc-grid">
+                                    {filtered.map(course => {
+                                        const cert = certificates[course.id];   // normalised or null
+                                        const isCertLoading = certsLoading[course.id];
+                                        const hasCert = !!cert;
+                                        const certUrl = cert?.url ?? '';
+
+                                        return (
+                                            <CourseCard
+                                                key={course.id}
+                                                course={course}
+                                                cert={cert}
+                                                certUrl={certUrl}
+                                                hasCert={hasCert}
+                                                isCertLoading={isCertLoading}
+                                                hovered={hoveredCard === course.id}
+                                                onHover={() => setHoveredCard(course.id)}
+                                                onLeave={() => setHoveredCard(null)}
+                                                navigate={navigate}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-
-                        {loading ? (
-                            <div style={styles.loadingWrap}>
-                                <div style={styles.spinner} />
-                                <p style={styles.loadingText}>جاري تحميل دوراتك...</p>
-                            </div>
-                        ) : error ? (
-                            <div style={styles.errorWrap}>
-                                <div style={styles.emptyIcon}>⚠️</div>
-                                <h3 style={styles.emptyTitle}>{error}</h3>
-                                <button style={styles.emptyBtn} onClick={fetchMyCourses}>إعادة المحاولة</button>
-                            </div>
-                        ) : filtered.length === 0 ? (
-                            <EmptyState search={search} navigate={navigate} />
-                        ) : (
-                            <div style={styles.grid} className="mc-grid">
-                                {filtered.map(course => {
-                                    const cert = certificates[course.id];   // normalised or null
-                                    const isCertLoading = certsLoading[course.id];
-                                    const hasCert = !!cert;
-                                    const certUrl = cert?.url ?? '';
-
-                                    return (
-                                        <CourseCard
-                                            key={course.id}
-                                            course={course}
-                                            cert={cert}
-                                            certUrl={certUrl}
-                                            hasCert={hasCert}
-                                            isCertLoading={isCertLoading}
-                                            hovered={hoveredCard === course.id}
-                                            onHover={() => setHoveredCard(course.id)}
-                                            onLeave={() => setHoveredCard(null)}
-                                            navigate={navigate}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        )}
                     </div>
                 </SignedIn>
             </div>
@@ -310,7 +317,6 @@ const CourseCard = ({
     course, cert, certUrl, hasCert, isCertLoading,
     hovered, onHover, onLeave, navigate,
 }) => {
-    // cert.name comes from normaliseCert (prefers fileName → filename → name)
     const certName = cert?.name || `شهادة_${course.title || 'الدورة'}.pdf`;
 
     return (
@@ -320,7 +326,7 @@ const CourseCard = ({
             onMouseLeave={onLeave}
             className="mc-card"
         >
-            <div style={styles.cardHeader}>
+            <div className="mc-card-header">
                 <div style={{
                     ...styles.cardImgPlaceholder,
                     background: course.isFree
@@ -329,19 +335,19 @@ const CourseCard = ({
                 }}>
                     <div style={styles.iconWrapper}><BookIcon /></div>
                 </div>
-                <span style={{ ...styles.badge, ...(course.isFree ? styles.badgeFree : styles.badgePaid) }}>
+                <span className="mc-badge" style={course.isFree ? styles.badgeFree : styles.badgePaid}>
                     ✅ {course.isFree ? 'مجاني - مسجل' : 'مسجل'}
                 </span>
                 {hasCert && (
-                    <div style={styles.certRibbon}>📜 شهادة جاهزة</div>
+                    <div className="mc-cert-ribbon">📜 شهادة جاهزة</div>
                 )}
             </div>
 
-            <div style={styles.cardBody}>
-                <h3 style={styles.cardTitle}>{course.title}</h3>
+            <div className="mc-card-body">
+                <h3 className="mc-card-title">{course.title}</h3>
 
                 {course.place && (
-                    <div style={styles.metaRow}>
+                    <div className="mc-meta-row">
                         <svg style={styles.metaIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
@@ -349,7 +355,7 @@ const CourseCard = ({
                     </div>
                 )}
                 {course.date && (
-                    <div style={styles.metaRow}>
+                    <div className="mc-meta-row">
                         <svg style={styles.metaIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -357,7 +363,7 @@ const CourseCard = ({
                     </div>
                 )}
                 {course.enrolledAt && (
-                    <div style={styles.metaRow}>
+                    <div className="mc-meta-row">
                         <svg style={styles.metaIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -370,11 +376,11 @@ const CourseCard = ({
                 {/* Certificate section */}
                 <div style={{ ...styles.certSection, backgroundColor: hasCert ? '#faf5ff' : '#f9fafb', borderColor: hasCert ? '#e8d8ff' : '#e5e7eb' }}>
                     <div style={{ ...styles.certSectionHeader, color: hasCert ? '#7c3aed' : '#6b7280' }}>
-                        <svg width="16" height="16" fill="none" stroke={hasCert ? '#7c3aed' : '#9ca3af'} viewBox="0 0 24 24">
+                        <svg width="16" height="16" style={{ flexShrink: 0 }} fill="none" stroke={hasCert ? '#7c3aed' : '#9ca3af'} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                 d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                         </svg>
-                        <span style={{ ...styles.certSectionTitle, color: hasCert ? '#7c3aed' : '#6b7280' }}>
+                        <span className="mc-cert-title" style={{ color: hasCert ? '#7c3aed' : '#6b7280' }}>
                             {isCertLoading
                                 ? 'جاري التحقق من الشهادة...'
                                 : hasCert
@@ -383,15 +389,14 @@ const CourseCard = ({
                         </span>
                     </div>
 
-                    {/* Download & open — only when cert exists with a valid URL */}
                     {hasCert && !isCertLoading && certUrl && (
-                        <div style={{ display: 'flex', gap: 8 }}>
+                        <div className="mc-cert-actions">
                             {/* Open in new tab */}
                             <a
                                 href={certUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{ ...styles.certDownloadBtn, background: 'rgba(124,58,237,0.1)', color: '#7c3aed', boxShadow: 'none', border: '1.5px solid rgba(124,58,237,0.3)' }}
+                                className="mc-cert-btn mc-cert-open"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" /></svg>
@@ -403,8 +408,7 @@ const CourseCard = ({
                                 download={certName}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mc-cert-download-btn"
-                                style={styles.certDownloadBtnFull}
+                                className="mc-cert-btn mc-cert-download"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <DownloadIcon />
@@ -415,7 +419,8 @@ const CourseCard = ({
                 </div>
 
                 <button
-                    style={{ ...styles.ctaBtn, ...(hovered ? styles.ctaBtnHover : {}) }}
+                    className="mc-cta"
+                    style={hovered ? styles.ctaBtnHover : undefined}
                     onClick={() => { if (course.slug) navigate(`/course/${course.slug}`); }}
                 >
                     ابدأ الدورة
@@ -430,7 +435,7 @@ const CourseCard = ({
 };
 
 const EmptyState = ({ search, navigate }) => (
-    <div style={styles.emptyWrap}>
+    <div className="mc-empty">
         <div style={styles.emptyIcon}>{search ? '🔍' : '📭'}</div>
         <h3 style={styles.emptyTitle}>
             {search ? 'لا توجد دورات تطابق بحثك' : 'لم تنضم إلى أي دورة بعد'}
@@ -444,84 +449,266 @@ const EmptyState = ({ search, navigate }) => (
     </div>
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Static styles only (things that never change with screen size)
+// ─────────────────────────────────────────────────────────────────────────────
 const styles = {
-    page: { minHeight: '100vh', backgroundColor: '#f7f8fc', fontFamily: '"Noto Kufi Arabic", serif', direction: 'rtl' },
-    hero: { position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #05416d 0%, #0865a8 45%, #c96000 100%)', paddingTop: '116px', paddingBottom: '52px', paddingLeft: '24px', paddingRight: '24px' },
+    page: { backgroundColor: '#f7f8fc', fontFamily: '"Noto Kufi Arabic", serif', direction: 'rtl' },
     heroDeco1: { position: 'absolute', top: '-60px', left: '-60px', width: '260px', height: '260px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' },
     heroDeco2: { position: 'absolute', bottom: '-80px', right: '-40px', width: '320px', height: '320px', borderRadius: '50%', background: 'rgba(245,124,0,0.18)', pointerEvents: 'none' },
     heroDeco3: { position: 'absolute', top: '40px', right: '30%', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' },
-    heroInner: { maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 },
-    heroTopRow: { display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px' },
-    heroAvatar: { width: '64px', height: '64px', borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.2)', border: '2.5px solid rgba(255,255,255,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px' },
-    heroGreeting: { margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#ffffff', fontFamily: '"Noto Kufi Arabic", serif' },
-    heroTitle: { margin: '4px 0 0', fontSize: '32px', fontWeight: 'bold', color: '#fff', fontFamily: '"Noto Kufi Arabic", serif' },
-    heroSub: { fontSize: '16px', color: 'rgba(255,255,255,0.8)', margin: '0 0 24px', fontFamily: '"Noto Kufi Arabic", serif' },
-    heroDivider: { width: '100%', height: '1px', background: 'linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)', marginBottom: '28px' },
-    statsRow: { display: 'flex', gap: '16px', flexWrap: 'wrap' },
-    statCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(255,255,255,0.25)', borderRadius: '16px', padding: '18px 32px', minWidth: '130px' },
-    statIcon: { fontSize: '26px' },
-    statValue: { fontSize: '32px', fontWeight: 'bold', color: '#fff', fontFamily: '"Noto Kufi Arabic", serif', lineHeight: 1 },
-    statLabel: { fontSize: '13px', color: 'rgba(255,255,255,0.82)', fontFamily: '"Noto Kufi Arabic", serif' },
-    main: { maxWidth: '1200px', margin: '0 auto', padding: '36px 24px 60px' },
-    toolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '28px', backgroundColor: '#fff', borderRadius: '14px', padding: '16px 20px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', border: '1.5px solid #ebebeb' },
-    searchWrap: { display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '200px', backgroundColor: '#f7f8fc', borderRadius: '10px', padding: '8px 14px', border: '1.5px solid #e0e0e0' },
+    heroDivider: { width: '100%', height: '1px', background: 'linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)', marginBottom: 'clamp(16px, 1.5vw + 8px, 32px)' },
     searchIcon: { width: '18px', height: '18px', color: '#aaa', flexShrink: 0 },
-    searchInput: { border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif', color: '#333', flex: 1, direction: 'rtl' },
-    refreshBtn: { padding: '8px 20px', borderRadius: '10px', border: '1.5px solid #e0e0e0', backgroundColor: '#fff', color: '#555', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif', cursor: 'pointer' },
     loadingWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '20px' },
     spinner: { width: '48px', height: '48px', border: '4px solid #e0e0e0', borderTopColor: '#0865a8', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
     loadingText: { fontSize: '16px', color: '#666', fontFamily: '"Noto Kufi Arabic", serif' },
     errorWrap: { textAlign: 'center', padding: '80px 20px' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' },
-    card: { backgroundColor: '#fff', borderRadius: '16px', border: '2px solid #f0f0f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', overflow: 'hidden', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' },
+    card: { backgroundColor: '#fff', borderRadius: '16px', border: '2px solid #f0f0f0', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', overflow: 'hidden', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column', minWidth: 0 },
     cardHover: { transform: 'translateY(-7px)', boxShadow: '0 14px 28px rgba(0,0,0,0.13)', borderColor: '#0865a8' },
-    cardHeader: { position: 'relative', height: '160px', overflow: 'hidden' },
     cardImgPlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    iconWrapper: { borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.15)', padding: '24px', backdropFilter: 'blur(10px)', border: '2px solid rgba(255,255,255,0.3)' },
-    badge: { position: 'absolute', top: '12px', right: '12px', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif' },
+    iconWrapper: { borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.15)', padding: 'clamp(14px, 1vw + 8px, 24px)', backdropFilter: 'blur(10px)', border: '2px solid rgba(255,255,255,0.3)', display: 'flex' },
     badgePaid: { backgroundColor: '#0865a8', color: '#fff', boxShadow: '0 2px 8px rgba(8,101,168,0.35)' },
     badgeFree: { backgroundColor: '#1a7a4a', color: '#fff', boxShadow: '0 2px 8px rgba(26,122,74,0.35)' },
-    certRibbon: { position: 'absolute', bottom: '12px', left: '12px', background: 'linear-gradient(135deg, #7c3aed, #9f67f5)', color: '#fff', borderRadius: '8px', padding: '4px 12px', fontSize: '11px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif', boxShadow: '0 2px 8px rgba(124,58,237,0.4)' },
-    cardBody: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 },
-    cardTitle: { fontSize: '16px', fontWeight: 'bold', color: '#111', fontFamily: '"Noto Kufi Arabic", serif', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0 },
-    metaRow: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#555', fontFamily: '"Noto Kufi Arabic", serif' },
     metaIcon: { width: '15px', height: '15px', flexShrink: 0, color: '#0865a8' },
-    metaText: { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' },
+    metaText: { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', minWidth: 0 },
     certSection: { borderRadius: '12px', border: '1.5px solid', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '10px' },
-    certSectionHeader: { display: 'flex', alignItems: 'center', gap: '8px' },
-    certSectionTitle: { fontSize: '13px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif' },
-    certDownloadBtnFull: { flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '9px 14px', background: 'linear-gradient(135deg, #7c3aed 0%, #9f67f5 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif', textDecoration: 'none', cursor: 'pointer', boxShadow: '0 3px 10px rgba(124,58,237,0.3)', transition: 'all 0.2s ease' },
-    certDownloadBtn: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif', textDecoration: 'none', cursor: 'pointer', transition: 'all 0.2s ease' },
-    ctaBtn: { marginTop: 'auto', width: '100%', padding: '12px 20px', background: 'linear-gradient(135deg, #0865a8 0%, #f57c00 100%)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' },
+    certSectionHeader: { display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 },
     ctaBtnHover: { transform: 'translateY(-2px)', boxShadow: '0 6px 18px rgba(8,101,168,0.32)' },
-    emptyWrap: { textAlign: 'center', padding: '80px 20px', backgroundColor: '#fff', borderRadius: '16px', border: '2px dashed #d0dce8' },
     emptyIcon: { fontSize: '64px', marginBottom: '16px' },
-    emptyTitle: { fontSize: '22px', fontWeight: 'bold', color: '#222', fontFamily: '"Noto Kufi Arabic", serif', margin: '0 0 10px' },
-    emptySub: { fontSize: '15px', color: '#777', fontFamily: '"Noto Kufi Arabic", serif', margin: '0 0 28px' },
+    emptyTitle: { fontSize: 'clamp(17px, 0.8vw + 14px, 26px)', fontWeight: 'bold', color: '#222', fontFamily: '"Noto Kufi Arabic", serif', margin: '0 0 10px' },
+    emptySub: { fontSize: 'clamp(13px, 0.4vw + 12px, 18px)', color: '#777', fontFamily: '"Noto Kufi Arabic", serif', margin: '0 0 28px' },
     emptyBtn: { padding: '13px 36px', background: 'linear-gradient(135deg, #0865a8 0%, #f57c00 100%)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', fontFamily: '"Noto Kufi Arabic", serif', cursor: 'pointer' },
-    authGate: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '120px 20px 60px' },
-    authGateCard: { backgroundColor: '#fff', borderRadius: '20px', padding: '52px 44px', boxShadow: '0 8px 40px rgba(0,0,0,0.1)', textAlign: 'center', maxWidth: '420px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' },
     authGateIcon: { fontSize: '64px' },
-    authGateTitle: { fontSize: '26px', fontWeight: 'bold', color: '#111', fontFamily: '"Noto Kufi Arabic", serif', margin: 0 },
-    authGateSub: { fontSize: '15px', color: '#666', fontFamily: '"Noto Kufi Arabic", serif', margin: 0 },
+    authGateTitle: { fontSize: 'clamp(20px, 1vw + 14px, 30px)', fontWeight: 'bold', color: '#111', fontFamily: '"Noto Kufi Arabic", serif', margin: 0 },
+    authGateSub: { fontSize: 'clamp(13px, 0.4vw + 12px, 17px)', color: '#666', fontFamily: '"Noto Kufi Arabic", serif', margin: 0 },
     btnBrowse: { marginTop: '4px', width: '100%', padding: '10px 24px', backgroundColor: 'transparent', color: '#888', border: '1.5px solid #ddd', borderRadius: '10px', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif', cursor: 'pointer' },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Responsive CSS
+// ─────────────────────────────────────────────────────────────────────────────
 const css = `
   * { font-family: "Noto Kufi Arabic", serif !important; box-sizing: border-box; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  .mc-cert-download-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* ── Tokens ─────────────────────────────────────────────────────────────
+     --mc-hdr : height of your SITE header (the fixed one above the breadcrumb).
+                Change these two numbers if your header height is different.   */
+  .mc-page {
+    --mc-hdr: 70px;
+    --mc-gutter: clamp(14px, 1.6vw + 6px, 40px);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+  @media (max-width: 640px) { .mc-page { --mc-hdr: 90px; } }
+
+  /* ── Container: grows with the screen ─────────────────────────────────── */
+  .mc-container { width: 100%; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+  @media (min-width: 1440px) { .mc-container { max-width: 1360px; } }
+  @media (min-width: 1700px) { .mc-container { max-width: 1560px; } }
+  @media (min-width: 2000px) { .mc-container { max-width: 1800px; } }
+  @media (min-width: 2300px) { .mc-container { max-width: 2100px; } }
+  @media (min-width: 2800px) { .mc-container { max-width: 2500px; } }
+
+  /* ── Breadcrumb ───────────────────────────────────────────────────────── */
+  .mc-crumb {
+    position: fixed; top: var(--mc-hdr); left: 0; right: 0; z-index: 50;
+    border-bottom: 1px solid #d1d5db; background-color: #f5f5f5;
+    padding: 8px var(--mc-gutter);
+  }
+  .mc-crumb-inner {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: clamp(12px, 0.5vw + 10px, 20px);
+    white-space: nowrap; overflow: hidden; min-width: 0;
+  }
+  .mc-crumb-link { color: #0865a8; font-weight: 700; text-decoration: none; flex-shrink: 0; }
+  .mc-crumb-current { color: #374151; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Hero ─────────────────────────────────────────────────────────────── */
+  .mc-hero {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #05416d 0%, #0865a8 45%, #c96000 100%);
+    padding: calc(var(--mc-hdr) + 56px) var(--mc-gutter) clamp(28px, 3vw + 16px, 72px);
+  }
+  .mc-hero-top {
+    display: flex; align-items: center;
+    gap: clamp(12px, 1.2vw + 6px, 24px);
+    margin-bottom: clamp(10px, 1vw + 6px, 18px);
+  }
+  .mc-hero-top > div:last-child { min-width: 0; }
+  .mc-avatar {
+    width: clamp(48px, 2.6vw + 32px, 96px); height: clamp(48px, 2.6vw + 32px, 96px);
+    border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.2); border: 2.5px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(20px, 1.2vw + 14px, 42px);
+  }
+  .mc-greeting {
+    margin: 0; font-weight: bold; color: #fff;
+    font-size: clamp(15px, 0.6vw + 14px, 28px);
+    overflow-wrap: anywhere;
+  }
+  .mc-hero-title {
+    margin: 4px 0 0; font-weight: bold; color: #fff; line-height: 1.3;
+    font-size: clamp(22px, 1.2vw + 18px, 48px);
+    overflow-wrap: anywhere;
+  }
+  .mc-hero-sub {
+    margin: 0 0 clamp(16px, 1.5vw + 8px, 28px);
+    color: rgba(255,255,255,0.8); line-height: 1.7;
+    font-size: clamp(13px, 0.4vw + 12px, 22px);
+  }
+
+  /* ── Stats: always a tidy 3-up grid ───────────────────────────────────── */
+  .mc-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(8px, 1.2vw, 24px);
+  }
+  @media (min-width: 641px) {
+    .mc-stats-row { grid-template-columns: repeat(3, minmax(0, clamp(140px, 14vw, 280px))); }
+  }
+  .mc-stat-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: clamp(3px, 0.4vw, 8px); min-width: 0;
+    background-color: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: clamp(12px, 0.8vw + 6px, 24px);
+    padding: clamp(10px, 1vw + 6px, 28px) clamp(4px, 1.4vw, 28px);
+  }
+  .mc-stat-icon  { font-size: clamp(20px, 1vw + 14px, 38px); line-height: 1; }
+  .mc-stat-value { font-size: clamp(22px, 1.2vw + 16px, 46px); font-weight: bold; color: #fff; line-height: 1; }
+  .mc-stat-label { font-size: clamp(11px, 0.3vw + 9px, 18px); color: rgba(255,255,255,0.85); line-height: 1.4; overflow-wrap: anywhere; }
+
+  /* ── Main + toolbar ───────────────────────────────────────────────────── */
+  .mc-main { padding: clamp(20px, 2vw + 12px, 56px) var(--mc-gutter) clamp(40px, 3vw + 24px, 90px); }
+  .mc-toolbar {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    gap: 12px 16px;
+    margin-bottom: clamp(18px, 1.5vw + 10px, 36px);
+    background-color: #fff; border: 1.5px solid #ebebeb;
+    border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    padding: clamp(10px, 0.6vw + 8px, 20px) clamp(12px, 0.8vw + 8px, 24px);
+  }
+  .mc-search {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1 1 220px; min-width: 0;
+    background-color: #f7f8fc; border: 1.5px solid #e0e0e0;
+    border-radius: 10px; padding: 8px 14px;
+  }
+  .mc-search-input {
+    border: none; background: transparent; outline: none; direction: rtl;
+    flex: 1; min-width: 0; width: 100%; color: #333;
+    font-size: clamp(13px, 0.3vw + 12px, 17px);
+  }
+  .mc-refresh-btn {
+    padding: 8px 20px; border-radius: 10px; border: 1.5px solid #e0e0e0;
+    background-color: #fff; color: #555; cursor: pointer;
+    font-size: clamp(13px, 0.3vw + 12px, 17px);
+  }
   @media (max-width: 640px) {
-    .mc-hero { padding-top: 100px !important; }
-    .mc-main { padding: 24px 14px 48px !important; }
-    .mc-toolbar { flex-direction: column !important; }
-    .mc-grid { grid-template-columns: 1fr !important; gap: 18px !important; }
+    .mc-toolbar { flex-direction: column; align-items: stretch; }
+    .mc-search { flex: 0 0 auto; }
+    .mc-refresh-btn { width: 100%; }
   }
-  @media (min-width: 641px) and (max-width: 1024px) {
-    .mc-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* ── Course grid: 1 → 2 → 3 → 4 → 5 → 6 columns ───────────────────────── */
+  .mc-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(16px, 1.4vw + 8px, 36px);
   }
-  @media (min-width: 1025px) {
-    .mc-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  @media (min-width: 641px)  { .mc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1025px) { .mc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1700px) { .mc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 2300px) { .mc-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+  @media (min-width: 2800px) { .mc-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+
+  /* ── Card ─────────────────────────────────────────────────────────────── */
+  .mc-card-header { position: relative; overflow: hidden; height: clamp(130px, 5vw + 90px, 220px); }
+  .mc-badge {
+    position: absolute; top: 12px; right: 12px; border-radius: 8px; padding: 5px 12px;
+    font-weight: bold; font-size: clamp(11px, 0.2vw + 10px, 15px);
+  }
+  .mc-cert-ribbon {
+    position: absolute; bottom: 12px; left: 12px; color: #fff; font-weight: bold;
+    background: linear-gradient(135deg, #7c3aed, #9f67f5);
+    border-radius: 8px; padding: 4px 12px; box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+    font-size: clamp(10px, 0.2vw + 9px, 14px);
+  }
+  .mc-card-body {
+    flex: 1; min-width: 0; display: flex; flex-direction: column;
+    gap: clamp(10px, 0.5vw + 8px, 16px);
+    padding: clamp(14px, 0.8vw + 10px, 26px);
+  }
+  .mc-card-title {
+    margin: 0; font-weight: bold; color: #111; line-height: 1.5;
+    font-size: clamp(15px, 0.35vw + 13px, 22px);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .mc-meta-row {
+    display: flex; align-items: center; gap: 8px; min-width: 0; color: #555;
+    font-size: clamp(12px, 0.25vw + 10.5px, 16px);
+  }
+  .mc-cert-title { font-weight: bold; font-size: clamp(12px, 0.25vw + 10.5px, 16px); min-width: 0; }
+
+  .mc-cert-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mc-cert-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: 8px; font-weight: bold; text-decoration: none; cursor: pointer;
+    transition: all 0.2s ease; white-space: nowrap;
+    font-size: clamp(12px, 0.2vw + 10.5px, 15px);
+  }
+  .mc-cert-open {
+    flex: 1 1 70px; padding: 8px 10px;
+    background: rgba(124,58,237,0.1); color: #7c3aed; border: 1.5px solid rgba(124,58,237,0.3);
+  }
+  .mc-cert-download {
+    flex: 2 1 130px; padding: 9px 14px; border: none; color: #fff;
+    background: linear-gradient(135deg, #7c3aed 0%, #9f67f5 100%);
+    box-shadow: 0 3px 10px rgba(124,58,237,0.3);
+  }
+  .mc-cert-download:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .mc-cta {
+    margin-top: auto; width: 100%; border: none; border-radius: 10px; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #0865a8 0%, #f57c00 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; transition: all 0.3s ease;
+    padding: clamp(10px, 0.4vw + 9px, 16px) 20px;
+    font-size: clamp(14px, 0.3vw + 12px, 19px);
+  }
+
+  /* ── Empty state / auth gate ──────────────────────────────────────────── */
+  .mc-empty {
+    text-align: center; background-color: #fff; border-radius: 16px; border: 2px dashed #d0dce8;
+    padding: clamp(40px, 4vw + 20px, 110px) clamp(16px, 2vw, 40px);
+  }
+  .mc-auth-gate {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; min-height: 100dvh;
+    padding: calc(var(--mc-hdr) + 70px) var(--mc-gutter) 60px;
+  }
+  .mc-auth-card {
+    background-color: #fff; border-radius: 20px; box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+    text-align: center; width: 100%; max-width: clamp(300px, 30vw, 560px);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    padding: clamp(28px, 4vw, 56px) clamp(18px, 3.5vw, 48px);
+  }
+
+  /* ── Extra-small phones (≤360px) ──────────────────────────────────────── */
+  @media (max-width: 360px) {
+    .mc-hero-top { gap: 10px; }
+    .mc-badge { top: 8px; right: 8px; padding: 4px 8px; }
+    .mc-cert-ribbon { bottom: 8px; left: 8px; padding: 3px 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation-duration: 0.01ms !important; }
   }
 `;
 

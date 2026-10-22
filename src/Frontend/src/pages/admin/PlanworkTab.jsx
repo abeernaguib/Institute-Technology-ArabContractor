@@ -8,6 +8,9 @@
  *
  * Sponsored category: planwork records can be flagged as a "sponsored" section
  * (sponsorFlag + sponsorDesc) shown on the Home page.
+ *
+ * NEW: the left tree now has a search box (by name or ID, Arabic-friendly) and
+ * the badge shows the real total of courses in the tree (like BooksTab).
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -85,6 +88,32 @@ function flattenTree(nodes, acc = []) {
     });
     return acc;
 }
+
+// ── Tree search helpers ───────────────────────────────────────────────────────
+// Arabic-friendly normalisation: ignores tashkeel and أ/إ/آ, ى/ي, ة/ه differences
+const normAr = s => (s || '').toString().toLowerCase()
+    .replace(/[\u064B-\u0652\u0640]/g, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').trim();
+
+// matches by name, or by exact ID (e.g. "42" or "#42")
+const nodeMatches = (n, q) =>
+    normAr(n.title || n.label).includes(q) || String(n.id) === q.replace('#', '');
+
+// keeps matching nodes plus the parents that lead to them
+function filterTree(nodes, q) {
+    if (!q) return nodes;
+    return nodes.reduce((acc, n) => {
+        if (nodeMatches(n, q)) acc.push(n);
+        else {
+            const kids = filterTree(n.children || [], q);
+            if (kids.length) acc.push({ ...n, children: kids });
+        }
+        return acc;
+    }, []);
+}
+
+const countMatches = (nodes, q) =>
+    nodes.reduce((c, n) => c + (nodeMatches(n, q) ? 1 : 0) + countMatches(n.children || [], q), 0);
 
 const BLANK = {
     id: 0, parentId: null, priority: '', days: '', name: '', slug: '', sku: '',
@@ -232,9 +261,10 @@ function RichTextEditor({ icon, label, sub, name, value, onChange, placeholder, 
     );
 }
 
-// ── TreeNode (unchanged) ──────────────────────────────────────────────────────
-function TreeNode({ node, selectedId, onSelect, depth = 0 }) {
+// ── TreeNode — now supports forceOpen (auto-expand while searching) ───────────
+function TreeNode({ node, selectedId, onSelect, depth = 0, forceOpen = false }) {
     const [open, setOpen] = useState(depth === 0);
+    const isOpen = forceOpen || open;
     const hasChildren = node.children && node.children.length > 0;
     const label = node.title || node.label || '';
     const depthClass = ['pw-tree-d0', 'pw-tree-d1', 'pw-tree-d2', 'pw-tree-d3'][Math.min(depth, 3)];
@@ -243,13 +273,14 @@ function TreeNode({ node, selectedId, onSelect, depth = 0 }) {
             <div className={`pw-tree-row ${depthClass}${selectedId === node.id ? ' active' : ''}`}
                 style={{ paddingRight: 10 + depth * 14 }}
                 onClick={e => { e.stopPropagation(); onSelect(node); if (hasChildren) setOpen(o => !o); }}>
-                <span className="pw-tree-toggle">{hasChildren ? (open ? '⊟' : '⊞') : ''}</span>
+                <span className="pw-tree-toggle">{hasChildren ? (isOpen ? '⊟' : '⊞') : ''}</span>
                 <span className="pw-tree-label">{label}</span>
             </div>
-            {hasChildren && open && (
+            {hasChildren && isOpen && (
                 <div className={`pw-tree-children pw-children-d${Math.min(depth, 2)}`}>
                     {node.children.map(child => (
-                        <TreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} />
+                        <TreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect}
+                            depth={depth + 1} forceOpen={forceOpen} />
                     ))}
                 </div>
             )}
@@ -780,11 +811,11 @@ const PlanworkTab = () => {
     };
     useEffect(() => { loadTree(); }, []);
 
-    const filtered = records.filter(r =>
-        (r.name || '').toLowerCase().includes(search.toLowerCase()) ||
-        (r.description || '').toLowerCase().includes(search.toLowerCase()) ||
-        (r.place || '').toLowerCase().includes(search.toLowerCase())
-    );
+    // ── Tree search + totals ──────────────────────────────────────────────────
+    const q = normAr(search);
+    const visibleTree = filterTree(tree, q);
+    const totalCourses = allTreeNodes.length;
+    const shownCount = q ? countMatches(tree, q) : totalCourses;
 
     const toast = (msg, type = 'success') => { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3500); };
 
@@ -918,10 +949,27 @@ const PlanworkTab = () => {
                 {/* LEFT PANEL */}
                 <div className="lec-panel pw-left-panel" style={{ height: 'calc(100vh - 120px)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                     <div className="lec-panel-hdr" style={{ flexShrink: 0 }}>
-                        <span className="lec-count-badge">{filtered.length}</span>
+                        <span className="lec-count-badge">{shownCount}</span>
                         <span style={{ fontWeight: 800, fontSize: '.8rem', color: '#0a0a0a', flex: 1, textAlign: 'center' }}>خطة العمل</span>
                         <button className="lec-new-btn" onClick={handleNew}>+ جديد</button>
                     </div>
+
+                    {/* Search */}
+                    <div style={{ padding: '10px 10px 6px', position: 'relative', flexShrink: 0 }}>
+                        <div className="adm-search" style={{ minWidth: 'unset' }}>
+                            <input
+                                type="text"
+                                placeholder="بحث بالاسم أو الرقم..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                style={{ fontSize: '.76rem' }}
+                            />
+                            {search && (
+                                <button className="lec-search-clear" onClick={() => setSearch('')}>✕</button>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="pw-tree-panel" style={{ borderTop: 'none', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <div className="pw-tree-header" style={{ flexShrink: 0 }}>
                             خطه المعهد
@@ -945,7 +993,12 @@ const PlanworkTab = () => {
                         <div className="pw-tree-scroll" style={{ flex: 1, overflowY: 'auto' }}>
                             {loadingTree
                                 ? <div style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: '.8rem' }}>⏳ جاري التحميل...</div>
-                                : tree.map(node => <TreeNode key={node.id} node={node} selectedId={treeSelected?.id} onSelect={handleTreeSelect} />)}
+                                : visibleTree.length === 0
+                                    ? <div className="adm-empty" style={{ padding: '32px 12px' }}><div className="adm-emi">🔍</div><p>لا توجد نتائج</p></div>
+                                    : visibleTree.map(node => (
+                                        <TreeNode key={node.id} node={node} selectedId={treeSelected?.id}
+                                            onSelect={handleTreeSelect} forceOpen={!!q} />
+                                    ))}
                         </div>
                         {treeSelected && (
                             <div className="pw-tree-footer" style={{ flexShrink: 0 }}>
@@ -969,7 +1022,7 @@ const PlanworkTab = () => {
                                 <h2 className="lec-form-title">{isNew ? '➕ إضافة سجل جديد' : '✏️ تعديل بيانات خطة العمل'}</h2>
                                 {!isNew && selected && <p className="lec-form-sub">{selected.name}</p>}
                             </div>
-                            <div className="lec-stat-pill">📋 {records.length} سجل</div>
+                            <div className="lec-stat-pill">📋 {totalCourses} دورة</div>
                         </div>
 
                         {loadingRecord ? (

@@ -4,6 +4,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import Seo from '../components/Seo';
+import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
+import { getCategoryTrailForCourse } from '../utils/categoryPath';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
 
@@ -67,7 +69,6 @@ function mapOtherCourse(a) {
 const fmtDate = (d) => (d || '').replace(/-/g, '/');
 const fmtRange = (r) => (r ? `${fmtDate(r.startDate)} - ${fmtDate(r.endDate)}` : '');
 
-// ✱ CHANGED
 // Did this enrollment (from /course/my-courses) get bought as ONLINE?
 // Returns true / false when the API says so, and null when it can't be told.
 // NOTE: `isOnline` is intentionally NOT read here. In /my-courses it describes the
@@ -591,13 +592,14 @@ const CourseDetails = () => {
     const { getToken, isSignedIn } = useAuth();
 
     const [course, setCourse] = useState(null);
+    const [trail, setTrail] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [otherCourses, setOtherCourses] = useState([]);
     const [ownedCourseIds, setOwnedCourseIds] = useState(new Set());
     // courseId -> true / false / null (true if the user bought it as ONLINE, null if unknown)
     const [ownedModes, setOwnedModes] = useState(new Map());
-    // ✱ NEW: courseId -> meeting link returned by /course/my-courses
+    // courseId -> meeting link returned by /course/my-courses
     const [ownedLinks, setOwnedLinks] = useState(new Map());
 
     const [planFiles, setPlanFiles] = useState([]);
@@ -636,7 +638,7 @@ const CourseDetails = () => {
         try { return await getToken({ skipCache: true }); } catch (_) { return null; }
     }, [getToken]);
 
-    // ✱ CHANGED: also stores the meeting link coming from /course/my-courses
+    // also stores the meeting link coming from /course/my-courses
     const fetchOwnedCourses = useCallback(async () => {
         const clear = () => {
             setOwnedCourseIds(new Set());
@@ -835,6 +837,8 @@ const CourseDetails = () => {
 
         return {
             id: a.id, slug: a.slug, title: a.title, description: a.description, place: a.place,
+            // category slug, if the API returns it (used by the breadcrumb)
+            categorySlug: a.categorySlug ?? a.CategorySlug ?? a.programSlug ?? a.ProgramSlug ?? a.category?.slug ?? null,
             price: onsitePrice, originalPrice: onsiteOriginalPrice,
             discountPercent: onsiteDiscountPercent, discountAmount: onsiteDiscountAmount,
             onlineCost: onlineCostRaw,
@@ -894,6 +898,14 @@ const CourseDetails = () => {
         })();
     }, [slug]);
 
+    // Category path for the breadcrumb (e.g. Category › Sub-category › Program)
+    useEffect(() => {
+        let off = false;
+        setTrail([]);
+        if (course) getCategoryTrailForCourse(course).then(t => { if (!off) setTrail(t); }).catch(() => { });
+        return () => { off = true; };
+    }, [course]);
+
     const isOwned = course ? ownedCourseIds.has(course.id) : false;
 
     // ── Rounds ──────────────────────────────────────────────────────────────
@@ -907,7 +919,6 @@ const CourseDetails = () => {
     const heroRound = isOwned ? ownedRound : (selectedRound || bookableRounds[0] || null);
     const heroStart = heroRound ? fmtDate(heroRound.startDate) : course?.startDate;
 
-    // ✱ CHANGED
     // ownedMode: true = bought online, false = bought onsite, null/undefined = API doesn't say
     const ownedMode = course ? ownedModes.get(course.id) : undefined;
     const boughtOnline = ownedMode === true;
@@ -932,7 +943,6 @@ const CourseDetails = () => {
         }
     }, [course?.id, isOwned, fetchCertForCourse]);
 
-    // ✱ CHANGED
     // Meeting-link settings — only needed when the meeting block is shown
     useEffect(() => {
         if (!course?.id || !showMeetingBlock) { setOnlineSetting(null); return; }
@@ -1122,7 +1132,6 @@ const CourseDetails = () => {
 
     const showFilesSection = planFilesLoading || planFiles.length > 0;
 
-    // ✱ CHANGED
     // Meeting link priority: online-settings → /my-courses → /Course/{slug}
     const meetingLink = onlineSetting?.link || ownedLinks.get(course?.id) || course?.onlineLink || '';
     const meetingVisible = !!meetingLink && (onlineSetting ? onlineSetting.visible : true);
@@ -1181,15 +1190,10 @@ const CourseDetails = () => {
             <style>{`*{font-family:${font}!important}${mediaQueryStyles}`}</style>
 
             <div dir="rtl" style={S.pageWrapper}>
-                <div style={{ ...S.overviewBar, top: 70 }} className="overview-bar">
-                    <div style={S.overviewBarText} className="breadcrumb-text">
-                        <a href="/" style={S.breadcrumbLink}
-                            onMouseEnter={e => e.target.style.color = '#f57c00'}
-                            onMouseLeave={e => e.target.style.color = '#0865a8'}>الصفحة الرئيسية</a>
-                        <span style={S.breadcrumbSep}>•</span>
-                        <span style={S.breadcrumbCur}>{course.title}</span>
-                    </div>
-                </div>
+                <CategoryBreadcrumb items={[
+                    ...trail.map(c => ({ label: c.title, to: `/courses/${c.slug}` })),
+                    { label: course.title },
+                ]} />
 
                 <div style={{ ...S.heroSection, background: heroBg }} className="hero-section">
                     <div style={S.heroContainer}>
@@ -1478,7 +1482,7 @@ const CourseDetails = () => {
 
                                                 <button className="btnViewMyCourses" style={S.btnViewMyCourses} onClick={() => navigate('/my-courses')}>عرض في دوراتي</button>
 
-                                                {/* ✱ CHANGED: ── Meeting link: users who bought the course online ── */}
+                                                {/* ── Meeting link: users who bought the course online ── */}
                                                 {showMeetingBlock && (
                                                     onlineLoading ? (
                                                         <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '13px', color: '#7c3aed', fontFamily: font }}>

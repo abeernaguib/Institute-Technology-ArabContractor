@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import Seo from '../components/Seo';
+import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
+import { getCategoryTrailBySlug } from '../utils/categoryPath';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
 
@@ -494,6 +496,7 @@ const CoursesPage = () => {
     const [certificates, setCertificates] = useState({});
     const [certsLoading, setCertsLoading] = useState({});
     const [previewCert, setPreviewCert] = useState(null);
+    const [trail, setTrail] = useState([]);
 
     const COURSES_PER_PAGE = 12;
     const [currentPage, setCurrentPage] = useState(1);
@@ -619,6 +622,13 @@ const CoursesPage = () => {
 
     useEffect(() => { setCurrentPage(1); }, [slug]);
 
+    useEffect(() => {
+        let off = false;
+        setTrail([]);
+        if (slug) getCategoryTrailBySlug(slug).then(t => { if (!off) setTrail(t); }).catch(() => { });
+        return () => { off = true; };
+    }, [slug]);
+
     const handleEnroll = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); navigate('/sign-in'); return; }
         const round = getSelectedRound(course);
@@ -726,6 +736,13 @@ const CoursesPage = () => {
 
     const courses = programData?.courses || [];
 
+    const crumbItems = trail.length
+        ? trail.map((c, i) => ({
+            label: c.title,
+            to: i < trail.length - 1 ? `/courses/${c.slug}` : undefined, // last = current page
+        }))
+        : [{ label: programData?.programName || '' }];
+
     const totalPages = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
     const page = Math.min(currentPage, totalPages);
     const visibleCourses = courses.slice((page - 1) * COURSES_PER_PAGE, page * COURSES_PER_PAGE);
@@ -789,13 +806,7 @@ const CoursesPage = () => {
                 })()}
                 {previewCert && <CertPreviewModal cert={previewCert} onClose={() => setPreviewCert(null)} />}
 
-                <div style={{ ...styles.overviewBar, top: 70 }} className="overview-bar">
-                    <div style={styles.overviewBarText}>
-                        <a href="/" style={styles.breadcrumbLink} onMouseEnter={e => e.target.style.color = '#f57c00'} onMouseLeave={e => e.target.style.color = '#0865a8'}>الصفحة الرئيسية</a>
-                        <span style={styles.breadcrumbSeparator}>•</span>
-                        <span style={styles.breadcrumbCurrent}>{programData?.programName || ''}</span>
-                    </div>
-                </div>
+                <CategoryBreadcrumb items={crumbItems} />
 
                 <div style={styles.mainContainer} className="main-container">
                     <div style={styles.pageHeader}>
