@@ -501,7 +501,7 @@ const css = `
     min-height: 100dvh;
     overflow-x: clip;
   }
-  @media (max-width: 640px) { .mc-page { --mc-hdr: 90px; } }
+  @media (max-width: 640px) { .mc-page { --mc-hdr: 70px; } }
 
   /* ── Container: grows with the screen ─────────────────────────────────── */
   .mc-container { width: 100%; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
