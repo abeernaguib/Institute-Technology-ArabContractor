@@ -1341,7 +1341,7 @@ const Navbar = () => {
 
             {/* ── MOBILE DRAWER ── */}
             <Drawer
-                anchor="right"
+                anchor="left"
                 open={mobileOpen}
                 onClose={toggleDrawer(false)}
                 SlideProps={{ onExited: () => { setMobileView('main'); setDrillStack([]); } }}
