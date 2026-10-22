@@ -1,4 +1,5 @@
 ﻿import React, { useState } from 'react';
+import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
 
 export default function ICMETTests() {
     const [selectedImg, setSelectedImg] = useState(null);
@@ -169,7 +170,7 @@ export default function ICMETTests() {
                 }
 
                 .main-content {
-                    padding-top: 45px;
+                    padding-top: 130px;
                 }
 
                 .hero-section {
@@ -497,16 +498,8 @@ export default function ICMETTests() {
                 .close-modal { position: absolute; top: -35px; left: 0; color: white; font-size: 2rem; cursor: pointer; }
             `}</style>
 
-            {/* Fixed navigation bar */}
-            <div className="fixed-nav">
-                <a href="/" style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none', marginLeft: '8px' }}
-                    onMouseEnter={e => e.target.style.color = '#f57c00'}
-                    onMouseLeave={e => e.target.style.color = '#0865a8'}>
-                    الصفحة الرئيسية
-                </a>
-                <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                <span style={{ color: '#374151' }}>الاختبارات</span>
-            </div>
+            {/* Breadcrumb (sits under the main navbar) */}
+            <CategoryBreadcrumb items={[{ label: 'الخدمات' }, { label: 'الاختبارات' }]} />
 
             <div className="main-content">
                 <section className="hero-section">

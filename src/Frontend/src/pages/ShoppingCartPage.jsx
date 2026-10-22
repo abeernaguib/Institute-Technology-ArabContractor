@@ -286,7 +286,7 @@ export default function ShoppingCartPage() {
                                     <ShoppingCart className="mx-auto mb-4 h-20 w-20 text-gray-300 md:h-24 md:w-24" />
                                     <h3 className="mb-2 text-xl font-bold text-black md:text-2xl">سلة التسوق فارغة</h3>
                                     <p className="mb-6 text-sm text-black opacity-60 md:text-base">لم تقم بإضافة أي دورات إلى السلة بعد</p>
-                                    <Link to="/" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0865a8] to-[#f57c00] px-6 py-3 font-bold text-white shadow-lg transition-all hover:scale-105 md:px-8">
+                                    <Link to="/courses/training-plan" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0865a8] to-[#f57c00] px-6 py-3 font-bold text-white shadow-lg transition-all hover:scale-105 md:px-8">
                                         تصفح الدورات
                                         <ArrowRight className="h-4 w-4 rotate-180 md:h-5 md:w-5" />
                                     </Link>

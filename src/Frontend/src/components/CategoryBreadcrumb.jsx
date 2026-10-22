@@ -7,22 +7,32 @@ const row = { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', align
 const link = { color: '#0865a8', textDecoration: 'none', fontWeight: 500, transition: 'color .2s' };
 const sep = { color: '#000', margin: '0 8px', opacity: 0.4 };
 const cur = { color: '#000', fontWeight: 600 };
+const plain = { color: '#374151', fontWeight: 500 };
 
-// items: [{ label, to? }]  — the last item is the current page (not a link)
+// items: [{ label, to? }]  — the last item is the current page; items without `to` are plain text
 const CategoryBreadcrumb = ({ items }) => (
     <div style={bar} className="overview-bar">
         <nav aria-label="breadcrumb" style={row}>
-            <Link to="/" style={link}>الصفحة الرئيسية</Link>
-            {items.map((it, i) => (
-                <React.Fragment key={`${it.label}-${i}`}>
-                    <span style={sep}>•</span>
-                    {it.to
-                        ? <Link to={it.to} style={link}
-                            onMouseEnter={e => (e.currentTarget.style.color = '#f57c00')}
-                            onMouseLeave={e => (e.currentTarget.style.color = '#0865a8')}>{it.label}</Link>
-                        : <span style={cur} aria-current="page">{it.label}</span>}
-                </React.Fragment>
-            ))}
+            <Link
+                to="/"
+                style={link}
+                onMouseEnter={e => (e.currentTarget.style.color = '#f57c00')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#0865a8')}>
+                الصفحة الرئيسية
+            </Link>
+            {items.map((it, i) => {
+                const isLast = i === items.length - 1;
+                return (
+                    <React.Fragment key={`${it.label}-${i}`}>
+                        <span style={sep}>•</span>
+                        {it.to
+                            ? <Link to={it.to} style={link}
+                                onMouseEnter={e => (e.currentTarget.style.color = '#f57c00')}
+                                onMouseLeave={e => (e.currentTarget.style.color = '#0865a8')}>{it.label}</Link>
+                            : <span style={isLast ? cur : plain} aria-current={isLast ? 'page' : undefined}>{it.label}</span>}
+                    </React.Fragment>
+                );
+            })}
         </nav>
     </div>
 );

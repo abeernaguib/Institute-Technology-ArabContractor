@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
 import { BookOpen, Check, Search, Calendar, Tag, ChevronLeft, ChevronRight, Sparkles, TrendingUp, Clock, Award, Star, Globe, Users, Building } from 'lucide-react';
 
 export default function ModernLibrary() {
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
     const [scrollProgress, setScrollProgress] = useState(0);
 
-    
+
 
     useEffect(() => {
         const hash = window.location.hash;
@@ -102,17 +103,11 @@ export default function ModernLibrary() {
                 <div style={{ height: '100%', background: 'linear-gradient(to right, #f57c00, #0865a8)', width: `${scrollProgress}%`, transition: 'width 0.3s ease' }} />
             </div>
 
-            {/* Nav */}
-            <div style={{ position: 'fixed', top: 4, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: isMobile ? '8px 12px' : '8px 20px', boxSizing: 'border-box' }}>
-                <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: isTiny ? '13px' : '1rem' }}>
-                    <a href="/" style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none', marginLeft: '8px' }}>الصفحة الرئيسية</a>
-                    <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                    <span style={{ color: '#374151' }}>المكتبة</span>
-                </div>
-            </div>
+            {/* Breadcrumb (sits under the main navbar) */}
+            <CategoryBreadcrumb items={[{ label: 'المكتبة' }]} />
 
             {/* ══ HERO ══ */}
-            <section style={{ ...sectionStyle('white'), paddingTop: isMobile ? '72px' : '120px', textAlign: 'center' }}>
+            <section style={{ ...sectionStyle('white'), paddingTop: isMobile ? '140px' : '150px', textAlign: 'center' }}>
                 <div style={containerStyle}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: isMobile ? '72px' : '100px', height: isMobile ? '72px' : '100px', background: 'linear-gradient(135deg, #0865a8, #f57c00)', borderRadius: isMobile ? '20px' : '28px', marginBottom: '20px', boxShadow: '0 16px 48px rgba(8,101,168,0.35)' }}>
                         <BookOpen style={{ width: isMobile ? '34px' : '48px', height: isMobile ? '34px' : '48px', color: 'white' }} />
@@ -286,8 +281,8 @@ export default function ModernLibrary() {
                     {/* ── NEW: Embassy definition image scroll strip ── */}
                     <div style={{ marginBottom: '24px' }}>
                         <div style={{ display: 'flex', gap: isTiny ? '10px' : '14px', overflowX: 'auto', paddingBottom: '10px', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x mandatory', justifyContent: 'center' }}>                            {embassyDefImages.map((img, i) => (
-                                <EmbassyDefImage key={i} img={img} isTiny={isTiny} isMobile={isMobile} />
-                            ))}
+                            <EmbassyDefImage key={i} img={img} isTiny={isTiny} isMobile={isMobile} />
+                        ))}
                         </div>
                     </div>
 
