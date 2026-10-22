@@ -63,6 +63,10 @@ function mapOtherCourse(a) {
     };
 }
 
+// ── Rounds (مواعيد انعقاد الدورة) ────────────────────────────────────────────
+const fmtDate = (d) => (d || '').replace(/-/g, '/');
+const fmtRange = (r) => (r ? `${fmtDate(r.startDate)} - ${fmtDate(r.endDate)}` : '');
+
 // ✱ CHANGED
 // Did this enrollment (from /course/my-courses) get bought as ONLINE?
 // Returns true / false when the API says so, and null when it can't be told.
@@ -328,6 +332,19 @@ const S = {
     },
 };
 
+const RS = {
+    box: { marginBottom: '16px' },
+    title: { fontSize: '14px', fontWeight: 'bold', color: '#000', marginBottom: '8px', display: 'block' },
+    item: { display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 14px', borderRadius: '10px', border: '2px solid #e0e0e0', backgroundColor: '#fff', cursor: 'pointer', marginBottom: '8px', fontSize: '14px', color: '#000', transition: 'all .2s', width: '100%', boxSizing: 'border-box', fontFamily: '"Noto Kufi Arabic",serif', textAlign: 'right' },
+    itemActive: { borderColor: '#0865a8', backgroundColor: '#f0f7ff', boxShadow: '0 2px 8px rgba(8,101,168,0.15)' },
+    radio: { width: 18, height: 18, borderRadius: '50%', border: '2px solid #9ca3af', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+    radioOn: { borderColor: '#0865a8' },
+    dot: { width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0865a8' },
+    hint: { fontSize: '12px', color: '#b45309' },
+    none: { padding: '12px 14px', borderRadius: '10px', background: '#f8f9fa', border: '1.5px solid #e2e8f0', fontSize: '13px', color: '#6b7280', textAlign: 'center', lineHeight: 1.7 },
+    myRound: { display: 'block', marginTop: '6px', fontSize: '13px', color: '#4a4a8a', fontWeight: 'bold' },
+};
+
 const REFUND_STATUS_MAP = {
     Pending: { label: 'قيد المراجعة', bg: '#fff8e1', color: '#f59e0b', icon: '⏳' },
     Approved: { label: 'تمت الموافقة', bg: '#e3f2fd', color: '#0865a8', icon: '✅' },
@@ -350,7 +367,7 @@ function getRefundPolicy(courseDateStr, coursePrice) {
     const daysLeft = Math.round((startDate - today) / (1000 * 60 * 60 * 24));
     if (daysLeft <= 0) return { type: 'blocked', reason: 'started' };
     if (daysLeft < 2) return { type: 'blocked', reason: 'tooClose', daysLeft };
-    if (daysLeft <= 6) return { type: 'partial', daysLeft, refundAmount: (coursePrice * 0.75).toLocaleString('ar-EG') };
+    if (daysLeft <= 7) return { type: 'partial', daysLeft, refundAmount: (coursePrice * 0.75).toLocaleString('ar-EG') };
     return { type: 'full', daysLeft };
 }
 
@@ -606,6 +623,8 @@ const CourseDetails = () => {
     const [loadingRefundCheck, setLoadingRefundCheck] = useState(false);
 
     const [mode, setMode] = useState('onsite');
+    const [selectedRoundId, setSelectedRoundId] = useState(null);
+    const [ownedRounds, setOwnedRounds] = useState(new Map());
     const [onlineSetting, setOnlineSetting] = useState(null);
     const [onlineLoading, setOnlineLoading] = useState(false);
 
@@ -623,6 +642,7 @@ const CourseDetails = () => {
             setOwnedCourseIds(new Set());
             setOwnedModes(new Map());
             setOwnedLinks(new Map());
+            setOwnedRounds(new Map());
         };
         if (!isSignedIn) { clear(); return; }
         try {
@@ -636,6 +656,10 @@ const CourseDetails = () => {
             setOwnedLinks(new Map(data.map(e => [
                 e.childId,
                 e.onlineLink ?? e.OnlineLink ?? e.meetingLink ?? e.MeetingLink ?? '',
+            ])));
+            setOwnedRounds(new Map(data.map(e => [
+                e.childId,
+                e.roundId ? { id: e.roundId, startDate: e.roundStart, endDate: e.roundEnd } : null,
             ])));
         } catch { clear(); }
     }, [isSignedIn, safeGetToken]);
@@ -830,6 +854,7 @@ const CourseDetails = () => {
             prerequisites: extractList(a.content, 'لمن يعقد البرنامج'),
             implementationMethods: extractList(a.content, 'طريقة تنفيذ البرنامج'),
             programDates: extractList(a.content, 'تاريخ انعقاد البرنامج'),
+            rounds: Array.isArray(a.rounds) ? a.rounds : [],
             startDate, endDate, date: a.date,
             image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800',
         };
@@ -845,6 +870,8 @@ const CourseDetails = () => {
                 const c = transform(await res.json());
                 setCourse(c);
                 setMode('onsite');
+                const open = c.rounds.filter(r => r.isBookable);
+                setSelectedRoundId(open.length === 1 ? open[0].id : null);
 
                 try {
                     const latestRes = await fetch(`${API_BASE}/course/latest`);
@@ -868,6 +895,17 @@ const CourseDetails = () => {
     }, [slug]);
 
     const isOwned = course ? ownedCourseIds.has(course.id) : false;
+
+    // ── Rounds ──────────────────────────────────────────────────────────────
+    const rounds = course?.rounds ?? [];
+    const hasRounds = rounds.length > 0;
+    const bookableRounds = rounds.filter(r => r.isBookable);
+    const noOpenRounds = hasRounds && bookableRounds.length === 0;
+    const selectedRound = bookableRounds.find(r => r.id === selectedRoundId) || null;
+    const canPurchase = !hasRounds || !!selectedRound;
+    const ownedRound = course ? (ownedRounds.get(course.id) ?? null) : null;
+    const heroRound = isOwned ? ownedRound : (selectedRound || bookableRounds[0] || null);
+    const heroStart = heroRound ? fmtDate(heroRound.startDate) : course?.startDate;
 
     // ✱ CHANGED
     // ownedMode: true = bought online, false = bought onsite, null/undefined = API doesn't say
@@ -923,8 +961,10 @@ const CourseDetails = () => {
         if (!course) return;
         setCartMsg(null);
 
-        if (!isSignedIn) {
-            navigate('/sign-in');
+        if (!isSignedIn) { navigate('/sign-in'); return; }
+
+        if (hasRounds && !selectedRound) {
+            setCartMsg({ type: 'error', text: 'يرجى اختيار موعد انعقاد الدورة أولاً' });
             return;
         }
 
@@ -942,7 +982,7 @@ const CourseDetails = () => {
             const res = await fetch(`${API_BASE}/cart/add/${course.id}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isOnline }),
+                body: JSON.stringify({ isOnline, roundId: selectedRound?.id ?? null }),
             });
 
             if (!res.ok) {
@@ -951,9 +991,12 @@ const CourseDetails = () => {
                     navigate('/sign-in');
                     return;
                 }
-                if (res.status === 409) {
-                    // already in cart — treat as success
-                } else {
+                if (res.status === 400) {
+                    const j = await res.json().catch(() => null);
+                    setCartMsg({ type: 'error', text: j?.message || 'تعذّرت إضافة الدورة إلى السلة' });
+                    return;
+                }
+                if (res.status !== 409) {   // 409 = already in cart, treat as success
                     setCartMsg({ type: 'error', text: await parseServerError(res) });
                     return;
                 }
@@ -964,23 +1007,30 @@ const CourseDetails = () => {
         }
 
         const cart = JSON.parse(localStorage.getItem('cartItems') || '[]');
-        if (!cart.some(i => i.id === course.id)) {
-            cart.push({
-                id: course.id, slug: course.slug, title: course.title,
-                instructor: course.place || 'غير محدد', image: course.image,
-                currentPrice: priceToUse,
-                originalPrice: isOnline ? (course.onlineOriginalPrice || 0) : (course.originalPrice || 0),
-                quantity: 1, isOnline, modeLabel: isOnline ? 'أونلاين' : 'حضوري',
-            });
-            localStorage.setItem('cartItems', JSON.stringify(cart));
-            window.dispatchEvent(new Event('cartUpdated'));
-        }
+        const entry = {
+            id: course.id, slug: course.slug, title: course.title,
+            instructor: course.place || 'غير محدد', image: course.image,
+            currentPrice: priceToUse,
+            originalPrice: isOnline ? (course.onlineOriginalPrice || 0) : (course.originalPrice || 0),
+            quantity: 1, isOnline, modeLabel: isOnline ? 'أونلاين' : 'حضوري',
+            roundId: selectedRound?.id ?? null,
+            roundStart: selectedRound?.startDate ?? null,
+            roundEnd: selectedRound?.endDate ?? null,
+        };
+        const idx = cart.findIndex(i => i.id === course.id);
+        if (idx >= 0) cart[idx] = { ...cart[idx], ...entry }; else cart.push(entry);
+        localStorage.setItem('cartItems', JSON.stringify(cart));
+        window.dispatchEvent(new Event('cartUpdated'));
         navigate(buyNow ? '/checkout' : '/cart');
     };
 
     const handleEnroll = async () => {
         if (!course) return;
         if (!isSignedIn) { navigate('/sign-in'); return; }
+        if (hasRounds && !selectedRound) {
+            setEnrollMsg({ type: 'error', text: 'يرجى اختيار موعد انعقاد الدورة أولاً' });
+            return;
+        }
         setEnrolling(true); setEnrollMsg(null);
         try {
             const token = await freshGetToken();
@@ -988,6 +1038,7 @@ const CourseDetails = () => {
             const res = await fetch(`${API_BASE}/course/enroll-free/${course.id}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roundId: selectedRound?.id ?? null }),
             });
             if (res.status === 401) {
                 setEnrollMsg({ type: 'error', text: 'انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى.' });
@@ -1055,7 +1106,7 @@ const CourseDetails = () => {
     const statusInfo = existingRefund ? REFUND_STATUS_MAP[existingRefund.status] : null;
 
     const refundPrice = course ? (boughtOnline ? course.onlinePrice : course.price) : 0;
-    const refundPolicy = course ? getRefundPolicy(course.date, refundPrice) : { type: 'unknown' };
+    const refundPolicy = course ? getRefundPolicy(ownedRound?.startDate || course.date, refundPrice) : { type: 'unknown' };
     const isRefundBlocked = refundPolicy.type === 'blocked';
 
     // Online is only offered when the admin enabled it for this course
@@ -1150,7 +1201,7 @@ const CourseDetails = () => {
                             <div style={S.heroInfo}>
                                 <span style={S.infoItem}>
                                     <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z" /><path d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H5.5a.5.5 0 010-1H7.5V4a.5.5 0 01.5-.5z" /></svg>
-                                    تاريخ البدء: {course.startDate}
+                                    تاريخ البدء: {heroStart}
                                 </span>
                                 <span style={S.infoItem}>
                                     <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
@@ -1213,16 +1264,23 @@ const CourseDetails = () => {
                                     </div>
                                 </div>
                             )}
-                            {course.programDates.length > 0 && (
+                            {(hasRounds || course.programDates.length > 0) && (
                                 <div style={S.section}>
                                     <h2 style={S.sectionHeading}>تاريخ انعقاد البرنامج</h2>
                                     <div style={S.dateGrid}>
-                                        {course.programDates.map((d, i) => (
-                                            <div key={i} style={S.dateItem}>
-                                                <span style={S.dateLabel}>الدورة {i + 1}:</span>
-                                                <span style={S.dateValue}>{d}</span>
-                                            </div>
-                                        ))}
+                                        {hasRounds
+                                            ? rounds.map((r, i) => (
+                                                <div key={r.id} style={{ ...S.dateItem, opacity: r.isBookable ? 1 : 0.55 }}>
+                                                    <span style={S.dateLabel}>الدورة {i + 1}:{!r.isBookable && ' (انتهى التسجيل)'}</span>
+                                                    <span style={S.dateValue}>{fmtRange(r)}</span>
+                                                </div>
+                                            ))
+                                            : course.programDates.map((d, i) => (
+                                                <div key={i} style={S.dateItem}>
+                                                    <span style={S.dateLabel}>الدورة {i + 1}:</span>
+                                                    <span style={S.dateValue}>{d}</span>
+                                                </div>
+                                            ))}
                                     </div>
                                 </div>
                             )}
@@ -1328,11 +1386,37 @@ const CourseDetails = () => {
                                         </div>
                                     )}
 
+                                    {/* ── Round picker ── */}
+                                    {!isOwned && hasRounds && (
+                                        noOpenRounds ? (
+                                            <div style={{ ...RS.none, marginBottom: '16px' }}>
+                                                🕐 لا توجد مواعيد متاحة للتسجيل حالياً.<br />سيتم الإعلان عن المواعيد القادمة قريباً.
+                                            </div>
+                                        ) : (
+                                            <div style={RS.box}>
+                                                <span style={RS.title}>📅 اختر موعد انعقاد الدورة</span>
+                                                {bookableRounds.map(r => {
+                                                    const active = selectedRoundId === r.id;
+                                                    return (
+                                                        <button key={r.id} type="button"
+                                                            onClick={() => { setSelectedRoundId(r.id); setCartMsg(null); setEnrollMsg(null); }}
+                                                            style={{ ...RS.item, ...(active ? RS.itemActive : {}) }}>
+                                                            <span style={{ ...RS.radio, ...(active ? RS.radioOn : {}) }}>{active && <span style={RS.dot} />}</span>
+                                                            <span style={{ flex: 1 }}>{fmtRange(r)}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                                {!selectedRound && <span style={RS.hint}>اختر موعدًا للمتابعة</span>}
+                                            </div>
+                                        )
+                                    )}
+
                                     <div style={S.priceSec}>
                                         {isOwned ? (
                                             <>
                                                 <span style={S.ownedLabel}>✅ مسجل</span>
                                                 <span style={S.priceSub}>لديك هذه الدورة بالفعل{boughtOnline ? ' (أونلاين)' : ''}</span>
+                                                {ownedRound && <span style={RS.myRound}>📅 موعدك: {fmtRange(ownedRound)}</span>}
                                             </>
                                         ) : course.isFree ? (
                                             <><span style={S.freeLabel}>مجاناً</span><span style={S.priceSub}>دورة مجانية بالكامل</span></>
@@ -1426,14 +1510,14 @@ const CourseDetails = () => {
                                                         {enrollMsg.text}
                                                     </div>
                                                 )}
-                                                <button className="btnEnroll" style={{ ...S.btnEnroll, opacity: enrolling ? 0.7 : 1, cursor: enrolling ? 'not-allowed' : 'pointer' }} onClick={handleEnroll} disabled={enrolling}>
+                                                <button className="btnEnroll" style={{ ...S.btnEnroll, opacity: (enrolling || !canPurchase) ? 0.7 : 1, cursor: (enrolling || !canPurchase) ? 'not-allowed' : 'pointer' }} onClick={handleEnroll} disabled={enrolling || !canPurchase}>
                                                     {enrolling ? '⏳ جاري التسجيل...' : '🎁 اشترك الآن — مجاناً'}
                                                 </button>
                                             </>
                                         ) : (
                                             <>
-                                                <button className="btnAddCart" style={S.btnAddCart} onClick={() => addToCart(false, effectiveMode)}>إضافة إلى السلة</button>
-                                                <button className="btnBuyNow" style={S.btnBuyNow} onClick={() => addToCart(true, effectiveMode)}>اشترِ الآن</button>
+                                                <button className="btnAddCart" disabled={!canPurchase} style={{ ...S.btnAddCart, ...(!canPurchase ? { opacity: 0.55, cursor: 'not-allowed' } : {}) }} onClick={() => addToCart(false, effectiveMode)}>إضافة إلى السلة</button>
+                                                <button className="btnBuyNow" disabled={!canPurchase} style={{ ...S.btnBuyNow, ...(!canPurchase ? { opacity: 0.55, cursor: 'not-allowed' } : {}) }} onClick={() => addToCart(true, effectiveMode)}>اشترِ الآن</button>
                                             </>
                                         )}
                                     </div>

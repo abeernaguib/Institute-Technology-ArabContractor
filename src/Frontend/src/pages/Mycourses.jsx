@@ -91,7 +91,10 @@ const MyCourses = () => {
                 slug: e.slug || '',
                 title: e.serviceTitle || e.title || '',
                 place: e.coursePlace || e.place || '',
-                date: e.courseDate || e.date || '',
+                // The round the user bought decides the date; old enrollments fall back to the legacy text
+                date: e.roundStart
+                    ? `${e.roundStart.replace(/-/g, '/')} - ${(e.roundEnd || e.roundStart).replace(/-/g, '/')}`
+                    : (e.courseDate || e.date || ''),
                 enrolledAt: e.enrolledAt || '',
                 isFree: e.isFree === true ||
                     (e.orderId === null || e.orderId === undefined) ||

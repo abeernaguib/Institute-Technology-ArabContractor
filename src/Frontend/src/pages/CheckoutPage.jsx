@@ -28,6 +28,9 @@ function normalizeCartItem(item) {
         slug: item.slug,
         courseImage: item.courseImage,
         quantity: 1,
+        roundStart: item.roundStart ?? null,
+        roundEnd: item.roundEnd ?? null,
+        roundIsBookable: item.roundIsBookable ?? null,
     };
 }
 
@@ -358,6 +361,7 @@ export default function CheckoutPage() {
     const subtotal = cartItems.reduce((sum, item) => sum + (item.currentPrice ?? 0) * (item.quantity || 1), 0);
     const totalOriginalPrice = cartItems.reduce((sum, item) => sum + (item.originalPrice ?? item.currentPrice ?? 0) * (item.quantity || 1), 0);
     const totalDiscount = totalOriginalPrice - subtotal;
+    const hasExpiredRound = cartItems.some(i => i.roundIsBookable === false);
 
     useEffect(() => { subtotalRef.current = subtotal; }, [subtotal]);
 
@@ -373,6 +377,10 @@ export default function CheckoutPage() {
         }
         if (cartItems.length === 0) {
             setError("السلة فارغة. يرجى إضافة دورات أولاً.");
+            return;
+        }
+        if (hasExpiredRound) {
+            setError("يوجد موعد منتهي في السلة. يرجى حذف الدورة من السلة وإضافتها مرة أخرى بموعد جديد.");
             return;
         }
 
@@ -667,6 +675,11 @@ export default function CheckoutPage() {
                                                 <p style={{ fontSize: 'clamp(0.75rem,2vw,0.875rem)', fontWeight: 500, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                     {item.title}
                                                 </p>
+                                                {item.roundStart && (
+                                                    <p style={{ fontSize: '0.72rem', color: '#6b7280', marginTop: 2 }}>
+                                                        📅 {item.roundStart.replace(/-/g, '/')} - {(item.roundEnd || item.roundStart).replace(/-/g, '/')}
+                                                    </p>
+                                                )}
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                                                     <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f57c00' }}>
                                                         {((item.currentPrice || 0) * (item.quantity || 1)).toFixed(2)} جنيه

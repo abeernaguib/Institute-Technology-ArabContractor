@@ -24,6 +24,9 @@ function getOnlineInfo(course) {
     };
 }
 
+const fmtDate = (d) => (d || '').replace(/-/g, '/');
+const fmtRange = (r) => (r ? `${fmtDate(r.startDate)} - ${fmtDate(r.endDate)}` : '');
+
 const styles = {
     overviewBar: { position: 'fixed', left: 0, top: '64px', zIndex: 40, width: '100%', backgroundColor: '#f5f5f5', padding: '12px 24px', boxSizing: 'border-box', boxShadow: '0 2px 4px rgba(0,0,0,0.08)', borderBottom: '1px solid #e0e0e0' },
     overviewBarText: { textAlign: 'center', fontSize: '14px', fontFamily: '"Noto Kufi Arabic", serif', color: '#000000' },
@@ -187,7 +190,7 @@ function getRefundPolicy(courseDateStr, coursePrice) {
     const daysLeft = Math.round((startDate - today) / (1000 * 60 * 60 * 24));
     if (daysLeft <= 0) return { type: 'blocked', reason: 'started' };
     if (daysLeft < 2) return { type: 'blocked', reason: 'tooClose', daysLeft };
-    if (daysLeft <= 6) return { type: 'partial', daysLeft, refundAmount: (coursePrice * 0.75).toLocaleString('ar-EG') };
+    if (daysLeft <= 7) return { type: 'partial', daysLeft, refundAmount: (coursePrice * 0.75).toLocaleString('ar-EG') };
     return { type: 'full', daysLeft };
 }
 
@@ -499,6 +502,13 @@ const CoursesPage = () => {
     const getCourseMode = (id) => courseModes[id] || 'onsite';
     const handleModeChange = (id, mode) => setCourseModes(prev => ({ ...prev, [id]: mode }));
 
+    const [courseRoundSel, setCourseRoundSel] = useState({});
+    const openRounds = (course) => (course.rounds || []).filter(r => r.isBookable);
+    const getSelectedRound = (course) => {
+        const open = openRounds(course);
+        return open.find(r => r.id === courseRoundSel[course.id]) || (open.length === 1 ? open[0] : null);
+    };
+
     const showToast = (message, type = 'success') => setToast({ message, type });
 
     const safeGetToken = useCallback(async () => {
@@ -611,6 +621,8 @@ const CoursesPage = () => {
 
     const handleEnroll = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); navigate('/sign-in'); return; }
+        const round = getSelectedRound(course);
+        if ((course.rounds || []).length > 0 && !round) { showToast('يرجى اختيار موعد انعقاد الدورة أولاً', 'warning'); return; }
         setEnrollingId(course.id);
         setEnrollMsgs(prev => ({ ...prev, [course.id]: null }));
         try {
@@ -619,6 +631,7 @@ const CoursesPage = () => {
             const res = await fetch(`${API_BASE}/course/enroll-free/${course.id}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roundId: round?.id ?? null }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -644,6 +657,8 @@ const CoursesPage = () => {
 
     const addToCart = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); return; }
+        const round = getSelectedRound(course);
+        if ((course.rounds || []).length > 0 && !round) { showToast('يرجى اختيار موعد انعقاد الدورة أولاً', 'warning'); return; }
         const online = getOnlineInfo(course);
         // online only if the course supports it AND the user picked it
         const isOnline = online.available && getCourseMode(course.id) === 'online';
@@ -655,26 +670,33 @@ const CoursesPage = () => {
             const res = await fetch(`${API_BASE}/cart/add/${course.id}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isOnline }),
+                body: JSON.stringify({ isOnline, roundId: round?.id ?? null }),
             });
             if (!res.ok) {
+                if (res.status === 400) {
+                    const j = await res.json().catch(() => null);
+                    throw new Error(j?.message || 'تعذّرت إضافة الدورة');
+                }
                 const msgs = { 401: 'انتهت الجلسة، سجل دخول مرة أخرى', 404: 'الدورة غير موجودة', 409: 'الدورة موجودة بالفعل في السلة', 500: 'خطأ في الخادم' };
                 throw new Error(msgs[res.status] || 'فشل إضافة الدورة');
             }
             const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-            if (!cartItems.some(i => i.id === course.id)) {
-                cartItems.push({
-                    id: course.id, title: course.title,
-                    instructor: course.place || 'غير محدد', image: 'book',
-                    currentPrice: priceToUse,
-                    originalPrice: isOnline ? (online.oldCost || 0) : (course.oldCost || (course.cost ? course.cost / 0.6 : 0)),
-                    quantity: 1, slug: course.slug || '',
-                    date: course.date || '', place: course.place || '',
-                    isOnline, modeLabel: isOnline ? 'أونلاين' : 'حضوري',
-                });
-                localStorage.setItem('cartItems', JSON.stringify(cartItems));
-                window.dispatchEvent(new Event('cartUpdated'));
-            }
+            const entry = {
+                id: course.id, title: course.title,
+                instructor: course.place || 'غير محدد', image: 'book',
+                currentPrice: priceToUse,
+                originalPrice: isOnline ? (online.oldCost || 0) : (course.oldCost || (course.cost ? course.cost / 0.6 : 0)),
+                quantity: 1, slug: course.slug || '',
+                date: course.date || '', place: course.place || '',
+                isOnline, modeLabel: isOnline ? 'أونلاين' : 'حضوري',
+                roundId: round?.id ?? null,
+                roundStart: round?.startDate ?? null,
+                roundEnd: round?.endDate ?? null,
+            };
+            const idx = cartItems.findIndex(i => i.id === course.id);
+            if (idx >= 0) cartItems[idx] = { ...cartItems[idx], ...entry }; else cartItems.push(entry);
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            window.dispatchEvent(new Event('cartUpdated'));
             showToast('تمت إضافة الدورة إلى السلة بنجاح', 'success');
         } catch (err) { showToast(err.message || 'حدث خطأ', 'error'); }
         finally { setAddingToCart(null); }
@@ -760,9 +782,10 @@ const CoursesPage = () => {
                 {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
                 {refundCourse && (() => {
                     const enr = ownedEnrollments.find(e => String(e.childId) === String(refundCourse.id));
-                    const paidOnline = enr ? !!(enr.isOnline ?? enr.IsOnline ?? false) : false;
+                    const paidOnline = !!enr?.purchasedOnline;
                     const paidPrice = paidOnline ? getOnlineInfo(refundCourse).price : (refundCourse.cost || 0);
-                    return <RefundModal course={refundCourse} price={paidPrice} getToken={safeGetToken} onClose={() => setRefundCourse(null)} />;
+                    return <RefundModal course={{ ...refundCourse, date: enr?.roundStart || refundCourse.date }}
+                        price={paidPrice} getToken={safeGetToken} onClose={() => setRefundCourse(null)} />;
                 })()}
                 {previewCert && <CertPreviewModal cert={previewCert} onClose={() => setPreviewCert(null)} />}
 
@@ -804,6 +827,15 @@ const CoursesPage = () => {
                                     const activePrice = mode === 'online' ? online.price : (course.cost || 0);
                                     const activeOldCost = mode === 'online' ? online.oldCost : course.oldCost;
                                     const activeDiscount = mode === 'online' ? online.discount : course.discountPercentage;
+
+                                    // ── rounds logic ──
+                                    const hasRounds = (course.rounds || []).length > 0;
+                                    const open = openRounds(course);
+                                    const noOpenRounds = hasRounds && open.length === 0;
+                                    const selRound = getSelectedRound(course);
+                                    const canBuy = !hasRounds || !!selRound;
+                                    const myEnr = isOwned ? ownedEnrollments.find(e => String(e.childId) === String(course.id)) : null;
+                                    const myRoundText = myEnr?.roundStart ? `${fmtDate(myEnr.roundStart)} - ${fmtDate(myEnr.roundEnd)}` : null;
 
                                     return (
                                         <div key={course.id}
@@ -847,10 +879,28 @@ const CoursesPage = () => {
                                                             <span style={styles.clampText}>{course.place}</span>
                                                         </div>
                                                     )}
-                                                    {course.date && (
+                                                    {(course.date || hasRounds) && (
                                                         <div style={styles.infoRow}>
                                                             <svg style={styles.infoIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                            <span>{course.date}</span>
+                                                            {isOwned ? (
+                                                                <span>{myRoundText ? `موعدك: ${myRoundText}` : course.date}</span>
+                                                            ) : hasRounds ? (
+                                                                noOpenRounds ? (
+                                                                    <span style={{ color: '#b45309' }}>لا توجد مواعيد متاحة حالياً</span>
+                                                                ) : open.length === 1 ? (
+                                                                    <span>{fmtRange(open[0])}</span>
+                                                                ) : (
+                                                                    <select
+                                                                        value={selRound?.id ?? ''}
+                                                                        onChange={e => setCourseRoundSel(p => ({ ...p, [course.id]: Number(e.target.value) }))}
+                                                                        style={{ flex: 1, padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '13px', background: '#fff' }}>
+                                                                        <option value="" disabled>اختر الموعد</option>
+                                                                        {open.map(r => <option key={r.id} value={r.id}>{fmtRange(r)}</option>)}
+                                                                    </select>
+                                                                )
+                                                            ) : (
+                                                                <span>{course.date}</span>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -944,8 +994,8 @@ const CoursesPage = () => {
                                                             )}
                                                             <button
                                                                 onClick={() => handleEnroll(course)}
-                                                                disabled={isEnrolling}
-                                                                style={{ ...styles.enrollBtn, ...(hoveredAddBtn === course.id && !isEnrolling ? styles.enrollBtnHover : {}), ...(isEnrolling ? { opacity: 0.7, cursor: 'not-allowed' } : {}) }}
+                                                                disabled={isEnrolling || !canBuy}
+                                                                style={{ ...styles.enrollBtn, ...(hoveredAddBtn === course.id && !isEnrolling ? styles.enrollBtnHover : {}), ...((isEnrolling || !canBuy) ? { opacity: 0.7, cursor: 'not-allowed' } : {}) }}
                                                                 onMouseEnter={() => !isEnrolling && setHoveredAddBtn(course.id)}
                                                                 onMouseLeave={() => setHoveredAddBtn(null)}>
                                                                 {isEnrolling
@@ -968,8 +1018,8 @@ const CoursesPage = () => {
                                                         <>
                                                             <button
                                                                 onClick={() => addToCart(course)}
-                                                                disabled={isAdding}
-                                                                style={{ ...styles.addToCartBtn, ...(hoveredAddBtn === course.id && !isAdding ? styles.addToCartBtnHover : {}), ...(isAdding ? styles.addToCartBtnDisabled : {}) }}
+                                                                disabled={isAdding || !canBuy}
+                                                                style={{ ...styles.addToCartBtn, ...(hoveredAddBtn === course.id && !isAdding ? styles.addToCartBtnHover : {}), ...((isAdding || !canBuy) ? styles.addToCartBtnDisabled : {}) }}
                                                                 onMouseEnter={() => !isAdding && setHoveredAddBtn(course.id)}
                                                                 onMouseLeave={() => setHoveredAddBtn(null)}>
                                                                 {isAdding

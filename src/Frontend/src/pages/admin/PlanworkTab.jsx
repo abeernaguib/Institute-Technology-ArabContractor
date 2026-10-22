@@ -561,6 +561,167 @@ function FilesSection({ planworkId, planworkName }) {
     );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// RoundsSection — مواعيد انعقاد الدورة
+// GET    /api/admin/AdminPlanwork/{id}/rounds
+// POST   /api/admin/AdminPlanwork/{id}/rounds        { startDate, endDate }   (yyyy-MM-dd)
+// PUT    /api/admin/AdminPlanwork/rounds/{roundId}   { startDate?, endDate?, isActive? }
+// DELETE /api/admin/AdminPlanwork/rounds/{roundId}
+// ══════════════════════════════════════════════════════════════════════════════
+async function roundsApi(url, method = 'GET', body) {
+    const res = await fetch(`${BASE_URL}${url}`, {
+        method,
+        headers: await authHeaders(),
+        body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return data;
+}
+
+function RoundsSection({ planworkId, planworkName, onChanged }) {
+    const [rounds, setRounds] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [form, setForm] = useState({ id: null, startDate: '', endDate: '', enrollments: 0 });
+    const [saving, setSaving] = useState(false);
+    const [notif, setNotif] = useState(null);
+    const [delId, setDelId] = useState(null);
+
+    const toast = (msg, type = 'success') => { setNotif({ msg, type }); setTimeout(() => setNotif(null), 3500); };
+    const resetForm = () => setForm({ id: null, startDate: '', endDate: '', enrollments: 0 });
+
+    const load = async () => {
+        setLoading(true);
+        try { setRounds(await roundsApi(`/api/admin/AdminPlanwork/${planworkId}/rounds`)); }
+        catch (e) { setRounds([]); toast('فشل تحميل المواعيد: ' + e.message, 'error'); }
+        finally { setLoading(false); }
+    };
+
+    useEffect(() => { resetForm(); setDelId(null); load(); }, [planworkId]);
+
+    const save = async () => {
+        if (!form.startDate || !form.endDate) { toast('يرجى إدخال تاريخ البداية والنهاية', 'error'); return; }
+        if (form.endDate < form.startDate) { toast('تاريخ النهاية قبل تاريخ البداية', 'error'); return; }
+        setSaving(true);
+        try {
+            const body = { startDate: form.startDate, endDate: form.endDate };
+            if (form.id) await roundsApi(`/api/admin/AdminPlanwork/rounds/${form.id}`, 'PUT', body);
+            else await roundsApi(`/api/admin/AdminPlanwork/${planworkId}/rounds`, 'POST', body);
+            toast(form.id ? 'تم تعديل الموعد' : 'تمت إضافة الموعد');
+            resetForm(); await load(); onChanged?.();
+        } catch (e) { toast(e.message, 'error'); }
+        finally { setSaving(false); }
+    };
+
+    const toggleActive = async (r) => {
+        try {
+            await roundsApi(`/api/admin/AdminPlanwork/rounds/${r.id}`, 'PUT', { isActive: !r.isActive });
+            toast(r.isActive ? 'تم تعطيل الموعد' : 'تم تفعيل الموعد', 'info');
+            await load(); onChanged?.();
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    const remove = async (r) => {
+        if (delId !== r.id) { setDelId(r.id); return; }
+        try {
+            await roundsApi(`/api/admin/AdminPlanwork/rounds/${r.id}`, 'DELETE');
+            setDelId(null); toast('تم حذف الموعد', 'error');
+            if (form.id === r.id) resetForm();
+            await load(); onChanged?.();
+        } catch (e) { setDelId(null); toast(e.message, 'error'); }
+    };
+
+    const statusOf = r => !r.isActive ? { t: 'معطّل', c: '#6b7280' }
+        : r.isBookable ? { t: 'متاح للتسجيل', c: '#059669' } : { t: 'بدأ', c: '#b45309' };
+
+    return (
+        <div className="pw-files-section" style={{ marginBottom: 16 }}>
+            <div className="pw-files-hdr">
+                <span className="pw-files-icon">📅</span>
+                <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                    <div className="pw-files-title">مواعيد انعقاد الدورة</div>
+                    <div className="pw-files-sub">{planworkName}</div>
+                </div>
+                <span className="lec-count-badge" style={{ position: 'relative', zIndex: 1 }}>{rounds.length}</span>
+            </div>
+
+            {notif && (
+                <div className={`lec-notif lec-notif-${notif.type}`} style={{ margin: '10px 14px 0' }}>
+                    <span>{notif.type === 'success' ? '✅' : notif.type === 'error' ? '❌' : 'ℹ️'}</span>{notif.msg}
+                </div>
+            )}
+
+            <div className="pw-files-body">
+                <div className="pw-files-form">
+                    <div className="lec-field">
+                        <label className="lec-label">تاريخ البداية <span style={{ color: '#dc2626' }}>*</span></label>
+                        <input className="lec-inp" type="date" value={form.startDate}
+                            onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
+                            style={{ direction: 'ltr', textAlign: 'right' }} />
+                    </div>
+                    <div className="lec-field">
+                        <label className="lec-label">تاريخ النهاية <span style={{ color: '#dc2626' }}>*</span></label>
+                        <input className="lec-inp" type="date" value={form.endDate}
+                            onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
+                            style={{ direction: 'ltr', textAlign: 'right' }} />
+                    </div>
+                    {form.id && form.enrollments > 0 && (
+                        <p style={{ fontSize: '.72rem', color: '#b45309', margin: '0 0 8px' }}>
+                            عليه {form.enrollments} اشتراك — يمكن تأجيله فقط (لا يمكن تقديم تاريخ البداية). المشتركون لا يُخطَرون تلقائياً.
+                        </p>
+                    )}
+                    <div className="pw-files-actions">
+                        <button className="lec-act-btn save" onClick={save} disabled={saving} style={{ padding: '7px 16px', fontSize: '.76rem' }}>
+                            {saving ? '⏳ جاري الحفظ...' : form.id ? '💾 حفظ التعديل' : '➕ إضافة موعد'}
+                        </button>
+                        {form.id && <button className="adm-fclear" onClick={resetForm}>إلغاء التعديل</button>}
+                    </div>
+                    <p style={{ fontSize: '.7rem', color: '#6b7280', marginTop: 10, lineHeight: 1.7 }}>
+                        هذه المواعيد هي التي يختار منها المتدرب عند الشراء. تاريخ الكورس القديم يُحدَّث تلقائياً من أقرب موعد متاح.
+                    </p>
+                </div>
+
+                <div className="pw-files-table-wrap">
+                    {loading ? (
+                        <div className="adm-empty" style={{ padding: '28px 12px' }}><div className="adm-emi">⏳</div><p>جاري التحميل...</p></div>
+                    ) : rounds.length === 0 ? (
+                        <div className="adm-empty" style={{ padding: '28px 12px' }}><div className="adm-emi">📅</div><p>لا توجد مواعيد — أضف أول موعد</p></div>
+                    ) : (
+                        <table className="pw-files-tbl">
+                            <thead><tr><th>البداية</th><th>النهاية</th><th>الحالة</th><th>الاشتراكات</th><th></th></tr></thead>
+                            <tbody>
+                                {rounds.map(r => {
+                                    const st = statusOf(r);
+                                    return (
+                                        <tr key={r.id} className={form.id === r.id ? 'active' : ''}
+                                            onClick={() => setForm({ id: r.id, startDate: r.startDate, endDate: r.endDate, enrollments: r.enrollmentsCount })}>
+                                            <td style={{ direction: 'ltr' }}>{r.startDate}</td>
+                                            <td style={{ direction: 'ltr' }}>
+                                                {r.endDate}
+                                                {r.durationDays > 30 && <span title={`${r.durationDays} يوم`} style={{ marginRight: 6, color: '#b45309' }}>⚠️</span>}
+                                            </td>
+                                            <td style={{ color: st.c, fontWeight: 700, fontSize: '.72rem' }}>{st.t}</td>
+                                            <td style={{ textAlign: 'center' }}>{r.enrollmentsCount}</td>
+                                            <td onClick={e => e.stopPropagation()} style={{ whiteSpace: 'nowrap' }}>
+                                                <button className="adm-fclear" onClick={() => toggleActive(r)}>{r.isActive ? 'تعطيل' : 'تفعيل'}</button>{' '}
+                                                {r.enrollmentsCount === 0 && (
+                                                    <button className="adm-fclear" style={{ color: '#dc2626' }} onClick={() => remove(r)}>
+                                                        {delId === r.id ? 'تأكيد الحذف' : '🗑'}
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ── ParentSelector (unchanged) ────────────────────────────────────────────────
 function ParentSelector({ parentId, onChange, allTreeNodes }) {
     return (
@@ -699,6 +860,20 @@ const PlanworkTab = () => {
             }
         } catch (e) { toast('فشل الحفظ: ' + e.message, 'error'); }
         finally { setSaving(false); }
+    };
+
+    // The server rewrites the legacy course date whenever rounds change.
+    // Refresh only that field so any unsaved edits in the form are kept.
+    const handleRoundsChanged = async () => {
+        if (!selected) return;
+        try {
+            const res = await fetch(`${BASE_URL}/api/admin/AdminPlanwork/${selected.id}`, { headers: await authHeaders() });
+            if (!res.ok) return;
+            const fresh = apiToForm(await res.json());
+            setForm(f => ({ ...f, date: fresh.date }));
+            setSelected(s => (s ? { ...s, date: fresh.date } : s));
+            setRecords(prev => prev.map(r => (r.id === fresh.id ? { ...r, date: fresh.date } : r)));
+        } catch (_) { }
     };
 
     const handleReset = () => {
@@ -843,7 +1018,13 @@ const PlanworkTab = () => {
                                     )}
                                     <Field label="المكان"><input className="lec-inp" name="place" value={form.place} onChange={handleChange} placeholder="المكان..." /></Field>
                                     <Field label="التاريخ">
-                                        <input className="lec-inp" name="date" type="date" value={form.date} onChange={handleChange} style={{ direction: 'ltr', textAlign: 'right' }} />
+                                        {form.date && !/^\d{4}-\d{2}-\d{2}$/.test(form.date) ? (
+                                            <input className="lec-inp" value={form.date} disabled
+                                                title="يتم تحديث هذا التاريخ تلقائياً من مواعيد الانعقاد"
+                                                style={{ background: T.gray100, color: T.gray500, direction: 'ltr', textAlign: 'right', cursor: 'not-allowed' }} />
+                                        ) : (
+                                            <input className="lec-inp" name="date" type="date" value={form.date} onChange={handleChange} style={{ direction: 'ltr', textAlign: 'right' }} />
+                                        )}
                                     </Field>
                                     <Field label="الوصف" full><input className="lec-inp" name="description" value={form.description} onChange={handleChange} placeholder="الوصف..." /></Field>
                                     <div className="lec-field" style={{ gridColumn: '1/-1' }}>
@@ -891,6 +1072,9 @@ const PlanworkTab = () => {
                                 </div>
 
                                 <div className="lec-divider" style={{ marginTop: 8 }} />
+                                {!isNew && selected && !form.hasDetails && (
+                                    <RoundsSection planworkId={selected.id} planworkName={selected.name} onChanged={handleRoundsChanged} />
+                                )}
                                 {!isNew && selected && <FilesSection planworkId={selected.id} planworkName={selected.name} />}
                             </div>
                         )}

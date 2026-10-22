@@ -5,6 +5,8 @@ import { useAuth } from '@clerk/clerk-react';
 
 const API_BASE = 'https://icemt.arabcont.com/api';
 
+const fmtDate = (d) => (d || '').replace(/-/g, '/');
+
 const CartItemFull = ({ item, onRemove }) => {
     return (
         <div className="group relative mb-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg md:mb-6">
@@ -73,7 +75,7 @@ const CartItemFull = ({ item, onRemove }) => {
                         )}
                     </div>
 
-                    {(item.place || item.date) && (
+                    {(item.place || item.date || item.roundStart) && (
                         <div className="mb-3 flex flex-wrap gap-2 text-xs text-black md:mb-4 md:gap-3">
                             {item.place && (
                                 <span className="flex items-center gap-1">
@@ -83,14 +85,20 @@ const CartItemFull = ({ item, onRemove }) => {
                                     <span className="line-clamp-1">{item.place}</span>
                                 </span>
                             )}
-                            {item.date && (
+                            {(item.roundStart || item.date) && (
                                 <span className="flex items-center gap-1">
                                     <svg className="h-4 w-4 text-[#0865a8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span>{item.date}</span>
+                                    <span>{item.roundStart ? `${fmtDate(item.roundStart)} - ${fmtDate(item.roundEnd)}` : item.date}</span>
                                 </span>
                             )}
+                        </div>
+                    )}
+
+                    {item.roundIsBookable === false && (
+                        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 md:text-sm">
+                            ⚠️ هذا الموعد بدأ ولا يمكن الاشتراك فيه. احذف الدورة من السلة ثم أضفها مرة أخرى باختيار موعد جديد.
                         </div>
                     )}
 
@@ -120,7 +128,7 @@ export default function ShoppingCartPage() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    
+
 
     useEffect(() => {
         const loadCart = async () => {
@@ -155,6 +163,10 @@ export default function ShoppingCartPage() {
                         quantity: 1,
                         // ── UPDATED: carry isOnline from API response ──
                         isOnline: item.isOnline ?? item.IsOnline ?? false,
+                        roundId: item.roundId ?? null,
+                        roundStart: item.roundStart ?? null,
+                        roundEnd: item.roundEnd ?? null,
+                        roundIsBookable: item.roundIsBookable ?? null,
                     }));
 
                     setItems(transformedItems);
@@ -202,6 +214,8 @@ export default function ShoppingCartPage() {
     };
 
     const totalPrice = items.reduce((sum, item) => sum + ((item.currentPrice || 0) * (item.quantity || 1)), 0);
+
+    const hasExpiredRound = items.some(i => i.roundIsBookable === false);
 
     if (loading) {
         return (
@@ -307,10 +321,19 @@ export default function ShoppingCartPage() {
                                         </p>
                                     </div>
 
-                                    <Link to="/checkout" className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#0865a8] to-[#f57c00] py-3 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:py-4">
-                                        المتابعة للدفع
-                                        <ArrowRight className="h-4 w-4 rotate-180 md:h-5 md:w-5" />
-                                    </Link>
+                                    {hasExpiredRound ? (
+                                        <>
+                                            <div className="mb-2 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-300 py-3 font-bold text-white md:py-4">
+                                                المتابعة للدفع
+                                            </div>
+                                            <p className="mb-4 text-center text-xs font-semibold text-red-600">احذف الدورات ذات المواعيد المنتهية للمتابعة</p>
+                                        </>
+                                    ) : (
+                                        <Link to="/checkout" className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#0865a8] to-[#f57c00] py-3 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:py-4">
+                                            المتابعة للدفع
+                                            <ArrowRight className="h-4 w-4 rotate-180 md:h-5 md:w-5" />
+                                        </Link>
+                                    )}
 
                                     <p className="mb-4 text-center text-xs text-black opacity-60 md:mb-6">🔒 معاملة آمنة ومحمية</p>
 
