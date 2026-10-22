@@ -65,7 +65,7 @@ export const TABS = [
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓' },
     { id: 'news', label: 'الأخبار', icon: '📰' },
     { id: 'books', label: 'الكتب', icon: '📖' },
-    { id: 'planwork', label: 'خطة العمل', icon: '📋' },
+    { id: 'planwork', label: 'الدورات التدريبية', icon: '📋' },
     { id: 'settings', label: 'الإعدادات', icon: '⚙️' },
 ];
 
