@@ -110,16 +110,23 @@ namespace Institute.Application.Services
             {
                 no++;
                 var plan = item.Planwork;
-                rows.Append(
-                    "<tr>" +
-                    Td(no.ToString(CultureInfo.InvariantCulture)) +
-                    Td(Enc(plan?.ServiceTitle)) +
-                    Td(Enc(plan?.CourseDate)) +
-                    Td(Enc(plan?.CourseDays)) +
-                    Td(Enc(plan?.CoursePlace)) +
-                    Td(item.IsOnline ? "أونلاين" : "حضوري") +
-                    Td($"{Money(item.Price)} جنيه") +
-                    "</tr>");
+
+                // Use the round the user bought; old order items without a round fall back to the legacy text
+                var dateText = item.Round != null
+                    ? $"{item.Round.StartDate:yyyy/MM/dd} - {item.Round.EndDate:yyyy/MM/dd}"
+                    : plan?.CourseDate;
+
+                // Values are already HTML-encoded (Dash encodes)
+                itemRows.Add(new Dictionary<string, string>
+                {
+                    ["No"] = no.ToString(CultureInfo.InvariantCulture),
+                    ["Title"] = Dash(plan?.ServiceTitle),
+                    ["Date"] = Dash(dateText),
+                    ["Days"] = Dash(plan?.CourseDays),
+                    ["Place"] = Dash(plan?.CoursePlace),
+                    ["Type"] = item.IsOnline ? "أونلاين" : "حضوري",
+                    ["Price"] = $"{Money(item.Price)} جنيه",
+                });
             }
 
             // Everything below is already HTML-encoded
