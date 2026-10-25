@@ -24,12 +24,15 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
-Console.WriteLine("AzureStorage Conn = " + builder.Configuration["AzureStorage:ConnectionString"]);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -73,19 +76,26 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 #region (CORS)
+var allowedOrigins = new List<string>
+{
+    "https://acwebsite-icmet-test.azurewebsites.net",
+    "https://icmet-a3bvdmgua9akf7c5.westeurope-01.azurewebsites.net",
+    "https://icemt.arabcont.com"
+};
+
+// Local frontend is only allowed when running in Development
+if (builder.Environment.IsDevelopment())
+{
+    allowedOrigins.Add("http://localhost:5173");
+    allowedOrigins.Add("https://localhost:5173");
+}
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost",
-        builder => builder
-            .WithOrigins(
-                "http://localhost:5173",
-                "https://acwebsite-icmet-test.azurewebsites.net",
-                "https://icmet-a3bvdmgua9akf7c5.westeurope-01.azurewebsites.net",
-                "https://icemt.arabcont.com"
-
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+    options.AddPolicy("AppCors", policy => policy
+        .WithOrigins(allowedOrigins.ToArray())
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 #endregion
 
@@ -98,11 +108,6 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<NewsPictureUrlResolver<NewsListDto>>();
 builder.Services.AddScoped<NewsPictureUrlResolver<NewsDetailsDto>>();
 builder.Services.AddScoped<INewsService, NewsService>();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    });
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -130,6 +135,7 @@ builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("Pa
 builder.Services.Configure<RoundsOptions>(builder.Configuration.GetSection("Rounds"));
 builder.Services.AddScoped<IRoundSelectionService, RoundSelectionService>();
 builder.Services.AddScoped<IPlanworkRoundService, PlanworkRoundService>();
+
 // Email notifications
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
@@ -156,7 +162,13 @@ builder.Services.AddHttpClient("BankClient", client =>
 #endregion
 
 #region (Authentication And Authorization)
-var clerkAuthority = builder.Configuration["Clerk:Authority"];
+var clerkAuthority = builder.Configuration["Clerk:Authority"]?.TrimEnd('/');
+if (string.IsNullOrWhiteSpace(clerkAuthority))
+{
+    // Without the authority no token can be validated, so fail fast with a clear message
+    throw new InvalidOperationException(
+        "Clerk:Authority is not configured. Set it in App Settings as 'Clerk__Authority'.");
+}
 var jwksUrl = $"{clerkAuthority}/.well-known/jwks.json";
 
 List<SecurityKey> clerkSigningKeys = new();
@@ -222,11 +234,6 @@ builder.Services
                 Console.WriteLine("❌ AUTH FAILED: " + context.Exception);
                 return Task.CompletedTask;
             },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("✅ TOKEN VALIDATED");
-                return Task.CompletedTask;
-            },
             OnChallenge = context =>
             {
                 context.HandleResponse();
@@ -277,88 +284,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
-app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("AppCors");
 app.UseAuthentication();
-app.UseAuthentication();
-
-// ⚠ DEV ONLY – remove after testing. Never active outside the Development environment.
-if (app.Environment.IsDevelopment())
-{
-    var devClerkUserId = app.Configuration["DevAuth:ClerkUserId"];
-    if (!string.IsNullOrWhiteSpace(devClerkUserId))
-    {
-        app.Use(async (ctx, next) =>
-        {
-            if (ctx.User.Identity?.IsAuthenticated != true)
-            {
-                var identity = new System.Security.Claims.ClaimsIdentity(
-                    new[]
-                    {
-                        new System.Security.Claims.Claim("sub", devClerkUserId),
-                        new System.Security.Claims.Claim(
-                            System.Security.Claims.ClaimTypes.NameIdentifier, devClerkUserId)
-                    },
-                    authenticationType: "DevAuth",
-                    nameType: "sub",
-                    roleType: null);
-                ctx.User = new System.Security.Claims.ClaimsPrincipal(identity);
-            }
-            await next();
-        });
-    }
-}
-
-app.UseAuthorization();
 app.UseAuthorization();
 app.UseRateLimiter();
-app.Map("/clerk-proxy", proxyApp =>
-{
-    proxyApp.Run(async ctx =>
-    {
-        var factory = ctx.RequestServices.GetRequiredService<IHttpClientFactory>();
-        var client = factory.CreateClient("ClerkProxy");
 
-        var remainingPath = ctx.Request.Path.ToString();
-        var queryString = ctx.Request.QueryString.ToString();
-        var targetUrl = $"https://clerk.acwebsite-icmet-test.azurewebsites.net{remainingPath}{queryString}";
-
-        var requestMessage = new HttpRequestMessage
-        {
-            RequestUri = new Uri(targetUrl),
-            Method = new HttpMethod(ctx.Request.Method)
-        };
-
-        foreach (var header in ctx.Request.Headers)
-        {
-            if (!header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
-                requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-        }
-
-        if (ctx.Request.ContentLength > 0 || ctx.Request.Headers.ContainsKey("Transfer-Encoding"))
-            requestMessage.Content = new StreamContent(ctx.Request.Body);
-
-        try
-        {
-            var response = await client.SendAsync(requestMessage);
-            ctx.Response.StatusCode = (int)response.StatusCode;
-
-            foreach (var header in response.Headers)
-                ctx.Response.Headers[header.Key] = header.Value.ToArray();
-            foreach (var header in response.Content.Headers)
-                ctx.Response.Headers[header.Key] = header.Value.ToArray();
-
-            ctx.Response.Headers.Remove("Transfer-Encoding");
-            await response.Content.CopyToAsync(ctx.Response.Body);
-        }
-        catch (Exception ex)
-        {
-            ctx.Response.StatusCode = 502;
-            await ctx.Response.WriteAsync($"Clerk proxy error: {ex.Message}");
-        }
-    });
-});
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
