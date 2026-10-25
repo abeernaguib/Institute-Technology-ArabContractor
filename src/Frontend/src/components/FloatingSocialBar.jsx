@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import YouTubeIcon from '@mui/icons-material/YouTube';
@@ -6,9 +7,19 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import { useTranslation } from 'react-i18next';
 
+// Routes where the bar must NOT appear
+const HIDDEN_PATHS = ['/admin', '/mohadren'];
+
 const FloatingSocialBar = () => {
     const { t, i18n } = useTranslation();
+    const { pathname } = useLocation();
     const isRTL = i18n.language === 'ar';
+
+    // Matches /admin, /admin/news, /admin/books, /admin/planwork, /mohadren ...
+    const isHidden = HIDDEN_PATHS.some(
+        (p) => pathname === p || pathname.startsWith(`${p}/`)
+    );
+    if (isHidden) return null;
 
     const socials = [
         {
