@@ -1,11 +1,9 @@
-﻿using Institute.Application.DTOs.AdminDtos;
+﻿
+using Institute.Application.DTOs.AdminDtos;
 using Institute.Application.Exceptions;
 using Institute.Application.Interfaces.IService;
-using Institute.Application.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Institute.API.Controllers
 {
@@ -16,22 +14,26 @@ namespace Institute.API.Controllers
         private readonly IPlanworkService _service;
         private readonly IPlanworkRoundService _rounds;
 
-        public AdminPlanworkController(IPlanworkService service, IPlanworkRoundService rounds)
+        public AdminPlanworkController(
+            IPlanworkService service,
+            IPlanworkRoundService rounds)
         {
             _service = service;
             _rounds = rounds;
         }
 
-        // 🌳 GET TREE
+        // PLANWORK: requires Workplan permission
+
         [HttpGet("tree")]
+        [Authorize(Policy = "Workplan")]
         public async Task<IActionResult> GetAdminTree()
         {
             var tree = await _service.GetTreeForAdminAsync();
             return Ok(tree);
         }
 
-        // 🔍 GET BY ID
         [HttpGet("{id}")]
+        [Authorize(Policy = "Workplan")]
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
@@ -42,9 +44,10 @@ namespace Institute.API.Controllers
             return Ok(result);
         }
 
-        // ➕ CREATE
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreatePlanworkDto dto)
+        [Authorize(Policy = "Workplan")]
+        public async Task<IActionResult> Create(
+            [FromBody] CreatePlanworkDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -54,15 +57,24 @@ namespace Institute.API.Controllers
                 var id = await _service.CreateAsync(dto);
                 return Ok(new { id, message = "Created successfully" });
             }
-            catch (Exception ex)
+            catch (BusinessRuleException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while creating Planwork."
+                });
+            }
         }
 
-        // ✏️ UPDATE
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CreatePlanworkDto dto)
+        [Authorize(Policy = "Workplan")]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromBody] CreatePlanworkDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -80,20 +92,17 @@ namespace Institute.API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new
                 {
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message,
-                    innerInnerException = ex.InnerException?.InnerException?.Message,
-                    fullException = ex.ToString()
+                    message = "An error occurred while updating Planwork."
                 });
             }
         }
 
-        // ❌ DELETE
         [HttpDelete("{id}")]
+        [Authorize(Policy = "Workplan")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -105,48 +114,92 @@ namespace Institute.API.Controllers
 
                 return Ok(new { message = "Deleted successfully" });
             }
-            catch (Exception ex)
+            catch (BusinessRuleException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while deleting Planwork."
+                });
+            }
+        }
+
+        // ROUNDS: requires Courses permission
+
+        [HttpGet("{id}/rounds")]
+        [Authorize(Policy = "Courses")]
+        public async Task<IActionResult> GetRounds(int id)
+        {
+            try
+            {
+                return Ok(await _rounds.GetRoundsAsync(id));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/rounds")]
+        [Authorize(Policy = "Courses")]
+        public async Task<IActionResult> AddRound(
+            int id,
+            [FromBody] SaveRoundDto dto)
+        {
+            try
+            {
+                return Ok(await _rounds.AddRoundAsync(id, dto));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (BusinessRuleException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
 
-        // =========================
-        // 🔁 ROUNDS
-        // =========================
-        [HttpGet("{id}/rounds")]
-        [Authorize(Policy = "Courses")]
-        public async Task<IActionResult> GetRounds(int id)
-        {
-            try { return Ok(await _rounds.GetRoundsAsync(id)); }
-            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-        }
-
-        [HttpPost("{id}/rounds")]
-        [Authorize(Policy = "Courses")]
-        public async Task<IActionResult> AddRound(int id, [FromBody] SaveRoundDto dto)
-        {
-            try { return Ok(await _rounds.AddRoundAsync(id, dto)); }
-            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BusinessRuleException ex) { return BadRequest(new { message = ex.Message }); }
-        }
-
         [HttpPut("rounds/{roundId}")]
         [Authorize(Policy = "Courses")]
-        public async Task<IActionResult> UpdateRound(int roundId, [FromBody] SaveRoundDto dto)
+        public async Task<IActionResult> UpdateRound(
+            int roundId,
+            [FromBody] SaveRoundDto dto)
         {
-            try { return Ok(await _rounds.UpdateRoundAsync(roundId, dto)); }
-            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BusinessRuleException ex) { return BadRequest(new { message = ex.Message }); }
+            try
+            {
+                return Ok(await _rounds.UpdateRoundAsync(roundId, dto));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (BusinessRuleException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("rounds/{roundId}")]
         [Authorize(Policy = "Courses")]
         public async Task<IActionResult> DeleteRound(int roundId)
         {
-            try { await _rounds.DeleteRoundAsync(roundId); return Ok(new { message = "Deleted successfully" }); }
-            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BusinessRuleException ex) { return BadRequest(new { message = ex.Message }); }
+            try
+            {
+                await _rounds.DeleteRoundAsync(roundId);
+                return Ok(new { message = "Deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (BusinessRuleException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

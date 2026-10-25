@@ -248,26 +248,43 @@ builder.Services
         };
     });
 
+
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("News", policy =>
-        policy.Requirements.Add(new PermissionRequirement("News")));
+    // Permissions matching SettingsTab.jsx
+    var permissionNames = new[]
+    {
+        "Users",
+        "Courses",
+        "Attendance",
+        "Certificates",
+        "Refunds",
+        "Finance",
+        "Lecturers",
+        "News",
+        "Books",
+        "Workplan",
+        "Settings"
+    };
 
-    options.AddPolicy("Books", policy =>
-        policy.Requirements.Add(new PermissionRequirement("Books")));
+    foreach (var permissionName in permissionNames)
+    {
+        options.AddPolicy(permissionName, policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.AddRequirements(
+                new PermissionRequirement(permissionName));
+        });
+    }
 
-    options.AddPolicy("Lecturers", policy =>
-        policy.Requirements.Add(new PermissionRequirement("Lecturers")));
-
-    options.AddPolicy("Courses", policy =>
-        policy.Requirements.Add(new PermissionRequirement("Courses")));
-
+    // Manager-only operations
     options.AddPolicy("ManagerOnly", policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.Requirements.Add(new ManagerRequirement());
+        policy.AddRequirements(new ManagerRequirement());
     });
 });
+
 #endregion
 
 builder.Services.AddAutoMapper(cfg =>
