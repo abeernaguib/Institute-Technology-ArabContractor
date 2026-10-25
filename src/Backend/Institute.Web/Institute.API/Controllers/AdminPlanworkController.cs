@@ -51,8 +51,8 @@ namespace Institute.API.Controllers
 
             try
             {
-                await _service.CreateAsync(dto);
-                return Ok(new { message = "Created successfully" });
+                var id = await _service.CreateAsync(dto);
+                return Ok(new { id, message = "Created successfully" });
             }
             catch (Exception ex)
             {
@@ -75,6 +75,10 @@ namespace Institute.API.Controllers
                     return NotFound(new { message = "Planwork not found" });
 
                 return Ok(new { message = "Updated successfully" });
+            }
+            catch (BusinessRuleException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {

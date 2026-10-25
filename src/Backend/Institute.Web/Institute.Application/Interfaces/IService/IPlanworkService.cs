@@ -12,7 +12,7 @@ namespace Institute.Application.Interfaces.IService
     {
         Task<List<CategoryTreeDto>> GetTreeForAdminAsync();
         Task<PlanworkDto?> GetByIdAsync(int id);
-        Task CreateAsync(CreatePlanworkDto dto);
+        Task<int> CreateAsync(CreatePlanworkDto dto);
         Task<bool> UpdateAsync(int id, CreatePlanworkDto dto);
         Task<bool> DeleteAsync(int id);
     }
