@@ -505,19 +505,7 @@ export default function Home() {
     }, [apiStats]);
 
     useEffect(() => {
-        const loadScript = (src) => new Promise((res, rej) => {
-            if (document.querySelector(`script[src="${src}"]`)) return res();
-            const s = document.createElement('script');
-            s.src = src; s.onload = res; s.onerror = rej;
-            document.head.appendChild(s);
-        });
-
-        Promise.all([
-            loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js'),
-            loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js'),
-        ]).then(() => {
-            const { gsap, ScrollTrigger } = window;
-            gsap.registerPlugin(ScrollTrigger);
+        const ctx = gsap.context(() => {
 
             gsap.to(progressRef.current, {
                 scaleX: 1, ease: 'none',
@@ -525,20 +513,11 @@ export default function Home() {
             });
 
             if (heroRef.current) {
-                const bgLayers = heroRef.current.querySelectorAll('.hero-bg-layer');
-                // ── FIX 2: Removed overlay opacity scrub animation entirely.
-                // The overlay now stays at a fixed opacity set via CSS/JSX,
-                // preventing the flicker caused by starting at undefined opacity.
                 if (heroInnerRef.current) gsap.to(heroInnerRef.current, { yPercent: -28, opacity: 0, ease: 'none', scrollTrigger: { trigger: heroRef.current, start: '25% top', end: 'bottom top', scrub: true } });
                 const scrollInd = heroRef.current.querySelector('.scroll-ind');
                 if (scrollInd) gsap.to(scrollInd, { opacity: 0, scale: 0.5, yPercent: 30, ease: 'none', scrollTrigger: { trigger: heroRef.current, start: 'top top', end: '30% top', scrub: true } });
                 const heroContent = heroRef.current.querySelector('.hero-entrance');
                 if (heroContent) gsap.fromTo(heroContent.children, { opacity: 0, y: 60, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.2, ease: 'power4.out', stagger: 0.12, delay: 0.3 });
-
-                // ── FIX 3: Removed parallax on .hero-bg-layer (yPercent: 40).
-                // background-image parallax via transform causes a visible "loading seam"
-                // on initial paint because the browser can't always pre-composite it.
-                // Kept the layer static — the Swiper autoplay still provides motion.
             }
 
             if (statsRef.current && statsOrangeBarRef.current) {
@@ -584,7 +563,8 @@ export default function Home() {
             if (certRef.current) {
                 const header = certRef.current.querySelector('.cert-header');
                 if (header) gsap.fromTo(header, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: certRef.current, start: 'top 82%', once: true } });
-                gsap.fromTo(certRef.current.querySelector('.swiper'), { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.15, scrollTrigger: { trigger: certRef.current, start: 'top 80%', once: true } });
+                const certSwiper = certRef.current.querySelector('.swiper');
+                if (certSwiper) gsap.fromTo(certSwiper, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.15, scrollTrigger: { trigger: certRef.current, start: 'top 80%', once: true } });
                 const bar = certRef.current.querySelector('.cert-side-bar');
                 if (bar) gsap.to(bar, { scaleY: 1.3, transformOrigin: 'top center', ease: 'none', scrollTrigger: { trigger: certRef.current, start: 'top bottom', end: 'bottom top', scrub: true } });
             }
@@ -593,6 +573,7 @@ export default function Home() {
                 const techHdr = techRef.current.querySelector('.tech-header');
                 if (techHdr) gsap.fromTo(techHdr, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: techRef.current, start: 'top 80%', once: true } });
             }
+
             if (schoolsRef.current) {
                 const featured = schoolsRef.current.querySelector('.school-featured');
                 const cards = schoolsRef.current.querySelectorAll('.school-card');
@@ -652,9 +633,10 @@ export default function Home() {
             document.querySelectorAll('.float-fast').forEach((el, i) => {
                 gsap.to(el, { y: `+=${5}`, rotate: `+=${6}`, duration: 2.5 + i * 0.5, ease: 'sine.inOut', yoyo: true, repeat: -1 });
             });
+        });
 
-            return () => ScrollTrigger.getAll().forEach(t => t.kill());
-        }).catch(err => console.warn('GSAP load failed:', err));
+        // Kills every animation and ScrollTrigger created above when leaving the page
+        return () => ctx.revert();
     }, []);
 
     return (

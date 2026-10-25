@@ -4,12 +4,16 @@
     <meta charset="UTF-8" />
 
     <script>
-                // Runs in the browser before the first paint, also on prerendered HTML.
+                // Runs before the first paint.
                 document.documentElement.classList.add('js-loading');
-                // Safety net: never keep the page hidden for more than 4 seconds.
-                setTimeout(function () {
+
+                // Reveal helper: main.jsx calls this after React has painted with its styles.
+                window.__revealApp = function () {
                     document.documentElement.classList.remove('js-loading');
-                }, 4000);
+                };
+
+                // Last-resort safety net only (e.g. JS failed to load). Normal reveal is from main.jsx.
+                setTimeout(window.__revealApp, 20000);
     </script>
 
     <style>
@@ -86,11 +90,11 @@
         </style>
     </noscript>
 
-    <!-- Preconnect (تسريع تحميل الخط) -->
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
 
-    <!-- Font (optimized load) -->
+    <!-- Font -->
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;700;900&display=swap">
 
@@ -127,7 +131,7 @@
 
     <meta name="google-site-verification" content="B8P8AXJYtdgMM2uZe-tjb1DjSFo19tja2Kv1GRrW7fU" />
 
-    <!-- Schema.org data: Website (site name for Google) -->
+    <!-- Schema.org: Website -->
     <script type="application/ld+json">
         {
           "@context": "https://schema.org",
@@ -138,7 +142,7 @@
         }
     </script>
 
-    <!-- Schema.org data: Organization -->
+    <!-- Schema.org: Organization -->
     <script type="application/ld+json">
         {
           "@context": "https://schema.org",
@@ -159,31 +163,26 @@
     <div id="splash"></div>
 
     <script>
-                                                // @ts-nocheck
-                                                function completeCallback(resultIndicator) {
-                                                    const win = window;
-                                                    if (win.completeCallbackReact) {
-                                                        win.completeCallbackReact(resultIndicator);
-                                                    }
-                                                }
-                                                function errorCallback(error) {
-                                                    const win = window;
-                                                    if (win.errorCallbackReact) {
-                                                        win.errorCallbackReact(error);
-                                                    }
-                                                }
-                                                function cancelCallback() {
-                                                    const win = window;
-                                                    if (win.cancelCallbackReact) {
-                                                        win.cancelCallbackReact();
-                                                    }
-                                                }
+                // @ts-nocheck
+                function completeCallback(resultIndicator) {
+                    if (window.completeCallbackReact) window.completeCallbackReact(resultIndicator);
+                }
+                function errorCallback(error) {
+                    if (window.errorCallbackReact) window.errorCallbackReact(error);
+                }
+                function cancelCallback() {
+                    if (window.cancelCallbackReact) window.cancelCallbackReact();
+                }
     </script>
-    <script src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
+
+    <!-- async: no longer blocks the page or delays main.jsx -->
+    <script async
+            src="https://banquemisr.gateway.mastercard.com/static/checkout/checkout.min.js"
             data-error="errorCallback"
             data-cancel="cancelCallback"
             data-complete="completeCallback">
     </script>
+
     <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
