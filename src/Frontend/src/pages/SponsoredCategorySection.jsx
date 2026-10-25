@@ -89,7 +89,7 @@ function MiniCourse({ c }) {
             <div style={{ fontFamily: F, fontWeight: 800, fontSize: '.88rem', lineHeight: 1.7, color: C.k, minHeight: '3.4em', ...clamp(2) }}>{c.title}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 <Chip Icon={LocationOnIcon} text={c.place} />
-                <Chip Icon={CalendarTodayIcon} text={c.date} />
+                <Chip Icon={CalendarTodayIcon} text={c.date || 'لا توجد مواعيد متاحة حالياً'} />
             </div>
             <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                 <Price cost={c.cost} size=".95rem" />
@@ -160,7 +160,7 @@ function CourseCard({ item }) {
             {text && <p style={{ fontFamily: F, fontSize: '.82rem', lineHeight: 1.9, color: C.g5, margin: 0, ...clamp(3) }}>{text}</p>}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 <Chip Icon={LocationOnIcon} text={item.place} />
-                <Chip Icon={CalendarTodayIcon} text={item.date} />
+                <Chip Icon={CalendarTodayIcon} text={item.date || 'لا توجد مواعيد متاحة حالياً'} />
             </div>
             <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: `2px solid ${C.g3}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <Price cost={item.cost} size="1.3rem" />

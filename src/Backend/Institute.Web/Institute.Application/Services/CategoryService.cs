@@ -24,17 +24,23 @@ namespace Institute.Application.Services
 
         public async Task<List<CategoryTreeDto>> GetCategoryTreeAsync()
         {
+            var allPlanworks = (await _planworkRepository.GetAllAsync()).ToList();
 
-            // 1️⃣ Get all categories (no courses)
-            var allPlanworks = await _planworkRepository.GetAllAsync();
+            // ids that have at least one child
+            var parentIds = allPlanworks
+                .Where(x => x.ParentId.HasValue)
+                .Select(x => x.ParentId!.Value)
+                .ToHashSet();
 
+            // CHANGED: a category = flagged as a section (DetailsFlag) OR has children.
+            // It no longer depends on CourseDesc, so a course without a description
+            // is not mistaken for a category, and a section with a description is not dropped.
             var categories = allPlanworks
-                .Where(x => x.CourseDesc == null)
-                .Where(x => x.MainFlag ==true)
+                .Where(x => x.DetailsFlag == true || parentIds.Contains(x.ChildId))
+                .Where(x => x.MainFlag == true)
                 .OrderBy(x => x.Priority)
                 .ToList();
 
-            // 2️⃣ Build tree
             List<CategoryTreeDto> Build(int? parentId)
             {
                 return categories
@@ -50,7 +56,6 @@ namespace Institute.Application.Services
                     .ToList();
             }
 
-            // 3️⃣ Root nodes
             return Build(null);
         }
 
@@ -59,6 +64,5 @@ namespace Institute.Application.Services
             var spec = new LatestCoursesSpecification(count);
             return await _planworkRepository.GetAllWithSpecAsync(spec);
         }
-
     }
 }

@@ -632,7 +632,7 @@ const CoursesPage = () => {
     const handleEnroll = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); navigate('/sign-in'); return; }
         const round = getSelectedRound(course);
-        if ((course.rounds || []).length > 0 && !round) { showToast('يرجى اختيار موعد انعقاد الدورة أولاً', 'warning'); return; }
+        if (!round) { showToast('لا توجد مواعيد متاحة للتسجيل حالياً', 'warning'); return; }
         setEnrollingId(course.id);
         setEnrollMsgs(prev => ({ ...prev, [course.id]: null }));
         try {
@@ -668,7 +668,7 @@ const CoursesPage = () => {
     const addToCart = async (course) => {
         if (!isSignedIn) { showToast('الرجاء تسجيل الدخول أولاً', 'warning'); return; }
         const round = getSelectedRound(course);
-        if ((course.rounds || []).length > 0 && !round) { showToast('يرجى اختيار موعد انعقاد الدورة أولاً', 'warning'); return; }
+        if (!round) { showToast('لا توجد مواعيد متاحة للتسجيل حالياً', 'warning'); return; }
         const online = getOnlineInfo(course);
         // online only if the course supports it AND the user picked it
         const isOnline = online.available && getCourseMode(course.id) === 'online';
@@ -840,13 +840,16 @@ const CoursesPage = () => {
                                     const activeDiscount = mode === 'online' ? online.discount : course.discountPercentage;
 
                                     // ── rounds logic ──
-                                    const hasRounds = (course.rounds || []).length > 0;
                                     const open = openRounds(course);
-                                    const noOpenRounds = hasRounds && open.length === 0;
+                                    const noOpenRounds = open.length === 0;
                                     const selRound = getSelectedRound(course);
-                                    const canBuy = !hasRounds || !!selRound;
-                                    const myEnr = isOwned ? ownedEnrollments.find(e => String(e.childId) === String(course.id)) : null;
-                                    const myRoundText = myEnr?.roundStart ? `${fmtDate(myEnr.roundStart)} - ${fmtDate(myEnr.roundEnd)}` : null;
+                                    const canBuy = !!selRound;
+
+                                    // the round the user is already enrolled in (shown on owned cards)
+                                    const myEnrollment = ownedEnrollments.find(e => String(e.childId) === String(course.id));
+                                    const myRoundText = myEnrollment?.roundStart
+                                        ? fmtRange({ startDate: myEnrollment.roundStart, endDate: myEnrollment.roundEnd })
+                                        : '';
 
                                     return (
                                         <div key={course.id}
@@ -890,27 +893,23 @@ const CoursesPage = () => {
                                                             <span style={styles.clampText}>{course.place}</span>
                                                         </div>
                                                     )}
-                                                    {(course.date || hasRounds) && (
+                                                    {(course.date || (course.rounds || []).length > 0 || !isOwned) && (
                                                         <div style={styles.infoRow}>
                                                             <svg style={styles.infoIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                             {isOwned ? (
                                                                 <span>{myRoundText ? `موعدك: ${myRoundText}` : course.date}</span>
-                                                            ) : hasRounds ? (
-                                                                noOpenRounds ? (
-                                                                    <span style={{ color: '#b45309' }}>لا توجد مواعيد متاحة حالياً</span>
-                                                                ) : open.length === 1 ? (
-                                                                    <span>{fmtRange(open[0])}</span>
-                                                                ) : (
-                                                                    <select
-                                                                        value={selRound?.id ?? ''}
-                                                                        onChange={e => setCourseRoundSel(p => ({ ...p, [course.id]: Number(e.target.value) }))}
-                                                                        style={{ flex: 1, padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '13px', background: '#fff' }}>
-                                                                        <option value="" disabled>اختر الموعد</option>
-                                                                        {open.map(r => <option key={r.id} value={r.id}>{fmtRange(r)}</option>)}
-                                                                    </select>
-                                                                )
+                                                            ) : noOpenRounds ? (
+                                                                <span style={{ color: '#b45309' }}>لا توجد مواعيد متاحة حالياً</span>
+                                                            ) : open.length === 1 ? (
+                                                                <span>{fmtRange(open[0])}</span>
                                                             ) : (
-                                                                <span>{course.date}</span>
+                                                                <select
+                                                                    value={selRound?.id ?? ''}
+                                                                    onChange={e => setCourseRoundSel(p => ({ ...p, [course.id]: Number(e.target.value) }))}
+                                                                    style={{ flex: 1, padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '13px', background: '#fff' }}>
+                                                                    <option value="" disabled>اختر الموعد</option>
+                                                                    {open.map(r => <option key={r.id} value={r.id}>{fmtRange(r)}</option>)}
+                                                                </select>
                                                             )}
                                                         </div>
                                                     )}

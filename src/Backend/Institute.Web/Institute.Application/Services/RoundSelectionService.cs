@@ -11,6 +11,8 @@ namespace Institute.Application.Services
 {
     public class RoundSelectionService : IRoundSelectionService
     {
+        private const string NoRoundsMessage = "لا توجد مواعيد متاحة للتسجيل حالياً. سيتم الإعلان عن المواعيد القادمة قريباً.";
+
         private readonly IRepository<PlanworkRound> _rounds;
         private readonly RoundsOptions _options;
 
@@ -36,12 +38,14 @@ namespace Institute.Application.Services
                 return round;
             }
 
-            // no round sent: legacy behaviour unless enforcement is on and the course has rounds
-            if (courseRounds.Count == 0 || !_options.Enforce)
-                return null;
+            // CHANGED: a course with no rounds (or none bookable) is visible on the site
+            // but cannot be bought / enrolled in until a round is added.
+            if (courseRounds.Count == 0 || !courseRounds.Any(RoundRules.IsBookable))
+                throw new BusinessRuleException(NoRoundsMessage);
 
-            if (!courseRounds.Any(RoundRules.IsBookable))
-                throw new BusinessRuleException("لا توجد مواعيد متاحة حالياً لهذه الدورة.");
+            // rounds exist and are bookable, but none was sent
+            if (!_options.Enforce)
+                return null;
 
             throw new BusinessRuleException("يرجى اختيار موعد انعقاد الدورة.");
         }

@@ -1014,9 +1014,9 @@ const CourseDetails = () => {
     const rounds = course?.rounds ?? [];
     const hasRounds = rounds.length > 0;
     const bookableRounds = rounds.filter(r => r.isBookable);
-    const noOpenRounds = hasRounds && bookableRounds.length === 0;
+    const noOpenRounds = bookableRounds.length === 0;
     const selectedRound = bookableRounds.find(r => r.id === selectedRoundId) || null;
-    const canPurchase = !hasRounds || !!selectedRound;
+    const canPurchase = !!selectedRound;
     const ownedRound = course ? (ownedRounds.get(course.id) ?? null) : null;
     const heroRound = isOwned ? ownedRound : (selectedRound || bookableRounds[0] || null);
     const heroStart = heroRound ? fmtDate(heroRound.startDate) : course?.startDate;
@@ -1075,8 +1075,11 @@ const CourseDetails = () => {
 
         if (!isSignedIn) { navigate('/sign-in'); return; }
 
-        if (hasRounds && !selectedRound) {
-            setCartMsg({ type: 'error', text: 'يرجى اختيار موعد انعقاد الدورة أولاً' });
+        if (!selectedRound) {
+            setCartMsg({
+                type: 'error',
+                text: noOpenRounds ? 'لا توجد مواعيد متاحة للتسجيل حالياً' : 'يرجى اختيار موعد انعقاد الدورة أولاً',
+            });
             return;
         }
 
@@ -1139,8 +1142,11 @@ const CourseDetails = () => {
     const handleEnroll = async () => {
         if (!course) return;
         if (!isSignedIn) { navigate('/sign-in'); return; }
-        if (hasRounds && !selectedRound) {
-            setEnrollMsg({ type: 'error', text: 'يرجى اختيار موعد انعقاد الدورة أولاً' });
+        if (!selectedRound) {
+            setEnrollMsg({
+                type: 'error',
+                text: noOpenRounds ? 'لا توجد مواعيد متاحة للتسجيل حالياً' : 'يرجى اختيار موعد انعقاد الدورة أولاً',
+            });
             return;
         }
         setEnrolling(true); setEnrollMsg(null);
@@ -1309,11 +1315,13 @@ const CourseDetails = () => {
                             <h1 style={S.heroTitle}>{course.title}</h1>
                             {course.description && <p style={S.heroDesc}>{course.description}</p>}
                             <div style={S.heroInfo}>
-                                {heroStart && (
+                                {heroStart ? (
                                     <span style={S.infoItem}>
                                         <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z" /><path d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H5.5a.5.5 0 010-1H7.5V4a.5.5 0 01.5-.5z" /></svg>
                                         تاريخ البدء: {heroStart}
                                     </span>
+                                ) : !isOwned && (
+                                    <span style={S.infoItem}>🕐 لا توجد مواعيد متاحة حالياً</span>
                                 )}
                                 {durationText && (
                                     <span style={S.infoItem}>
@@ -1521,8 +1529,8 @@ const CourseDetails = () => {
                                         </div>
                                     )}
 
-                                    {/* ── Round picker ── */}
-                                    {!isOwned && hasRounds && (
+                                    {/* ── Round picker (shown for every non-owned course) ── */}
+                                    {!isOwned && (
                                         noOpenRounds ? (
                                             <div style={{ ...RS.none, marginBottom: '16px' }}>
                                                 🕐 لا توجد مواعيد متاحة للتسجيل حالياً.<br />سيتم الإعلان عن المواعيد القادمة قريباً.

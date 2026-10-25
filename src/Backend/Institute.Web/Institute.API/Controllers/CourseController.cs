@@ -52,6 +52,22 @@ namespace Institute.API.Controllers
         }
 
         // ══════════════════════════════════════════════════════════════
+        // HELPERS — Course vs Section
+        // ✱ CHANGED: الكورس الحقيقي لم يعد يعتمد على CourseDate
+        // (CourseDate بيتحدّث من الـ Rounds، فالكورس بدون مواعيد تاريخه null
+        //  وكان بيختفي). دلوقتي الكورس = مش قسم (DetailsFlag != true)
+        //  ومالوش أبناء. الأقسام = DetailsFlag == true أو عندها أبناء.
+        // ══════════════════════════════════════════════════════════════
+        private static HashSet<int> GetParentIds(IEnumerable<Planwork> planworks) =>
+            planworks
+                .Where(x => x.ParentId.HasValue)
+                .Select(x => x.ParentId!.Value)
+                .ToHashSet();
+
+        private static bool IsCourse(Planwork p, HashSet<int> parentIds) =>
+            p.DetailsFlag != true && !parentIds.Contains(p.ChildId);
+
+        // ══════════════════════════════════════════════════════════════
         // HELPERS — Rounds
         // LoadRoundsLookupAsync: بيجيب كل الدورات الفعّالة مجمّعة بالـ PlanworkId
         // ToRoundDtos: بيحوّل الدورات لـ DTO مرتبة بتاريخ البداية
@@ -78,6 +94,7 @@ namespace Institute.API.Controllers
         // بيجيب كل الكورسات اللي تحت برنامج معين عن طريق الـ Slug بتاعه
         // بيشتغل Recursive عشان يجمع الكورسات من كل المستويات
         // سواء كانت مباشرة تحت البرنامج أو تحت محاور/عناوين تنظيمية
+        // ✱ الكورسات بدون مواعيد بتظهر (Date = null و Rounds = [])
         // ══════════════════════════════════════════════════════════════
         [HttpGet("programs/{slug}/courses")]
         public async Task<IActionResult> GetProgramCourses(string slug)
@@ -127,21 +144,23 @@ namespace Institute.API.Controllers
                 planworks,
                 files,
                 parentId,
-                new HashSet<int>()
+                new HashSet<int>(),
+                GetParentIds(planworks)
             );
         }
 
         // ══════════════════════════════════════════════════════════════
         // HELPER — GetCoursesRecursive (Core Logic)
         // بتجمع الكورسات من مستوى معين وكل المستويات اللي تحته
-        // كورس حقيقي = DetailsFlag: false + CourseDate != null
-        // عنوان تنظيمي = CourseDate == null (بيتنزل فيه Recursive)
+        // ✱ CHANGED: كورس حقيقي = IsCourse (مش قسم ومالوش أبناء)
+        // عنوان تنظيمي = أي حاجة تانية (بيتنزل فيه Recursive)
         // ══════════════════════════════════════════════════════════════
         private List<CourseCardDto> GetCoursesRecursive(
             List<Planwork> planworks,
             List<PlanFile> files,
             int parentId,
-            HashSet<int> visited)
+            HashSet<int> visited,
+            HashSet<int> parentIds)
         {
             var result = new List<CourseCardDto>();
 
@@ -153,11 +172,7 @@ namespace Institute.API.Controllers
 
             // جيب الكورسات المباشرة تحت الـ parentId
             var directCourses = planworks
-                .Where(x =>
-                    x.ParentId == parentId &&
-                    x.DetailsFlag == false &&
-                    x.CourseDate != null
-                )
+                .Where(x => x.ParentId == parentId && IsCourse(x, parentIds))
                 .OrderBy(x => x.Priority)
                 .Select(c => new CourseCardDto
                 {
@@ -175,20 +190,17 @@ namespace Institute.API.Controllers
 
             result.AddRange(directCourses);
 
-            // جيب العناوين التنظيمية (اللي مالهاش CourseDate)
+            // جيب العناوين التنظيمية (الأقسام)
             // وانزل فيها Recursive عشان تجيب الكورسات اللي جوّاها
             var childrenIds = planworks
-                .Where(x =>
-                    x.ParentId == parentId &&
-                    x.CourseDate == null
-                )
+                .Where(x => x.ParentId == parentId && !IsCourse(x, parentIds))
                 .Select(x => x.ChildId)
                 .ToList();
 
             foreach (var childId in childrenIds)
             {
                 result.AddRange(
-                    GetCoursesRecursive(planworks, files, childId, visited)
+                    GetCoursesRecursive(planworks, files, childId, visited, parentIds)
                 );
             }
 
@@ -199,6 +211,7 @@ namespace Institute.API.Controllers
         // GET /api/course/{slug}
         // بيجيب تفاصيل كورس واحد كامل عن طريق الـ Slug بتاعه
         // بيرجع كل البيانات + الملفات المرفقة مرتبة بالـ Priority
+        // ✱ CHANGED: الكورس بيظهر حتى لو مفيش مواعيد (Date = null, Rounds = [])
         // ملاحظة: لا يرجع رابط الاجتماع هنا لأن الـ endpoint عام
         // ══════════════════════════════════════════════════════════════
         [HttpGet("{slug}")]
@@ -206,12 +219,12 @@ namespace Institute.API.Controllers
         {
             var planworks = (await _planRepo.GetAllAsync()).ToList();
             var files = (await _fileRepo.GetAllAsync()).ToList();
+            var parentIds = GetParentIds(planworks);
 
             // دور على الكورس بالـ Slug
             var course = planworks.FirstOrDefault(x =>
                 x.Slug == slug &&
-                x.DetailsFlag == false &&
-                x.CourseDate != null
+                IsCourse(x, parentIds)
             );
 
             if (course == null)
@@ -253,6 +266,8 @@ namespace Institute.API.Controllers
         // GET /api/course/latest
         // بيجيب آخر 20 كورس متاحين
         // بيستخدم الـ CategoryService اللي فيها Logic الترتيب والفلترة
+        // ⚠ راجع CategoryService.GetLatestCoursesAsync — غالباً فيها
+        //   نفس فلتر CourseDate != null ولازم يتشال منها
         // ══════════════════════════════════════════════════════════════
         [HttpGet("latest")]
         public async Task<IActionResult> GetLatestCourses()
@@ -260,11 +275,13 @@ namespace Institute.API.Controllers
             var courses = await _categoryService.GetLatestCoursesAsync(20);
             return Ok(courses);
         }
+
         // GET /api/course/sponsored
         [HttpGet("sponsored")]
         public async Task<IActionResult> GetSponsored()
         {
             var planworks = (await _planRepo.GetAllAsync()).ToList();
+            var parentIds = GetParentIds(planworks);
             var noFiles = new List<PlanFile>();
 
             var result = planworks
@@ -272,8 +289,8 @@ namespace Institute.API.Controllers
                 .OrderBy(p => p.Priority)
                 .Select(p =>
                 {
-                    // same rule the rest of the controller uses for "a real course"
-                    var isCourse = p.DetailsFlag == false && p.CourseDate != null;
+                    // ✱ CHANGED: same rule as the rest of the controller — no CourseDate dependency
+                    var isCourse = IsCourse(p, parentIds);
 
                     if (isCourse)
                     {
@@ -312,6 +329,7 @@ namespace Institute.API.Controllers
 
             return Ok(result);
         }
+
         // ══════════════════════════════════════════════════════════════
         // GET /api/course/my-courses
         // بيجيب كل الكورسات اللي اليوزر المسجل دخول سجل فيها
@@ -389,6 +407,8 @@ namespace Institute.API.Controllers
         // بيعمل Order وهمي بـ 0 جنيه عشان الـ DB مش بتقبل OrderId = null
         // Body (اختياري): { "roundId": 12 } — EmptyBodyBehavior.Allow
         // بيخلي الـ Frontend القديم (من غير Body) يشتغل زي ما هو
+        // ✱ CHANGED: شلنا شرط CourseDate != null. التسجيل من غير موعد متاح
+        //   بيتمنع من _roundSelection.ResolveAsync (راجع ملاحظة تحت)
         // ══════════════════════════════════════════════════════════════
         [HttpPost("enroll-free/{planworkId}")]
         [Authorize]
@@ -407,10 +427,10 @@ namespace Institute.API.Controllers
 
             // تحقق إن الكورس موجود وفعلاً مجاني (PlanCost = 0 أو null)
             var planworks = (await _planRepo.GetAllAsync()).ToList();
+            var parentIds = GetParentIds(planworks);
             var course = planworks.FirstOrDefault(p =>
                 p.ChildId == planworkId &&
-                p.CourseDate != null &&
-                p.DetailsFlag == false &&
+                IsCourse(p, parentIds) &&
                 (p.PlanCost == null || p.PlanCost == 0));
 
             if (course == null)
@@ -424,6 +444,7 @@ namespace Institute.API.Controllers
                 return Ok(new { message = "أنت مسجل في هذا الكورس بالفعل.", alreadyEnrolled = true });
 
             // تحقق من الدورة (Round) المختارة
+            // ⚠ لازم ResolveAsync يرمي BusinessRuleException لو مفيش موعد متاح
             PlanworkRound? round;
             try
             {

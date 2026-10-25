@@ -310,6 +310,12 @@ const DynamicCoursesSection = () => {
                 body: JSON.stringify({ isOnline }),
             });
             if (!res.ok) {
+                if (res.status === 400) {
+                    const j = await res.json().catch(() => null);
+                    showToast(j?.message || 'تعذّرت إضافة الدورة', 'warning');
+                    navigate(`/course/${course.slug}`);
+                    return;
+                }
                 const msgs = {
                     401: 'انتهت الجلسة، سجل دخول مرة أخرى',
                     404: 'الدورة غير موجودة',
@@ -363,7 +369,8 @@ const DynamicCoursesSection = () => {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                showToast(data?.message || 'حدث خطأ، حاول مرة أخرى', 'error');
+                showToast(data?.message || 'حدث خطأ، حاول مرة أخرى', 'warning');
+                if (res.status === 400) navigate(`/course/${course.slug}`);
                 return;
             }
             if (data.alreadyEnrolled) {
@@ -431,6 +438,7 @@ const DynamicCoursesSection = () => {
                     }}
                 >
                     {courses.map((course, index) => {
+                        const noDate = !course.date;
                         const isOwned = ownedCourseIds.has(course.id);
                         const isAdding = addingToCart === course.id;
                         const isEnrolling = enrollingId === course.id;
@@ -665,15 +673,14 @@ const DynamicCoursesSection = () => {
                                             </Box>
                                         )}
 
-                                        {course.date && (
+                                        {!isOwned && (course.date || noDate) && (
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', direction: 'ltr' }}>
                                                 <AccessTimeIcon sx={{ fontSize: '0.8rem', color: '#0865a8', flexShrink: 0 }} />
                                                 <Typography variant="caption" sx={{
-                                                    color: '#555', fontSize: '0.65rem', fontFamily: '"Noto Kufi Arabic", serif',
-                                                    display: '-webkit-box', WebkitLineClamp: 1,
-                                                    WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                                                    color: noDate ? '#b45309' : '#555', fontSize: '0.65rem', fontFamily: '"Noto Kufi Arabic", serif',
+                                                    display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden',
                                                 }}>
-                                                    {course.date}
+                                                    {noDate ? 'لا توجد مواعيد متاحة حالياً' : course.date}
                                                 </Typography>
                                             </Box>
                                         )}
@@ -741,7 +748,7 @@ const DynamicCoursesSection = () => {
                                             <Button
                                                 fullWidth
                                                 variant="contained"
-                                                disabled={isEnrolling}
+                                                disabled={isEnrolling || noDate}
                                                 onClick={(e) => { e.stopPropagation(); handleEnroll(course); }}
                                                 sx={{
                                                     background: 'linear-gradient(135deg, #1a7a3c 0%, #27ae60 100%)',
@@ -753,13 +760,13 @@ const DynamicCoursesSection = () => {
                                                     '&:disabled': { opacity: 0.7, color: '#fff' },
                                                 }}
                                             >
-                                                {isEnrolling ? 'جاري التسجيل...' : '🎁 اشترك الآن — مجاناً'}
+                                                {noDate ? 'لا توجد مواعيد متاحة' : isEnrolling ? 'جاري التسجيل...' : '🎁 اشترك الآن — مجاناً'}
                                             </Button>
                                         ) : (
                                             <Button
                                                 fullWidth
                                                 variant="outlined"
-                                                disabled={isAdding}
+                                                disabled={isAdding || noDate}
                                                 onClick={(e) => { e.stopPropagation(); addToCart(course); }}
                                                 sx={{
                                                     borderColor: '#0865a8', color: '#0865a8',
@@ -771,7 +778,7 @@ const DynamicCoursesSection = () => {
                                                     '&:disabled': { opacity: 0.6, borderColor: '#0865a8', color: '#0865a8' },
                                                 }}
                                             >
-                                                {isAdding ? 'جاري الإضافة...' : 'أضف إلى السلة'}
+                                                {noDate ? 'لا توجد مواعيد متاحة' : isAdding ? 'جاري الإضافة...' : 'أضف إلى السلة'}
                                             </Button>
                                         )}
                                     </CardActions>

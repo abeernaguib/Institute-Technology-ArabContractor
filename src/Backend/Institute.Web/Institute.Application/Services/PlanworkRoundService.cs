@@ -53,7 +53,8 @@ namespace Institute.Application.Services
             var plan = await _plans.GetByIdAsync(planworkId)
                 ?? throw new KeyNotFoundException("الدورة غير موجودة.");
 
-            if (plan.DetailsFlag != false)
+            // CHANGED: only an explicit section is rejected (null = legacy course = allowed)
+            if (plan.DetailsFlag == true)
                 throw new BusinessRuleException("هذا عنوان تنظيمي وليس دورة، لا يمكن إضافة مواعيد له.");
 
             var (start, end) = ParseRange(dto);
@@ -169,7 +170,10 @@ namespace Institute.Application.Services
             EnrollmentsCount = enrollmentsCount
         };
 
-        // keeps Planwork.CourseDate (the legacy text) pointing at the relevant round
+        // keeps Planwork.CourseDate (the date text shown on cards) in line with the rounds:
+        //   - earliest BOOKABLE active round  -> its dates
+        //   - no bookable round (none / disabled / all started) -> null  ("no dates available")
+        // CHANGED: it is now cleared, because a null CourseDate no longer hides the course.
         private async Task SyncLegacyCourseDateAsync(int planworkId)
         {
             var plan = await _plans.GetByIdAsync(planworkId);
@@ -178,14 +182,12 @@ namespace Institute.Application.Services
             var active = (await _rounds.GetAllWithSpecAsync(
                 new BaseSpecification<PlanworkRound>(r => r.PlanworkId == planworkId && r.IsActive))).ToList();
 
-            if (active.Count == 0) return;   // never clear it: no CourseDate = treated as a category
+            var pick = active.Where(RoundRules.IsBookable).OrderBy(r => r.StartDate).FirstOrDefault();
 
-            var pick = active.Where(RoundRules.IsBookable).OrderBy(r => r.StartDate).FirstOrDefault()
-                       ?? active.OrderByDescending(r => r.StartDate).First();
-
-            plan.CourseDate =
-                $"{pick.StartDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)} - " +
-                $"{pick.EndDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}";
+            plan.CourseDate = pick == null
+                ? null
+                : $"{pick.StartDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)} - " +
+                  $"{pick.EndDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}";
 
             await _plans.SaveChangesAsync();
         }
