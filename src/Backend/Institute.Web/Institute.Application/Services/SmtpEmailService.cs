@@ -26,12 +26,9 @@ namespace Institute.Application.Services
             var builder = new BodyBuilder { HtmlBody = htmlBody };
             if (inlineImages != null)
             {
+                // sent as a normal attachment (not embedded in the body)
                 foreach (var img in inlineImages)
-                {
-                    var res = builder.LinkedResources.Add(
-                        img.ContentId + ".png", img.Data, ContentType.Parse(img.MimeType));
-                    res.ContentId = img.ContentId;
-                }
+                    builder.Attachments.Add("icemt-logo.png", img.Data, ContentType.Parse(img.MimeType));
             }
             msg.Body = builder.ToMessageBody();
 

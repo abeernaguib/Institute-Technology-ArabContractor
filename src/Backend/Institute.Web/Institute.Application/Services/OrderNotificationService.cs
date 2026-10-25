@@ -4,6 +4,7 @@ using Institute.Application.Interfaces.IService;
 using Institute.Domain.Entities;
 using Institute.Domain.Enums;
 using Institute.Domain.specifications;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
@@ -21,17 +22,20 @@ namespace Institute.Application.Services
         private readonly IRepository<Order> _orders;
         private readonly IEmailService _email;
         private readonly EmailSettings _settings;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<OrderNotificationService> _logger;
 
         public OrderNotificationService(
             IRepository<Order> orders,
             IEmailService email,
             IOptions<EmailSettings> options,
+            IWebHostEnvironment env,
             ILogger<OrderNotificationService> logger)
         {
             _orders = orders;
             _email = email;
             _settings = options.Value;
+            _env = env;
             _logger = logger;
         }
 
@@ -66,7 +70,7 @@ namespace Institute.Application.Services
                     return;
                 }
 
-                await _email.SendAsync(recipients, BuildSubject(order), BuildHtml(order), LoadInlineImages());
+                await _email.SendAsync(recipients, BuildSubject(order), BuildHtml(order), await LoadInlineImagesAsync());
 
                 _logger.LogInformation("Order-paid email sent. OrderId={OrderId}", orderId);
             }
@@ -135,6 +139,7 @@ namespace Institute.Application.Services
                 ["FullName"] = Dash(fullName),
                 ["WhatBought"] = Enc(WhatBought(order, 80)),
                 ["Email"] = Dash(user?.Email),
+                ["Phone"] = Dash(user?.Phone),
                 ["Username"] = Dash(user?.Username),
                 ["UserId"] = user != null ? user.Id.ToString(CultureInfo.InvariantCulture) : "-",
                 ["OrderId"] = order.Id.ToString(CultureInfo.InvariantCulture),
@@ -151,31 +156,36 @@ namespace Institute.Application.Services
                 ["OnsiteCount"] = onsiteCount.ToString(CultureInfo.InvariantCulture),
                 ["OnlineCount"] = onlineCount.ToString(CultureInfo.InvariantCulture),
                 ["Total"] = $"{Money(order.TotalAmount)} جنيه",
-                // no "Phone" key → the phone row is skipped (this version has no Clerk lookup)
             };
 
             return OrderPaidEmailRenderer.Render(values, itemRows, warnings.Select(Enc).ToList());
         }
 
-        // ── logo (embedded resource icemt-logo.png → inline image, cid:icemt-logo@icemt) ──
+        // ── logo from wwwroot/images/icemt-logo.png (inline image, cid:icemt-logo@icemt) ──
         private const string LogoContentId = "icemt-logo@icemt";
-        private static byte[]? _logo;
 
-        private static IReadOnlyList<EmailInlineImage> LoadInlineImages()
+        private async Task<IReadOnlyList<EmailInlineImage>> LoadInlineImagesAsync()
         {
-            if (_logo == null)
+            try
             {
-                var asm = typeof(OrderNotificationService).Assembly;
-                var name = asm.GetManifestResourceNames()
-                    .FirstOrDefault(n => n.EndsWith("icemt-logo.png", StringComparison.OrdinalIgnoreCase));
-                if (name == null) return Array.Empty<EmailInlineImage>(); // no logo → email still works
+                var webRoot = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+                var path = Path.Combine(webRoot, "images", "icemt-logo.png");
 
-                using var stream = asm.GetManifestResourceStream(name)!;
-                using var ms = new MemoryStream();
-                stream.CopyTo(ms);
-                _logo = ms.ToArray();
+                if (!File.Exists(path))
+                {
+                    _logger.LogWarning("Email logo not found at {Path}; sending without logo.", path);
+                    return Array.Empty<EmailInlineImage>();
+                }
+
+                var bytes = await File.ReadAllBytesAsync(path);
+                return new[] { new EmailInlineImage(LogoContentId, bytes, "image/png") };
             }
-            return new[] { new EmailInlineImage(LogoContentId, _logo, "image/png") };
+            catch (Exception ex)
+            {
+                // a missing logo must never block the notification
+                _logger.LogWarning(ex, "Failed to load email logo; sending without logo.");
+                return Array.Empty<EmailInlineImage>();
+            }
         }
 
         // ── subject + "who bought what" ───────────────────────────────
@@ -232,8 +242,9 @@ namespace Institute.Application.Services
 
         private static string Enc(string? s) => WebUtility.HtmlEncode(s ?? "");
 
+        // empty, whitespace or the literal text "null" (legacy data) → "-"
         private static string Dash(string? s) =>
-            Enc(string.IsNullOrWhiteSpace(s) ? "-" : s);
+            Enc(string.IsNullOrWhiteSpace(s) || s.Trim().Equals("null", StringComparison.OrdinalIgnoreCase) ? "-" : s);
 
         private static string Money(decimal v) =>
             v.ToString("N2", CultureInfo.InvariantCulture);

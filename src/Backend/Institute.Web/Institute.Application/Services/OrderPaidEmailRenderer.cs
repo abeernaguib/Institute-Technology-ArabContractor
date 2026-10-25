@@ -6,13 +6,12 @@ namespace Institute.Application.Services
     /// Builds the "order paid" email HTML entirely in the backend (no external template file).
     /// All values passed in MUST already be HTML-encoded (Enc / Dash in OrderNotificationService).
     /// </summary>
-    internal static class OrderPaidEmailRenderer
+    public static class OrderPaidEmailRenderer
     {
         private const string Font = "Tahoma, Arial, sans-serif";
         private const string Navy = "#10264d", Blue = "#1a3c6e", Orange = "#e07b00";
         private const string Bg = "#f2f4f8", Text = "#222222", Muted = "#6b7280", Line = "#e5e7eb", Head = "#f3f5f9";
         private const string BrandAr = "المعهد التكنولوجي لهندسة التشييد والإدارة";
-        private const string LogoCid = "icemt-logo@icemt";
 
         public static string Render(
             IReadOnlyDictionary<string, string> v,
@@ -25,15 +24,13 @@ namespace Institute.Application.Services
               .Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>")
               .Append("<title>طلب جديد #").Append(v["OrderId"]).Append("</title></head>")
               .Append("<body style=\"margin:0;padding:0;background-color:").Append(Bg).Append("\">")
-              .Append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:").Append(Bg).Append("\"><tbody><tr>")
+              .Append("<table role=\"presentation\" dir=\"rtl\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:").Append(Bg).Append("\"><tbody><tr>")
               .Append("<td align=\"center\" style=\"padding:24px 12px\">")
-              .Append("<table role=\"presentation\" width=\"640\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;max-width:640px;background-color:#ffffff;border-radius:8px\"><tbody>");
+              .Append("<table role=\"presentation\" dir=\"rtl\" width=\"640\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;max-width:640px;background-color:#ffffff;border-radius:8px\"><tbody>");
 
             // ── Header ──
             sb.Append("<tr><td style=\"background-color:").Append(Navy).Append(";padding:20px 24px;border-radius:8px 8px 0 0\">")
               .Append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tbody><tr>")
-              .Append("<td style=\"width:72px;vertical-align:middle\"><img src=\"cid:").Append(LogoCid)
-              .Append("\" width=\"56\" height=\"56\" alt=\"Logo\" style=\"display:block;border:0;border-radius:50%\"/></td>")
               .Append("<td style=\"vertical-align:middle;text-align:right\">")
               .Append("<div style=\"font-family:").Append(Font).Append(";font-size:12px;color:#9fb3d9\">").Append(BrandAr).Append("</div>")
               .Append("<div style=\"font-family:").Append(Font).Append(";font-size:20px;font-weight:bold;color:#ffffff\">تم دفع طلب جديد ✅</div></td>")
@@ -132,7 +129,7 @@ namespace Institute.Application.Services
         {
             var cell = "font-family:" + Font + ";font-size:14px;padding:8px 4px;border-bottom:1px solid " + Line + ";text-align:right;";
             sb.Append("<tr><td style=\"").Append(cell).Append("color:").Append(Muted).Append(";width:34%\">").Append(label).Append("</td>")
-              .Append("<td style=\"").Append(cell).Append("color:").Append(Text).Append(";font-weight:bold\">");
+              .Append("<td style=\"").Append(cell).Append("color:").Append(Text).Append(";font-weight:bold;word-break:break-word;overflow-wrap:anywhere\">");
             if (ltr) sb.Append("<span dir=\"ltr\" style=\"display:inline-block\">").Append(value).Append("</span>");
             else sb.Append(value);
             sb.Append("</td></tr>");
