@@ -6,8 +6,6 @@ export default function ModernLibrary() {
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
     const [scrollProgress, setScrollProgress] = useState(0);
 
-
-
     useEffect(() => {
         const hash = window.location.hash;
         if (!hash) return;
@@ -64,10 +62,19 @@ export default function ModernLibrary() {
         { label: 'حد الاستعارة', value: '3 كتب / 15 يوم', color: '#f57c00' },
     ];
 
+    // ── Books (images served from public/images) ──
     const books = [
-        { title: "Capture and reuse of project knowledge in construction", publisher: "Willy-Blackwell", image: "https://www.arabcont.com/icemt/assets/images/Book01.jpg", url: "https://online.fliphtml5.com/cvhml/vzfl/#p=1", color: '#0865a8' },
-        { title: "ICE manual of highway design and management", publisher: "Second Edition", image: "https://www.arabcont.com/icemt/assets/images/Book02.jpg", url: "https://online.fliphtml5.com/cvhml/qzxx/#p=1", color: '#f57c00' },
-        { title: "Construction Dewatering and Groundwater Control", publisher: "Third Edition", image: "https://www.arabcont.com/icemt/assets/images/Book03.jpg", url: "https://online.fliphtml5.com/cvhml/wdbx/#p=1", color: '#0865a8' },
+        { title: "Capture and reuse of project knowledge in construction", publisher: "Willy-Blackwell", image: "/images/Book01.jpg", url: "https://online.fliphtml5.com/cvhml/vzfl/#p=1", color: '#0865a8' },
+        { title: "ICE manual of highway design and management", publisher: "Second Edition", image: "/images/Book02.jpg", url: "https://online.fliphtml5.com/cvhml/qzxx/#p=1", color: '#f57c00' },
+        { title: "Construction Dewatering and Groundwater Control", publisher: "Third Edition", image: "/images/Book03.jpg", url: "https://online.fliphtml5.com/cvhml/wdbx/#p=1", color: '#0865a8' },
+    ];
+
+    // ── Library slideshow images (About section) ──
+    const libraryImages = [
+        '/images/library-02.jpg',
+        '/images/library-01.jpg',
+        '/images/library-03.jpg',
+        '/images/library-04.jpg',
     ];
 
     const embassyGoals = [
@@ -80,6 +87,7 @@ export default function ModernLibrary() {
     ];
 
     // ── Embassy definition images (horizontal scroll) ──
+    // add `caption: '...'` to any item if you want a caption under it
     const embassyDefImages = [
         { src: '/images/library/im1.jpeg' },
         { src: '/images/library/im2.jpeg' },
@@ -116,7 +124,6 @@ export default function ModernLibrary() {
                     <div style={{ width: isMobile ? '120px' : '180px', height: '5px', background: '#e5e7eb', borderRadius: '999px', margin: '0 auto 20px', overflow: 'hidden' }}>
                         <div style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, #0865a8, #f57c00)', borderRadius: '999px', animation: 'slide 2s infinite ease-in-out' }} />
                     </div>
-                    {/* ── UPDATED: larger subtitle font ── */}
                     <p style={{ fontSize: isTiny ? '15px' : isMobile ? '17px' : isTablet ? '20px' : '22px', color: '#6b7280', lineHeight: 1.7 }}>
                         مكتبة متخصصة في التشييد والبناء • تأسست 1970 • سفارة معرفة مكتبة الإسكندرية
                     </p>
@@ -164,9 +171,9 @@ export default function ModernLibrary() {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ borderRadius: '20px', overflow: 'hidden', border: '3px solid #e5e7eb', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
-                            <img src="https://www.arabcont.com/icemt/assets/images/library-02.jpg" alt="المكتبة" style={{ width: '100%', height: isTiny ? '200px' : isMobile ? '240px' : '380px', objectFit: 'cover', display: 'block' }} />
-                        </div>
+
+                        {/* Library slideshow */}
+                        <LibrarySlideshow images={libraryImages} isTiny={isTiny} isMobile={isMobile} />
                     </div>
                 </div>
             </section>
@@ -278,11 +285,12 @@ export default function ModernLibrary() {
                         </p>
                     </div>
 
-                    {/* ── NEW: Embassy definition image scroll strip ── */}
+                    {/* Embassy definition image scroll strip */}
                     <div style={{ marginBottom: '24px' }}>
-                        <div style={{ display: 'flex', gap: isTiny ? '10px' : '14px', overflowX: 'auto', paddingBottom: '10px', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x mandatory', justifyContent: 'center' }}>                            {embassyDefImages.map((img, i) => (
-                            <EmbassyDefImage key={i} img={img} isTiny={isTiny} isMobile={isMobile} />
-                        ))}
+                        <div style={{ display: 'flex', gap: isTiny ? '10px' : '14px', overflowX: 'auto', paddingBottom: '10px', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x mandatory', justifyContent: 'center' }}>
+                            {embassyDefImages.map((img, i) => (
+                                <EmbassyDefImage key={i} img={img} isTiny={isTiny} isMobile={isMobile} />
+                            ))}
                         </div>
                     </div>
 
@@ -418,6 +426,76 @@ export default function ModernLibrary() {
     );
 }
 
+/* ─────────────────────────────────────────────────────────────── */
+/* Library slideshow (About section)                               */
+function LibrarySlideshow({ images, isTiny, isMobile }) {
+    const [current, setCurrent] = useState(0);
+    const [paused, setPaused] = useState(false);
+    const height = isTiny ? '200px' : isMobile ? '240px' : '380px';
+
+    const prev = () => setCurrent(c => (c - 1 + images.length) % images.length);
+    const next = () => setCurrent(c => (c + 1) % images.length);
+
+    // auto-play every 4 seconds, pauses on hover/touch
+    useEffect(() => {
+        if (paused || images.length < 2) return;
+        const t = setInterval(() => setCurrent(c => (c + 1) % images.length), 4000);
+        return () => clearInterval(t);
+    }, [paused, images.length]);
+
+    const arrowStyle = (side) => ({
+        position: 'absolute', top: '50%', [side]: '10px', transform: 'translateY(-50%)',
+        width: isTiny ? '30px' : '38px', height: isTiny ? '30px' : '38px', borderRadius: '50%',
+        background: 'rgba(255,255,255,0.9)', border: '2px solid #e5e7eb',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', outline: 'none', zIndex: 2, padding: 0,
+    });
+
+    return (
+        <div
+            dir="ltr"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onTouchStart={() => setPaused(true)}
+            onTouchEnd={() => setPaused(false)}
+            style={{ position: 'relative', height, borderRadius: '20px', overflow: 'hidden', border: '3px solid #e5e7eb', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', background: '#f3f4f6' }}
+        >
+            {images.map((src, i) => (
+                <img
+                    key={i}
+                    src={src}
+                    alt={`المكتبة ${i + 1}`}
+                    style={{
+                        position: 'absolute', inset: 0, width: '100%', height: '100%',
+                        objectFit: 'cover', display: 'block',
+                        opacity: i === current ? 1 : 0,
+                        transition: 'opacity 0.8s ease',
+                    }}
+                />
+            ))}
+
+            <button onClick={prev} aria-label="السابق" style={arrowStyle('left')}>
+                <ChevronLeft size={isTiny ? 16 : 20} color="#0865a8" />
+            </button>
+            <button onClick={next} aria-label="التالي" style={arrowStyle('right')}>
+                <ChevronRight size={isTiny ? 16 : 20} color="#0865a8" />
+            </button>
+
+            {/* dots */}
+            <div style={{ position: 'absolute', bottom: '12px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px', zIndex: 2 }}>
+                {images.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => setCurrent(i)}
+                        aria-label={`صورة ${i + 1}`}
+                        style={{ width: i === current ? '22px' : '8px', height: '8px', borderRadius: '4px', border: 'none', padding: 0, cursor: 'pointer', outline: 'none', background: i === current ? '#f57c00' : 'rgba(255,255,255,0.85)', transition: 'all 0.3s ease' }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /* ── Embassy definition image card (horizontal scroll strip) ── */
 function EmbassyDefImage({ img, isTiny, isMobile }) {
     const [err, setErr] = useState(false);
@@ -431,18 +509,17 @@ function EmbassyDefImage({ img, isTiny, isMobile }) {
                     <span style={{ fontSize: '12px' }}>الصورة غير متاحة</span>
                 </div>
             ) : (
-                <img src={img.src} alt={img.caption} onError={() => setErr(true)}
+                <img src={img.src} alt={img.caption || ''} onError={() => setErr(true)}
                     style={{ width: '100%', height: h, objectFit: 'cover', display: 'block' }} />
             )}
-            <div style={{ padding: '8px 12px', background: 'white', textAlign: 'center' }}>
-                <span style={{ fontSize: isTiny ? '11px' : '13px', color: '#374151', fontWeight: '600' }}>{img.caption}</span>
-            </div>
+            {img.caption && (
+                <div style={{ padding: '8px 12px', background: 'white', textAlign: 'center' }}>
+                    <span style={{ fontSize: isTiny ? '11px' : '13px', color: '#374151', fontWeight: '600' }}>{img.caption}</span>
+                </div>
+            )}
         </div>
     );
 }
-
-/* ── BookOpen needed in EmbassyDefImage ── */
-const { BookOpen: _BO } = { BookOpen };
 
 /* ─────────────────────────────────────────────────────────────── */
 function FeatureCard({ feature, index, isTiny, isMobile }) {
