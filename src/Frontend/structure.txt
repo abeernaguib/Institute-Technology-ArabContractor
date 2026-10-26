@@ -1,972 +1,159 @@
-.gitignore
-README.md
-index.html
-package-lock.json
-package.json
-postcss.config.js
-public/apple-touch-icon.png
-public/favicon-96x96.png
-public/favicon.ico
-public/favicon.svg
-public/images/1-2.jpg
-public/images/1.jpg
-public/images/1.png
-public/images/10.jpg
-public/images/10.png
-public/images/11.jpg
-public/images/11.png
-public/images/12.jpg
-public/images/12.png
-public/images/13.jpg
-public/images/13.png
-public/images/2.jpeg
-public/images/2.jpg
-public/images/2.png
-public/images/3.jpg
-public/images/3.png
-public/images/4.jpg
-public/images/4.png
-public/images/5.jpg
-public/images/5.png
-public/images/6.jpg
-public/images/6.png
-public/images/7.jpg
-public/images/7.png
-public/images/8.jpg
-public/images/8.png
-public/images/9.jpg
-public/images/9.png
-public/images/AinShamsUniv.png
-public/images/Askry1.jpg
-public/images/Askry10.jpg
-public/images/Askry11.jpg
-public/images/Askry12.jpg
-public/images/Askry13.jpg
-public/images/Askry14.jpg
-public/images/Askry15.jpg
-public/images/Askry16.jpg
-public/images/Askry17.jpg
-public/images/Askry2.jpg
-public/images/Askry3.jpg
-public/images/Askry4.jpg
-public/images/Askry5.jpg
-public/images/Askry6.jpg
-public/images/Askry7.jpg
-public/images/Askry8.jpg
-public/images/Askry9.jpg
-public/images/Book01.jpg
-public/images/Book02.jpg
-public/images/Book03.jpg
-public/images/CEA-Program-600x600.jpg
-public/images/CEA-Video-bg1.jpg
-public/images/CEA-Video-bg2.jpg
-public/images/Cea1.jpg
-public/images/Cea2.jpg
-public/images/Cea3.jpg
-public/images/Cea4.jpg
-public/images/Cea5.jpg
-public/images/Cea6.jpg
-public/images/Cea7.jpg
-public/images/Cea8.jpg
-public/images/Coat-of-arms-of-Yemen.png
-public/images/Egypt-Gas.png
-public/images/GsrSuez1.jpg
-public/images/GsrSuez10.jpg
-public/images/GsrSuez11.jpg
-public/images/GsrSuez12.jpg
-public/images/GsrSuez13.jpg
-public/images/GsrSuez2.jpg
-public/images/GsrSuez3.jpg
-public/images/GsrSuez4.jpg
-public/images/GsrSuez5.jpg
-public/images/GsrSuez6.jpg
-public/images/GsrSuez7.jpg
-public/images/GsrSuez8.jpg
-public/images/GsrSuez9.jpg
-public/images/NQI-lg.jpg
-public/images/NQI.jpg
-public/images/Partner.jpg
-public/images/PartnerLg.jpg
-public/images/PicCEA1.jpg
-public/images/PicCEA10.jpg
-public/images/PicCEA11.jpg
-public/images/PicCEA2.jpg
-public/images/PicCEA3.jpg
-public/images/PicCEA4.jpg
-public/images/PicCEA5.jpg
-public/images/PicCEA6.jpg
-public/images/PicCEA7.jpg
-public/images/PicCEA8.jpg
-public/images/PicCEA9.jpg
-public/images/Picture1.jpg
-public/images/Shobra1.jpg
-public/images/Shobra10.jpg
-public/images/Shobra11.jpg
-public/images/Shobra12.jpg
-public/images/Shobra13.jpg
-public/images/Shobra2.jpg
-public/images/Shobra3.jpg
-public/images/Shobra4.jpg
-public/images/Shobra5.jpg
-public/images/Shobra6.jpg
-public/images/Shobra7.jpg
-public/images/Shobra8.jpg
-public/images/Shobra9.jpg
-public/images/Teams.png
-public/images/about.jpg
-public/images/armedforces.png
-public/images/arrow-down.jpg
-public/images/arrow-down.png
-public/images/autodeskCert.jpg
-public/images/autodeskCertLg.jpg
-public/images/banner03.png
-public/images/banner1.jpg
-public/images/banner2.jpg
-public/images/banner3.jpg
-public/images/banner4.jpg
-public/images/banner5.jpg
-public/images/banner6.jpg
-public/images/banner7.jpg
-public/images/banner8.jpg
-public/images/bg1.jpg
-public/images/black.webp
-public/images/cairo-university.jpg
-public/images/certificates/cert01.jpg
-public/images/certificates/cert02.jpg
-public/images/certificates/cert03.jpg
-public/images/certificates/cert04.jpg
-public/images/certificates/cert05.jpg
-public/images/certificates/cert06.jpg
-public/images/certificates/cert07.jpg
-public/images/certificates/cert08.jpg
-public/images/certificates/cert09.jpg
-public/images/certificates/large/cert01-lg.jpg
-public/images/certificates/large/cert02-lg.jpg
-public/images/certificates/large/cert03-lg.jpg
-public/images/certificates/large/cert04-lg.jpg
-public/images/certificates/large/cert05-lg.jpg
-public/images/certificates/large/cert06-lg.jpg
-public/images/certificates/large/cert07-lg.jpg
-public/images/certificates/large/cert08-lg.jpg
-public/images/certificates/large/cert09-lg.jpg
-public/images/check1.png
-public/images/check2.png
-public/images/check3.png
-public/images/close.png
-public/images/customer-01.jpg
-public/images/customer-02.jpg
-public/images/customer-03.jpg
-public/images/customer-04.jpg
-public/images/customer-05.jpg
-public/images/customer-06.jpg
-public/images/customer01.jpg
-public/images/customer02.jpg
-public/images/customer03.jpg
-public/images/customer04.jpg
-public/images/customer05.jpg
-public/images/customer06.jpg
-public/images/customer07.jpg
-public/images/customer08.jpg
-public/images/customer09.jpg
-public/images/customer10.jpg
-public/images/customer11.jpg
-public/images/customer12.jpg
-public/images/customer13.jpg
-public/images/customer14.jpg
-public/images/customer15.jpg
-public/images/customer16.jpg
-public/images/customer17.jpg
-public/images/customer18.jpg
-public/images/customer19.jpg
-public/images/customer20.jpg
-public/images/customer21.jpg
-public/images/customer22.jpg
-public/images/customer23.jpg
-public/images/customer24.jpg
-public/images/customer25.jpg
-public/images/customer26.jpg
-public/images/customer27.jpg
-public/images/customer28.jpg
-public/images/customer29.jpg
-public/images/customer30.jpg
-public/images/customer31.jpg
-public/images/customer32.jpg
-public/images/customer33.jpg
-public/images/customer34.jpg
-public/images/customer35.jpg
-public/images/customer36.jpg
-public/images/customer37.jpg
-public/images/customer38.jpg
-public/images/customer39.jpg
-public/images/customer40.jpg
-public/images/customer41.jpg
-public/images/customer42.jpg
-public/images/customer43.jpg
-public/images/customer44.jpg
-public/images/customer45.jpg
-public/images/customer46.jpg
-public/images/customer47.jpg
-public/images/customer48.jpg
-public/images/customer49.jpg
-public/images/customer50.jpg
-public/images/customer51.jpg
-public/images/customer52.jpg
-public/images/customer53.jpg
-public/images/customer54.jpg
-public/images/customer55.jpg
-public/images/customer56.jpg
-public/images/customer57.jpg
-public/images/customer58.jpg
-public/images/customer59.jpg
-public/images/customer60.jpg
-public/images/customer61.jpg
-public/images/customer62.jpg
-public/images/customer63.jpg
-public/images/customer64.jpg
-public/images/customer65.jpg
-public/images/customer66.jpg
-public/images/customer67.jpg
-public/images/customer68.jpg
-public/images/customer69.jpg
-public/images/customer70.jpg
-public/images/customer71.jpg
-public/images/customer72.jpg
-public/images/customer73.jpg
-public/images/customer74.jpg
-public/images/down.png
-public/images/eagle.jpg
-public/images/finalherfy.jpg
-public/images/gazan0.jpg
-public/images/gazan1.jpg
-public/images/gazan10.jpg
-public/images/gazan11.jpg
-public/images/gazan12.jpg
-public/images/gazan13.jpg
-public/images/gazan14.jpg
-public/images/gazan15.jpg
-public/images/gazan16.jpg
-public/images/gazan17.jpg
-public/images/gazan2.jpg
-public/images/gazan3.jpg
-public/images/gazan4.jpg
-public/images/gazan5.jpg
-public/images/gazan6.jpg
-public/images/gazan7.jpg
-public/images/gazan8.jpg
-public/images/gazan9.jpg
-public/images/grid-bg1.jpg
-public/images/grid-bg2.jpg
-public/images/grid-bg3.jpg
-public/images/grid-bg4.jpg
-public/images/grid-bg5.jpg
-public/images/icmet-logo.jpg
-public/images/img-sprite.png
-public/images/iso9001.jpg
-public/images/iso9001_lg.jpg
-public/images/it-training.jpg
-public/images/leader1.jpeg
-public/images/leader2.jpeg
-public/images/leader3.jpeg
-public/images/leader4.jpeg
-public/images/leader5.jpeg
-public/images/leader6.jpeg
-public/images/leader7.jpeg
-public/images/leader8.jpeg
-public/images/leaders-01.jpg
-public/images/leaders-02.jpg
-public/images/leaders-03.jpg
-public/images/leaders-04.jpg
-public/images/leaders-05.jpg
-public/images/leaders-06.jpg
-public/images/lect01.jpg
-public/images/lect02.jpg
-public/images/lect03.jpg
-public/images/lect04.jpg
-public/images/lect05.jpg
-public/images/lect06.jpg
-public/images/lect07.jpg
-public/images/library-01.jpg
-public/images/library-02.jpg
-public/images/library-03.jpg
-public/images/library-04.jpg
-public/images/library/IMG-20241012-WA0010.jpg
-public/images/library/IMG-20241012-WA0011.jpg
-public/images/library/IMG-20241012-WA0012.jpg
-public/images/library/IMG-20241012-WA0013.jpg
-public/images/library/IMG-20241012-WA0014.jpg
-public/images/library/IMG-20241012-WA0015.jpg
-public/images/library/IMG-20241012-WA0016.jpg
-public/images/library/IMG-20241012-WA0017.jpg
-public/images/library/IMG-20241012-WA0018.jpg
-public/images/library/IMG-20241012-WA0019.jpg
-public/images/library/IMG-20241012-WA0020.jpg
-public/images/library/IMG-20241012-WA0021.jpg
-public/images/library/IMG-20241012-WA0022.jpg
-public/images/library/IMG-20241012-WA0023.jpg
-public/images/library/IMG-20241012-WA0024.jpg
-public/images/library/IMG-20241012-WA0025.jpg
-public/images/library/im1.jpeg
-public/images/library/im2.jpeg
-public/images/library/im3.jpeg
-public/images/login-banner.jpg
-public/images/logo-removebg-preview.png
-public/images/logo.jpg
-public/images/menu.png
-public/images/mission-bg.jpg
-public/images/mohamedsobhy.jpg
-public/images/news/000001.jpg
-public/images/news/000002.jpg
-public/images/news/00003.jpg
-public/images/news/00004.jpg
-public/images/news/00005.jpg
-public/images/news/00006.jpg
-public/images/news/00007.jpg
-public/images/news/00008.jpg
-public/images/news/00009.jpg
-public/images/news/01.jpeg
-public/images/news/01.jpg
-public/images/news/02.jpeg
-public/images/news/02.jpg
-public/images/news/03.jpeg
-public/images/news/03.jpg
-public/images/news/04.jpeg
-public/images/news/04.jpg
-public/images/news/05.jpeg
-public/images/news/05.jpg
-public/images/news/06.jpeg
-public/images/news/06.jpg
-public/images/news/07.jpeg
-public/images/news/07.jpg
-public/images/news/08.jpeg
-public/images/news/08.jpg
-public/images/news/09.jpeg
-public/images/news/1.jpg
-public/images/news/10.jpeg
-public/images/news/1003.jpg
-public/images/news/11-10-2017-10.jpg
-public/images/news/11-7.jpg
-public/images/news/11-7_11.jpg
-public/images/news/11-7_4.jpg
-public/images/news/11-7_7.jpg
-public/images/news/11-7_8.jpg
-public/images/news/1111111111111111111111111111111111.jpeg
-public/images/news/14-10-2018-16.jpg
-public/images/news/15-8.jpg
-public/images/news/15-8_2.jpg
-public/images/news/15-8_3.jpg
-public/images/news/15-8_4.jpg
-public/images/news/15-8_5.jpg
-public/images/news/17-1-2021-5.jpg
-public/images/news/1754731353284.jpg
-public/images/news/1754731359209.jpg
-public/images/news/1754731359788.jpg
-public/images/news/1754731359841.jpg
-public/images/news/2-9-2021-1.jpg
-public/images/news/2-9-2021-2_2.jpg
-public/images/news/2-9-2021-3.jpg
-public/images/news/2.jpg
-public/images/news/200009.jpg
-public/images/news/201.jpeg
-public/images/news/201.jpg
-public/images/news/202.jpeg
-public/images/news/202.jpg
-public/images/news/20251022-01.jpg
-public/images/news/20251022-02.jpg
-public/images/news/203.jpeg
-public/images/news/203.jpg
-public/images/news/204.jpeg
-public/images/news/204.jpg
-public/images/news/205.jpg
-public/images/news/206.jpeg
-public/images/news/206.jpg
-public/images/news/207.jpeg
-public/images/news/207.jpg
-public/images/news/208.jpeg
-public/images/news/209.jpeg
-public/images/news/21-11-_10.jpg
-public/images/news/21-11-_2.jpg
-public/images/news/21-11-_5.jpg
-public/images/news/21-11-_8.jpg
-public/images/news/21-11-_9.jpg
-public/images/news/21-5-2015-13.jpg
-public/images/news/21-5-2015-14.jpg
-public/images/news/211-7_11.jpg
-public/images/news/211-7_7.jpg
-public/images/news/211-7_8.jpg
-public/images/news/215-8_4.jpg
-public/images/news/215-8_5.jpg
-public/images/news/217-1-2021-5.jpg
-public/images/news/21754731353284.jpg
-public/images/news/21754731359209.jpg
-public/images/news/21754731359788.jpg
-public/images/news/21754731359841.jpg
-public/images/news/22-9-2021-3.jpg
-public/images/news/22.jpg
-public/images/news/2204.jpg
-public/images/news/2205.jpg
-public/images/news/221-11-_10.jpg
-public/images/news/221-11-_2.jpg
-public/images/news/221-11-_9.jpg
-public/images/news/224-5-2015-2.jpg
-public/images/news/225-2-2015-13.jpg
-public/images/news/228-6.jpg
-public/images/news/228-6_15.jpg
-public/images/news/22icmet_bg.jpg
-public/images/news/23-4-2017-5.jpg
-public/images/news/2306.jpg
-public/images/news/2402.jpg
-public/images/news/2441.jpg
-public/images/news/25-2-2015-13.jpg
-public/images/news/2501.jpg
-public/images/news/2503.jpg
-public/images/news/27-12-2016-18.jpg
-public/images/news/27-12-2016-23.jpg
-public/images/news/277094131_3911478025643935_285208845174124755_n.jpg
-public/images/news/28-6_10.jpg
-public/images/news/28-6_14.jpg
-public/images/news/28-6_15.jpg
-public/images/news/2All_Page_5.jpg
-public/images/news/2All_Page_6.jpg
-public/images/news/2IMG_0542.jpg
-public/images/news/2IMG_0544.jpg
-public/images/news/2Slide6.jpg
-public/images/news/2WhatsApp Image 2024-07-01 at 3.28.45 PM.jpeg
-public/images/news/2WhatsApp Image 2024-11-05 at 12.02.03 PM.jpeg
-public/images/news/2icmet_bg.jpg
-public/images/news/2team4.jpg
-"public/images/news/2\330\247\330\271\331\204\330\247\331\206 \330\247\331\204\330\252\330\257\330\261\331\212\330\250 \330\247\331\204\330\265\331\212\331\201\331\211 2022.jpg"
-"public/images/news/2\330\247\331\204\330\254\331\207\330\247\330\262 \330\247\331\204\331\205\330\261\331\203\330\262\331\212 \331\204\331\204\330\252\331\206\330\270\331\212\331\205 \331\210\330\247\331\204\330\245\330\257\330\247\330\261\330\251.jpg"
-public/images/news/300009.jpg
-public/images/news/301.jpeg
-public/images/news/301.jpg
-public/images/news/302.jpeg
-public/images/news/302.jpg
-public/images/news/303.jpeg
-public/images/news/303.jpg
-public/images/news/304.jpeg
-public/images/news/304.jpg
-public/images/news/305.jpg
-public/images/news/306.jpeg
-public/images/news/306.jpg
-public/images/news/307.jpeg
-public/images/news/307.jpg
-public/images/news/308.jpeg
-public/images/news/309.jpeg
-public/images/news/311-7_8.jpg
-public/images/news/315-8_5.jpg
-public/images/news/3306.jpg
-public/images/news/3503.jpg
-public/images/news/3All_Page_5.jpg
-public/images/news/3IMG_0542.jpg
-public/images/news/3WhatsApp Image 2024-11-05 at 12.02.03 PM.jpeg
-public/images/news/3icmet_bg.jpg
-public/images/news/3team4.jpg
-public/images/news/401.jpeg
-public/images/news/401.jpg
-public/images/news/402.jpeg
-public/images/news/402.jpg
-public/images/news/403.jpeg
-public/images/news/403.jpg
-public/images/news/404.jpg
-public/images/news/406.jpeg
-public/images/news/409.jpeg
-public/images/news/441.jpg
-public/images/news/441077311_764588502465524_5146088508994150123_n.jpg
-public/images/news/441278230_764589149132126_7612795830584307410_n.jpg
-public/images/news/4icmet_bg.jpg
-public/images/news/4team4.jpg
-public/images/news/501.jpg
-public/images/news/502.jpg
-public/images/news/503.jpg
-public/images/news/529705043_1078734904384214_732249147036660665_n.jpg
-public/images/news/529765933_1078734954384209_3178460116791615368_n.jpg
-public/images/news/540595534_1098374592420245_631827512884081812_n.jpg
-public/images/news/542140445_1098374512420253_7142600362004390615_n____New.jpg
-public/images/news/565136921_1139460404978330_5812453874259941_n.jpg
-public/images/news/588165345_1409953927841690_7374012640948179484_n.jpg
-public/images/news/588271123_1409954004508349_8151932888544821874_n.jpg
-public/images/news/601.jpg
-public/images/news/602.jpg
-public/images/news/603.jpg
-public/images/news/68693e96-5d44-4cd9-ae92-22f598e925d5.jpg
-public/images/news/701.jpg
-public/images/news/702.jpg
-public/images/news/703.jpg
-public/images/news/801.jpg
-public/images/news/802.jpg
-public/images/news/803.jpg
-public/images/news/901.jpg
-public/images/news/902.jpg
-public/images/news/903.jpg
-public/images/news/ATC Site Certificate_(ICEMT).jpg
-public/images/news/All_Page_1.jpg
-public/images/news/All_Page_2.jpg
-public/images/news/All_Page_3.jpg
-public/images/news/All_Page_4.jpg
-public/images/news/All_Page_5.jpg
-public/images/news/All_Page_6.jpg
-public/images/news/IMG_0475.jpg
-public/images/news/IMG_0541.jpg
-public/images/news/IMG_0542.jpg
-public/images/news/IMG_0543.jpg
-public/images/news/IMG_0544.jpg
-public/images/news/Pic1.jpeg
-public/images/news/Pic2.jpeg
-public/images/news/Slide1.jpeg
-public/images/news/Slide2.jpeg
-public/images/news/Slide3.jpeg
-public/images/news/Slide4.jpg
-public/images/news/Slide5.jpg
-public/images/news/Slide6.jpg
-public/images/news/Slide7.jpg
-public/images/news/WhatsApp Image 2023-11-22 at 3.12.57 PM.jpeg
-public/images/news/WhatsApp Image 2023-11-22 at 3.12.58 PM.jpeg
-public/images/news/WhatsApp Image 2024-07-01 at 3.28.45 PM.jpeg
-public/images/news/WhatsApp Image 2024-11-05 at 12.02.03 PM.jpeg
-public/images/news/icmet_bg.jpg
-public/images/news/medix ad.jpg
-public/images/news/news-01.jpg
-public/images/news/news-02.jpg
-public/images/news/news-03.jpg
-public/images/news/news-04.jpg
-public/images/news/news-05.jpg
-public/images/news/news-06.jpg
-public/images/news/news-07.jpg
-public/images/news/news-08.jpg
-public/images/news/news-09.jpg
-public/images/news/news-10-12-2020.jpg
-public/images/news/news-20-02-2019.jpg
-public/images/news/team4.jpg
-"public/images/news/\330\247\330\271\331\204\330\247\331\206 \330\247\331\204\330\252\330\257\330\261\331\212\330\250 \330\247\331\204\330\265\331\212\331\201\331\211 2022.jpg"
-"public/images/news/\330\247\330\271\331\204\330\247\331\206 \330\247\331\204\330\252\330\257\330\261\331\212\330\250 \330\247\331\204\330\265\331\212\331\201\331\211 2023.jpg"
-"public/images/news/\330\247\330\271\331\204\330\247\331\206 \330\247\331\204\330\252\330\257\330\261\331\212\330\250 \330\247\331\204\330\265\331\212\331\201\331\211 2024.jpg"
-"public/images/news/\330\247\331\204\330\252\330\257\330\261\331\212\330\250 \330\247\331\204\330\265\331\212\331\201\331\211 \330\247\331\204\331\206\330\247\330\264\330\261_2025.jpg"
-"public/images/news/\330\247\331\204\330\254\331\207\330\247\330\262 \330\247\331\204\331\205\330\261\331\203\330\262\331\212 \331\204\331\204\330\252\331\206\330\270\331\212\331\205 \331\210\330\247\331\204\330\245\330\257\330\247\330\261\330\251.jpg"
-"public/images/news/\330\247\331\204\330\254\331\207\330\247\330\262 \330\247\331\204\331\205\330\261\331\203\330\262\331\212 \331\204\331\204\330\252\331\206\330\270\331\212\331\205 \331\210\330\247\331\204\330\245\330\257\330\247\330\261\330\2511.jpg"
-"public/images/news/\330\252\331\206\331\210\331\212\330\251  \330\250\330\256\330\265\331\210\330\265 \330\247\330\271\331\204\330\247\331\206 \330\247\331\204\330\252\330\257\330\261\331\212\330\250 \330\247\331\204\330\265\331\212\331\201\331\211 2024.jpg"
-public/images/on-site-01.jpg
-public/images/on-site-02.jpg
-public/images/on-site-03.jpg
-public/images/on-site-04.jpg
-public/images/on-site-05.jpg
-public/images/online-training.jpg
-public/images/online/1.jpeg
-public/images/online/2.jpeg
-public/images/online/3.jpeg
-public/images/online/4.jpeg
-public/images/online/5.jpeg
-public/images/online/6.jpeg
-public/images/opinion01.jpg
-public/images/opinion02.jpg
-public/images/opinion03.jpg
-public/images/p1.jpg
-public/images/pic01a1.jpg
-public/images/pic02a1.jpg
-public/images/pic02a2.jpg
-public/images/pic02a3.jpg
-public/images/pic02a4.jpg
-public/images/pic03a1.jpg
-public/images/pic03a2.jpg
-public/images/pic03a3.jpg
-public/images/pic04a1.jpg
-public/images/pic04a2.jpg
-public/images/pic04a3.jpg
-public/images/pic05a2.jpg
-public/images/pic05a3.jpg
-public/images/pic05a4.jpg
-public/images/pic06a1.jpg
-public/images/pic06a10.jpg
-public/images/pic06a11.jpg
-public/images/pic06a12.jpg
-public/images/pic06a13.jpg
-public/images/pic06a14.jpg
-public/images/pic06a15.jpg
-public/images/pic06a16.jpg
-public/images/pic06a17.jpg
-public/images/pic06a18.jpg
-public/images/pic06a19.jpg
-public/images/pic06a2.jpg
-public/images/pic06a20.jpg
-public/images/pic06a21.jpg
-public/images/pic06a22.jpg
-public/images/pic06a23.jpg
-public/images/pic06a3.jpg
-public/images/pic06a4.jpg
-public/images/pic06a5.jpg
-public/images/pic06a6.jpg
-public/images/pic06a7.jpg
-public/images/pic06a8.jpg
-public/images/pic06a9.jpg
-public/images/pic07a1.jpg
-public/images/pic07a10.jpg
-public/images/pic07a11.jpg
-public/images/pic07a12.jpg
-public/images/pic07a13.jpg
-public/images/pic07a14.jpg
-public/images/pic07a15.jpg
-public/images/pic07a16.jpg
-public/images/pic07a2.jpg
-public/images/pic07a3.jpg
-public/images/pic07a4.jpg
-public/images/pic07a5.jpg
-public/images/pic07a6.jpg
-public/images/pic07a7.jpg
-public/images/pic07a8.jpg
-public/images/pic07a9.jpg
-public/images/pic08a1.jpg
-public/images/pic08a2.jpg
-public/images/pic08a3.jpg
-public/images/pic08a4.jpg
-public/images/pic09a1.jpg
-public/images/pic09a2.jpg
-public/images/pic09a3.jpg
-public/images/pic09a4.jpg
-public/images/pic09a5.jpg
-public/images/pic09a6.jpg
-public/images/pic09a7.jpg
-public/images/pic09a8.jpg
-public/images/pic10a1.jpg
-public/images/pic10a2.jpg
-public/images/pic10a3.jpg
-public/images/pic10a4.jpg
-public/images/pic10a5.jpg
-public/images/pic11a1.jpg
-public/images/pic11a10.jpg
-public/images/pic11a11.jpg
-public/images/pic11a12.jpg
-public/images/pic11a13.jpg
-public/images/pic11a14.jpg
-public/images/pic11a15.jpg
-public/images/pic11a16.jpg
-public/images/pic11a17.jpg
-public/images/pic11a18.jpg
-public/images/pic11a19.jpg
-public/images/pic11a2.jpg
-public/images/pic11a20.jpg
-public/images/pic11a21.jpg
-public/images/pic11a22.jpg
-public/images/pic11a23.jpg
-public/images/pic11a24.jpg
-public/images/pic11a3.jpg
-public/images/pic11a4.jpg
-public/images/pic11a5.jpg
-public/images/pic11a6.jpg
-public/images/pic11a7.jpg
-public/images/pic11a8.jpg
-public/images/pic11a9.jpg
-public/images/pic12a1.jpg
-public/images/pic12a10.jpg
-public/images/pic12a11.jpg
-public/images/pic12a2.jpg
-public/images/pic12a3.jpg
-public/images/pic12a4.jpg
-public/images/pic12a5.jpg
-public/images/pic12a6.jpg
-public/images/pic12a7.jpg
-public/images/pic12a8.jpg
-public/images/pic12a9.jpg
-public/images/pic13a1.jpg
-public/images/pic13a10.jpg
-public/images/pic13a11.jpg
-public/images/pic13a12.jpg
-public/images/pic13a13.jpg
-public/images/pic13a14.jpg
-public/images/pic13a15.jpg
-public/images/pic13a16.jpg
-public/images/pic13a17.jpg
-public/images/pic13a18.jpg
-public/images/pic13a19.jpg
-public/images/pic13a2.jpg
-public/images/pic13a20.jpg
-public/images/pic13a21.jpg
-public/images/pic13a22.jpg
-public/images/pic13a23.jpg
-public/images/pic13a24.jpg
-public/images/pic13a25.jpg
-public/images/pic13a26.jpg
-public/images/pic13a27.jpg
-public/images/pic13a3.jpg
-public/images/pic13a4.jpg
-public/images/pic13a5.jpg
-public/images/pic13a6.jpg
-public/images/pic13a7.jpg
-public/images/pic13a8.jpg
-public/images/pic13a9.jpg
-public/images/pic14a1.jpg
-public/images/pic14a2.jpg
-public/images/pic14a3.jpg
-public/images/pic14a4.jpg
-public/images/pic14a5.jpg
-public/images/pic15a1.jpg
-public/images/pic16a1.jpg
-public/images/pic16a2.jpg
-public/images/pic16a3.jpg
-public/images/pic16a4.jpg
-public/images/pic16a5.jpg
-public/images/pic16a6.jpg
-public/images/pic17a1.jpg
-public/images/pic17a10.jpg
-public/images/pic17a11.jpg
-public/images/pic17a12.jpg
-public/images/pic17a13.jpg
-public/images/pic17a14.jpg
-public/images/pic17a2.jpg
-public/images/pic17a3.jpg
-public/images/pic17a4.jpg
-public/images/pic17a5.jpg
-public/images/pic17a6.jpg
-public/images/pic17a7.jpg
-public/images/pic17a8.jpg
-public/images/pic17a9.jpg
-public/images/pmi.jpg
-public/images/pmi_lg.jpg
-public/images/program-icon1.png
-public/images/protocol1.jpg
-public/images/protocol2.jpg
-public/images/quality-icon1.jpg
-public/images/quality-icon2.jpg
-public/images/sch01.jpg
-public/images/sch02.jpg
-public/images/sch03.jpg
-public/images/sch04.jpg
-public/images/sch05.jpg
-public/images/sch06.jpg
-public/images/sch07.jpg
-public/images/sch08.jpg
-public/images/sch09.jpg
-public/images/sch10.jpg
-public/images/sch11.jpg
-public/images/sch12.jpg
-public/images/sch13.jpg
-public/images/sch14.jpg
-public/images/sch15.jpg
-public/images/sch16.jpg
-public/images/sch17.jpg
-public/images/sch18.jpg
-public/images/sch19.jpg
-public/images/sch20.jpg
-public/images/sch21.jpg
-public/images/sch22.jpg
-public/images/sh1.jpg
-public/images/sh2.jpg
-public/images/sh3.jpg
-public/images/sh4.jpg
-public/images/sh5.jpg
-public/images/sh6.jpg
-public/images/sh7.jpg
-public/images/sherif-hamdy.jpg
-public/images/t1.jpeg
-public/images/t2.jpg
-public/images/t3.jpg
-public/images/t3lem/1.jpg
-public/images/t3lem/10.jpg
-public/images/t3lem/11.jpg
-public/images/t3lem/12.jpg
-public/images/t3lem/13.jpg
-public/images/t3lem/2.jpg
-public/images/t3lem/3.jpg
-public/images/t3lem/4.jpg
-public/images/t3lem/5.jpg
-public/images/t3lem/6.jpg
-public/images/t3lem/7.jpg
-public/images/t3lem/8.jpg
-public/images/t3lem/9.jpg
-public/images/team1.jpg
-public/images/team2.jpg
-public/images/team3.jpg
-public/images/team4.jpg
-public/images/teams1iconleft.png
-public/images/teams1iconright.png
-public/images/tech-01.jpg
-public/images/tech-02.jpg
-public/images/tech-03.jpg
-public/images/tech-04.jpg
-public/images/tech-05.jpg
-public/images/tech-06.jpg
-public/images/tech-07.png
-public/images/tech-08.png
-public/images/tech-09.png
-public/images/tech-10.png
-public/images/tech-11.png
-public/images/tech-12.jpg
-public/images/test-01.jpg
-public/images/test-02.jpg
-public/images/test-03.jpg
-public/images/testimonial_bg.jpg
-public/images/training-background.jpg
-public/images/vision.jfif
-public/images/warshabrad1.jpg
-public/images/warshabrad2.jpg
-public/images/warshabrad3.jpg
-public/images/warshabrad4.jpg
-public/images/warshabrad5.jpg
-public/images/warshahydro1.jpg
-public/images/warshahydro2.jpg
-public/images/warshahydro3.jpg
-public/images/warshahydro4.jpg
-public/images/warshahydro5.jpg
-public/images/warshakahrb1.jpg
-public/images/warshakahrb2.jpg
-public/images/warshakahrb3.jpg
-public/images/warshakahrb4.jpg
-public/images/warshamoad1.jpg
-public/images/warshamoad2.jpg
-public/images/warshamohrk1.jpg
-public/images/warshamohrk2.jpg
-public/images/warshanakl1.jpg
-public/images/warshanakl2.jpg
-public/images/warshanakl3.jpg
-public/images/warshanakl4.jpg
-public/images/warshanakl5.jpg
-public/images/warshatarkeb1.jpg
-public/images/warshatarkeb2.jpg
-public/images/warshatarkeb3.jpg
-public/images/warshatarkeb4.jpg
-public/images/white.png
-public/images/white.webp
-public/images/withbackgr.jpeg
-public/images/wrashA1.jpg
-public/images/wrashA2.jpg
-public/images/wrashA3.jpg
-public/images/wrashb1.jpg
-public/images/wrashb2.jpg
-public/images/wrashb3.jpg
-public/images/wrashc1.jpg
-public/images/wrashc2.jpg
-public/images/wrashc3.jpg
-public/images/wrashd1.jpg
-public/images/wrashd2.jpg
-public/images/wrashd3.jpg
-public/images/wrashe1.jpg
-public/images/wrashe2.jpg
-public/images/wrashe3.jpg
-public/images/wrashf1.jpg
-public/images/wrashf2.jpg
-public/images/wrashf3.jpg
-public/images/wrashg1.jpg
-public/images/wrashz1.jpg
-public/images/wrashz2.jpg
-public/images/wrashz3.jpg
-public/og-image.png
-public/pdf/ICEMT_Monthly_Activity.pdf
-public/pdf/ICEMT_Plan_Training.pdf
-public/pdf/Plan_2019-2020.pdf
-public/pdf/StrategicPlan_2024_2030.pdf
-public/robots.txt
-public/site.webmanifest
-public/sitemap.xml
-public/web-app-manifest-192x192.png
-public/web-app-manifest-512x512.png
-public/web.config
-public/withbackgr.jpg
-scripts/check-seo.mjs
-src/App.jsx
-src/api/api.js
-src/assets/The-Role-of-Technology-in-Modern-Society-1024x570.jpg
-src/assets/black.png
-src/assets/black.webp
-src/assets/hykl.png
-src/assets/img1.jpg
-src/assets/img2.jpg
-src/assets/logo-removebg-preview.png
-src/assets/logo.jpeg
-src/assets/organizational-structure.jpg
-src/assets/white.png
-src/assets/white.webp
-src/assets/withbackgr.jpeg
-src/components/AuthSync.jsx
-src/components/FloatingSocialBar.jsx
-src/components/Footer.jsx
-src/components/Navbar.jsx
-src/components/ScrollToTop.jsx
-src/components/ScrollToTopButton.jsx
-src/components/Seo.jsx
-src/components/admin/PageHero.jsx
-src/components/admin/Pagination.jsx
-src/components/admin/Sidebar.jsx
-src/components/admin/StatCards.jsx
-src/components/admin/constants.js
-src/components/admin/exportHelpers.js
-src/components/admin/helpers.js
-src/components/admin/modals/CertUploadModal.jsx
-src/components/admin/modals/RefundActionModal.jsx
-src/components/admin/modals/RefundDetailModal.jsx
-src/components/admin/normalizers.js
-src/components/admin/styles.js
-src/components/admin/tabs/AttendanceTab.jsx
-src/components/admin/tabs/CertificatesTab.jsx
-src/components/admin/tabs/CoursesTab.jsx
-src/components/admin/tabs/RefundsTab.jsx
-src/components/admin/tabs/UsersTab.jsx
-src/eslint.config.js
-src/i18n/index.js
-src/i18n/locales/ar/translation.json
-src/i18n/locales/en/translation.json
-src/index.css
-src/index.output.css
-src/layouts/DashboardLayout.jsx
-src/layouts/PublicLayout.jsx
-src/main.jsx
-src/pages/AdminDashboard.jsx
-src/pages/CEAProgram.jsx
-src/pages/Certifications.jsx
-src/pages/CheckoutPage.jsx
-src/pages/ContactPage.jsx
-src/pages/CourseDetails.jsx
-src/pages/CoursesPage.jsx
-src/pages/CustomersPage.jsx
-src/pages/CustomersSection.jsx
-src/pages/Dynamiccoursessection.jsx
-src/pages/ErrorBoundary.jsx
-src/pages/Galary.jsx
-src/pages/GesrElSuezPage.jsx
-src/pages/Home.jsx
-src/pages/Instructors.jsx
-src/pages/Leaders.jsx
-src/pages/Library.jsx
-src/pages/Login.jsx
-src/pages/Mycourses.jsx
-src/pages/News.jsx
-src/pages/OnlineTrainingPage.jsx
-src/pages/OnsiteTraining_fixed.jsx
-src/pages/OrganizationalStructure.jsx
-src/pages/PaymentReturnPage.jsx
-src/pages/Paymentresultpage.jsx
-src/pages/Protocols.jsx
-src/pages/Refundmanagementpage.JSX
-src/pages/Searchpage.jsx
-src/pages/ShobraTrainingPage.jsx
-src/pages/ShoppingCartPage.jsx
-src/pages/StatsSection.jsx
-src/pages/Team.jsx
-src/pages/TechnicalEducation.jsx
-src/pages/TechnicalEducationSection.jsx
-src/pages/TechnicalSchoolPage.jsx
-src/pages/TestsSection.jsx
-src/pages/TrainingMethods.jsx
-src/pages/VocationalTraining.jsx
-src/pages/admin/Admin.jsx
-src/pages/admin/BooksTab.jsx
-src/pages/admin/Financialtab.jsx
-src/pages/admin/NewsTab.jsx
-src/pages/admin/PlanworkTab.jsx
-src/pages/admin/SettingsTab.jsx
-src/pages/admin/mohadren.jsx
-src/pages/galary.css
-src/pages/home.css
-src/pages/news.css
-src/pages/newsDetails.jsx
-src/pages/organizational-structure.css
-src/pages/overview.css
-src/pages/overview.jsx
-src/pages/vision_and_goals/vision_goals.css
-src/pages/vision_and_goals/vision_goals.jsx
-src/routes/AppRoutes.jsx
-src/seo/RouteSeo.jsx
-src/theme/theme.js
-src/tree2.txt
-structure.txt
-tailwind.config.js
-tailwind.extension.json
-tree.txt
-vite.config.js
+Folder PATH listing for volume New Volume
+Volume serial number is 000001DE 1ABF:61F3
+D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SRC\FRONTEND\        
+Folder PATH listing for volume New Volume
+Volume serial number is 00000187 1ABF:61F3
+D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SRC\FRONTEND\SCRIPTS
+    check-seo.mjs
+    
+No subfolders exist 
+
+Folder PATH listing for volume New Volume
+Volume serial number is 00000231 1ABF:61F3
+D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SRC\FRONTEND\SRC
+|   App.jsx
+|   eslint.config.js
+|   index.css
+|   index.output.css
+|   main.jsx
+|   tree2.txt
+|   
++---api
+|       api.js
+|       
++---assets
+|       black.png
+|       black.webp
+|       hykl.png
+|       img1.jpg
+|       img2.jpg
+|       logo-removebg-preview.png
+|       logo.jpeg
+|       organizational-structure.jpg
+|       The-Role-of-Technology-in-Modern-Society-1024x570.jpg
+|       white.png
+|       white.webp
+|       withbackgr.jpeg
+|       
++---components
+|   |   AuthSync.jsx
+|   |   CategoryBreadcrumb.jsx
+|   |   FloatingSocialBar.jsx
+|   |   Footer.jsx
+|   |   Navbar.jsx
+|   |   ScrollToTop.jsx
+|   |   ScrollToTopButton.jsx
+|   |   Seo.jsx
+|   |   
+|   \---admin
+|       |   constants.js
+|       |   exportHelpers.js
+|       |   helpers.js
+|       |   normalizers.js
+|       |   PageHero.jsx
+|       |   Pagination.jsx
+|       |   Sidebar.jsx
+|       |   StatCards.jsx
+|       |   styles.js
+|       |   
+|       +---modals
+|       |       CertUploadModal.jsx
+|       |       RefundActionModal.jsx
+|       |       RefundDetailModal.jsx
+|       |       
+|       \---tabs
+|               AttendanceTab.jsx
+|               CertificatesTab.jsx
+|               CoursesTab.jsx
+|               RefundsTab.jsx
+|               UsersTab.jsx
+|               
++---i18n
+|   |   index.js
+|   |   
+|   \---locales
+|       +---ar
+|       |       translation.json
+|       |       
+|       \---en
+|               translation.json
+|               
++---layouts
+|       DashboardLayout.jsx
+|       PublicLayout.jsx
+|       
++---pages
+|   |   AdminDashboard.jsx
+|   |   CEAProgram.jsx
+|   |   Certifications.jsx
+|   |   CheckoutPage.jsx
+|   |   ContactPage.jsx
+|   |   CourseDetails.jsx
+|   |   CoursesPage.jsx
+|   |   CustomersPage.jsx
+|   |   CustomersSection.jsx
+|   |   Dynamiccoursessection.jsx
+|   |   ErrorBoundary.jsx
+|   |   galary.css
+|   |   Galary.jsx
+|   |   GesrElSuezPage.jsx
+|   |   home.css
+|   |   Home.jsx
+|   |   Instructors.jsx
+|   |   Leaders.jsx
+|   |   Library.jsx
+|   |   Login.jsx
+|   |   Mycourses.jsx
+|   |   news.css
+|   |   News.jsx
+|   |   newsDetails.jsx
+|   |   OnlineTrainingPage.jsx
+|   |   OnsiteTraining_fixed.jsx
+|   |   organizational-structure.css
+|   |   OrganizationalStructure.jsx
+|   |   overview.css
+|   |   overview.jsx
+|   |   Paymentresultpage.jsx
+|   |   PaymentReturnPage.jsx
+|   |   Protocols.jsx
+|   |   Refundmanagementpage.JSX
+|   |   Searchpage.jsx
+|   |   ShobraTrainingPage.jsx
+|   |   ShoppingCartPage.jsx
+|   |   SponsoredCategoryPage.jsx
+|   |   SponsoredCategorySection.jsx
+|   |   StatsSection.jsx
+|   |   Team.jsx
+|   |   TechnicalEducation.jsx
+|   |   TechnicalEducationSection.jsx
+|   |   TechnicalSchoolPage.jsx
+|   |   TestsSection.jsx
+|   |   TrainingMethods.jsx
+|   |   VocationalTraining.jsx
+|   |   
+|   +---admin
+|   |       Admin.jsx
+|   |       BooksTab.jsx
+|   |       Financialtab.jsx
+|   |       mohadren.jsx
+|   |       NewsTab.jsx
+|   |       PlanworkTab.jsx
+|   |       SettingsTab.jsx
+|   |       TeamTab.jsx
+|   |       
+|   \---vision_and_goals
+|           vision_goals.css
+|           vision_goals.jsx
+|           
++---routes
+|       AppRoutes.jsx
+|       
++---seo
+|       RouteSeo.jsx
+|       
++---theme
+|       theme.js
+|       
+\---utils
+        categoryPath.js
+        

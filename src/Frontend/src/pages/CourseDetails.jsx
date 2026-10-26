@@ -1317,27 +1317,46 @@ const CourseDetails = () => {
                             <div style={S.heroInfo}>
                                 {heroStart ? (
                                     <span style={S.infoItem}>
-                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z" /><path d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H5.5a.5.5 0 010-1H7.5V4a.5.5 0 01.5-.5z" /></svg>
+                                        {/* Calendar */}
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', flexShrink: 0 }}>
+                                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                                            <path d="M16 2v4M8 2v4M3 10h18" />
+                                        </svg>
                                         تاريخ البدء: {heroStart}
                                     </span>
                                 ) : !isOwned && (
                                     <span style={S.infoItem}>🕐 لا توجد مواعيد متاحة حالياً</span>
                                 )}
+
                                 {durationText && (
                                     <span style={S.infoItem}>
-                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
+                                        {/* Clock */}
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', flexShrink: 0 }}>
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="M12 6v6l4 2" />
+                                        </svg>
                                         المدة: {durationText}
                                     </span>
                                 )}
+
                                 {course.place && (
                                     <span style={S.infoItem}>
-                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
+                                        {/* Location pin */}
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', flexShrink: 0 }}>
+                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                            <circle cx="12" cy="10" r="3" />
+                                        </svg>
                                         {course.place}
                                     </span>
                                 )}
+
                                 {course.language && (
                                     <span style={S.infoItem}>
-                                        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '8px' }}><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 1a7 7 0 110 14A7 7 0 018 1z" /></svg>
+                                        {/* Globe */}
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', flexShrink: 0 }}>
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                        </svg>
                                         {course.language}
                                     </span>
                                 )}

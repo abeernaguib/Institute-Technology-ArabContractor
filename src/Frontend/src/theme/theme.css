@@ -1,0 +1,168 @@
+/* src/theme/theme.css
+   Light mode = your CURRENT site colors (cream page, white cards, #0865a8 blue, #f57c00 orange).
+   Dark mode  = a soft navy-charcoal with lighter blue/orange so text stays readable.
+   Imported once at the top of src/index.css:  @import "./theme/theme.css";
+   Keep the hex values in theme.js (MUI) in sync with this file. */
+
+:root,
+[data-theme="light"] {
+    color-scheme: light;
+    /* surfaces */
+    --bg: #F5F7E1; /* page background (your cream) */
+    --surface: #ffffff; /* cards, dropdowns, drawers */
+    --surface-2: #f7f9fb; /* panels, table headers */
+    --input-bg: #f1f3f4;
+    --navbar-bg: #ffffff;
+    /* lines */
+    --border: #e0e0e0;
+    --border-soft: #f0f0f0;
+    --scrollbar: #d0d0d0;
+    /* text */
+    --text: #1a1a1a;
+    --text-soft: #444444;
+    --text-muted: #666666;
+    --text-faint: #999999;
+    /* brand */
+    --brand: #0865a8; /* blue used as TEXT / icons / links */
+    --brand-solid: #0865a8; /* blue used as a FILL behind white text */
+    --brand-hover: #044478;
+    --accent: #f57c00; /* orange as text / icons / lines */
+    --accent-solid: #f57c00; /* orange as a fill behind white text */
+    --on-brand: #ffffff;
+    /* soft tints for hover / selected states */
+    --blue-tint: rgba(8, 101, 168, 0.08);
+    --blue-tint-strong: rgba(8, 101, 168, 0.12);
+    --orange-tint: rgba(245, 124, 0, 0.08);
+    /* status */
+    --success: #15803d;
+    --danger: #dc2626;
+    --warning: #b45309;
+    /* footer gradient */
+    --footer-from: #070707;
+    --footer-to: #0865a8;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --img-filter: none;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e141b;
+    --surface: #161d27;
+    --surface-2: #1b2430;
+    --input-bg: #1f2833;
+    --navbar-bg: #121923;
+    --border: #2a3544;
+    --border-soft: #222c39;
+    --scrollbar: #3a4859;
+    --text: #e8edf3; /* not pure white */
+    --text-soft: #c5d0dc;
+    --text-muted: #9aa8b8;
+    --text-faint: #6f7f91;
+    --brand: #5aaee8; /* lighter blue so it reads on dark */
+    --brand-solid: #1d7bc2; /* still passes with white text */
+    --brand-hover: #7cc0f0;
+    --accent: #ff9a3c;
+    --accent-solid: #f57c00;
+    --on-brand: #ffffff;
+    --blue-tint: rgba(90, 174, 232, 0.14);
+    --blue-tint-strong: rgba(90, 174, 232, 0.22);
+    --orange-tint: rgba(255, 154, 60, 0.16);
+    --success: #3ccf7e;
+    --danger: #ff6b6b;
+    --warning: #f2b83b;
+    --footer-from: #04070a;
+    --footer-to: #0a3a5e;
+    --shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+    --img-filter: brightness(0.92);
+}
+
+/* ---------- Base ---------- */
+html {
+    background: var(--bg);
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    transition: background-color .25s ease, color .25s ease;
+}
+
+img:not(.no-dim) {
+    filter: var(--img-filter);
+}
+
+/* Logos: show black logo in light mode, white logo in dark mode.
+   Usage:  <img className="logo-light" src={black} />  <img className="logo-dark" src={white} /> */
+[data-theme="dark"] .logo-light {
+    display: none !important;
+}
+
+:root:not([data-theme="dark"]) .logo-dark {
+    display: none !important;
+}
+
+/* ---------- Tailwind utility classes -> dark mode ----------
+   Your pages use Tailwind classes (bg-white, text-gray-700 ...). These overrides make them
+   follow the theme WITHOUT editing every page. Add a line here if you spot another class. */
+[data-theme="dark"] .bg-white {
+    background-color: var(--surface);
+}
+
+[data-theme="dark"] .bg-gray-50 {
+    background-color: var(--surface-2);
+}
+
+[data-theme="dark"] .bg-gray-300 {
+    background-color: var(--border);
+}
+
+[data-theme="dark"] .hover\:bg-gray-100:hover {
+    background-color: var(--surface-2);
+}
+
+[data-theme="dark"] .bg-\[\#F5F7E1\]\/80 {
+    background-color: rgba(14, 20, 27, 0.8);
+}
+
+[data-theme="dark"] .bg-\[\#0865A8\]\/10 {
+    background-color: var(--blue-tint);
+}
+
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-gray-700 {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .text-gray-800,
+[data-theme="dark"] .text-slate-800,
+[data-theme="dark"] .text-\[\#393939\] {
+    color: var(--text);
+}
+
+[data-theme="dark"] .text-slate-500 {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .text-\[\#0865a8\],
+[data-theme="dark"] .text-\[\#065a8a\] {
+    color: var(--brand);
+}
+
+[data-theme="dark"] .text-\[\#f57c00\] {
+    color: var(--accent);
+}
+
+[data-theme="dark"] .border-gray-200 {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .group:hover .group-hover\:text-blue-600 {
+    color: var(--brand-hover);
+}
+
+[data-theme="dark"] .shadow,
+[data-theme="dark"] .shadow-md,
+[data-theme="dark"] .shadow-lg,
+[data-theme="dark"] .shadow-2xl {
+    --tw-shadow-color: rgba(0,0,0,.6);
+}
