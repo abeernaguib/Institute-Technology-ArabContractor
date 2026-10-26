@@ -26,6 +26,7 @@ import NewsTab from './NewsTab';
 import BooksTab from './BooksTab';
 import PlanworkTab from './PlanworkTab';
 import SettingsTab from './SettingsTab';
+import TeamTab from '../../components/admin/tabs/TeamTab';
 
 // permissionName MUST match Permission.Name in the DB (case-insensitive).
 const TABS = [
@@ -36,6 +37,7 @@ const TABS = [
     { id: 'refunds', label: 'المستردات', icon: '💳', permissionName: 'Refunds' },
     { id: 'financial', label: 'المالية', icon: '💰', permissionName: 'Finance' },
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓', permissionName: 'Lecturers' },
+    { id: 'team', label: 'فريق العمل', icon: '👥', permissionName: 'Team' },
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan' },
@@ -776,6 +778,7 @@ const AdminDashboard = () => {
 
                         {activeTab === 'lecturers' && <LecturersTab />}
                         {activeTab === 'news' && <NewsTab />}
+                        {activeTab === 'team' && <TeamTab />}
 
                         {activeTab === 'books' && (
                             <BooksTab
