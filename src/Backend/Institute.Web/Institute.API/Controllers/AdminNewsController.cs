@@ -46,10 +46,7 @@ namespace Institute.API.Controllers
                 Id = x.NewsId,
                 Title = x.ATitel,
                 PublishedAt = x.NewsDate ?? DateTime.UtcNow,
-                ImageUrl = BuildImageUrl(
-                    x.NewsPics?
-                     .OrderBy(p => p.PicPeriorty)
-                     .FirstOrDefault()?.ImageName)
+                ImageUrl = BuildImageUrl(NewsPicHelper.GetCover(x.NewsPics)?.ImageName)
             }).ToList();
 
             var countSpec = new NewsWithFiltersForCountSpec(newsParams);
@@ -82,22 +79,15 @@ namespace Institute.API.Controllers
                 Details = news.ADetails,
                 PublishedAt = news.NewsDate ?? DateTime.UtcNow,
 
-                // الصورة الرئيسية
-                ImageUrl = BuildImageUrl(
-                    news.NewsPics?
-                        .OrderBy(p => p.PicPeriorty)
-                        .FirstOrDefault()?.ImageName),
-
-                // ✅ كل الصور مع PicId علشان الـ frontend يعرف يبعت الصح في الـ delete
-                Images = news.NewsPics?
-                    .OrderBy(p => p.PicPeriorty)
+                ImageUrl = BuildImageUrl(NewsPicHelper.GetCover(news.NewsPics)?.ImageName),
+                Images = NewsPicHelper.Ordered(news.NewsPics)
                     .Select(p => new NewsImageDto
                     {
                         PicId = p.PicId,
                         ImageUrl = BuildImageUrl(p.ImageName),
-                        IsMain = p.StartUpPic ?? false
-                    })
-                    .ToList()
+                        IsMain = p.StartUpPic ?? false,
+                        Priority = p.PicPeriorty
+                    }).ToList()
             });
         }
 

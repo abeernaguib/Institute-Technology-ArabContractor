@@ -2,7 +2,7 @@
  * NewsTab.jsx — Fixed version
  *
  * Key fixes:
- * 1. Detail GET returns images[] array with { picId, imageUrl, isMain } — parse that
+ * 1. Detail GET returns images[] array with { picId, imageUrl, isMain, priority } — parse that
  * 2. Detail GET uses publishedAt not date
  * 3. showFlag not in detail response — keep from list or default true
  * 4. Delete image uses correct picId from images[]
@@ -14,7 +14,10 @@
  *    <br>) to reduce the chance of tripping Azure App Gateway's WAF.
  * 8. Updates use a real PUT (no X-HTTP-Method-Override). The controller only
  *    defines [HttpPut("{id}")], so POST /AdminNews/{id} returns 405.
- * 9. isMain is kept in sync with image order (add / promote / replace).
+ * 9. Every image has its own "start-up" checkbox (startUp) and a priority
+ *    (select). Choosing a priority already used by another image swaps the two.
+ *    Saved images go as ExistingPics[i].{PicId,StartUpPic,Priority}; new files go
+ *    as Images + NewPics[i].{StartUpPic,Priority} in the same order.
  * 10. Clerk token is fetched on demand (no window.__clerkToken).
  *
  * API:
@@ -242,6 +245,9 @@ function RichTextEditor({ icon, label, sub, name, value, onChange, placeholder, 
 }
 
 // ── MultiImageUploader ────────────────────────────────────────────────────────
+const byPriority = arr => [...arr].sort((a, b) => (a.priority ?? 9999) - (b.priority ?? 9999));
+const renumber = arr => byPriority(arr).map((im, i) => ({ ...im, priority: i + 1 }));
+
 function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) {
     const fileRef = useRef();
     const [dragOver, setDragOver] = useState(false);
@@ -250,14 +256,14 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
     const addFiles = (files) => {
         const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
         if (!valid.length) return;
+        const base = images.length;
         onChange([
             ...images,
-            ...valid.map(file => ({
-                file,
-                previewSrc: URL.createObjectURL(file),
-                serverUrl: null,
-                picId: null,
-                isMain: false,
+            ...valid.map((file, i) => ({
+                file, previewSrc: URL.createObjectURL(file),
+                serverUrl: null, picId: null,
+                startUp: base === 0 && i === 0,   // first image ever = start-up by default
+                priority: base + i + 1,
             })),
         ]);
     };
@@ -266,42 +272,35 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
         const img = images[idx];
         // New unsaved file — remove locally only
         if (img.file || !img.picId || !newsId) {
-            onChange(images.filter((_, i) => i !== idx));
+            onChange(renumber(images.filter((_, i) => i !== idx)));
             return;
         }
         // Persisted image — DELETE /api/admin/AdminNews/{newsId}/images/{picId}
         setDeletingPicId(img.picId);
         try {
             await apiFetch(`/api/admin/AdminNews/${newsId}/images/${img.picId}`, { method: 'DELETE' });
-            onChange(images.filter((_, i) => i !== idx));
-            if (onServerImageDeleted) onServerImageDeleted('تم حذف الصورة بنجاح');
+            onChange(renumber(images.filter((_, i) => i !== idx)));
+            onServerImageDeleted?.('تم حذف الصورة بنجاح');
         } catch (e) {
-            if (onServerImageDeleted) onServerImageDeleted('فشل حذف الصورة: ' + e.message, 'error');
-        } finally {
-            setDeletingPicId(null);
-        }
+            onServerImageDeleted?.('فشل حذف الصورة: ' + e.message, 'error');
+        } finally { setDeletingPicId(null); }
     };
 
-    const setMain = (idx) => {
-        if (idx === 0) return;
-        const next = [...images];
-        const [picked] = next.splice(idx, 1);
-        onChange([
-            { ...picked, isMain: true },
-            ...next.map(img => ({ ...img, isMain: false })),
-        ]);
+    // choosing a priority already used by another image swaps the two
+    const setPriority = (idx, p) => {
+        const cur = images[idx].priority;
+        onChange(byPriority(images.map((im, i) =>
+            i === idx ? { ...im, priority: p }
+                : im.priority === p ? { ...im, priority: cur } : im)));
     };
+
+    const toggleStartUp = idx =>
+        onChange(images.map((im, i) => i === idx ? { ...im, startUp: !im.startUp } : im));
 
     const replaceFile = (idx, file) => {
         if (!file || !file.type.startsWith('image/')) return;
         const next = [...images];
-        next[idx] = {
-            file,
-            previewSrc: URL.createObjectURL(file),
-            serverUrl: null,
-            picId: null,
-            isMain: idx === 0,
-        };
+        next[idx] = { ...next[idx], file, previewSrc: URL.createObjectURL(file), serverUrl: null, picId: null };
         onChange(next);
     };
 
@@ -310,17 +309,19 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
             <div className="nt-label" style={{ marginBottom: 8 }}>
                 صور الخبر
                 <span style={{ marginRight: 8, fontSize: '.65rem', color: T.gray500, fontWeight: 400 }}>
-                    الصورة الأولى هي الصورة الرئيسية
+                    حدّد صور البداية وترتيب كل صورة
                 </span>
             </div>
             {images.length > 0 && (
                 <div className="nt-imgs-grid">
                     {images.map((img, idx) => (
-                        <MultiImageSlot key={idx} img={img} idx={idx} isMain={idx === 0}
+                        <MultiImageSlot key={img.picId ?? img.previewSrc} img={img} idx={idx}
+                            total={images.length}
                             isDeleting={deletingPicId === img.picId && img.picId != null}
                             onRemove={() => removeImage(idx)}
-                            onSetMain={() => setMain(idx)}
-                            onReplace={(file) => replaceFile(idx, file)} />
+                            onToggleStartUp={() => toggleStartUp(idx)}
+                            onPriority={p => setPriority(idx, p)}
+                            onReplace={file => replaceFile(idx, file)} />
                     ))}
                 </div>
             )}
@@ -342,22 +343,35 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
     );
 }
 
-function MultiImageSlot({ img, idx, isMain, isDeleting, onRemove, onSetMain, onReplace }) {
+function MultiImageSlot({ img, idx, total, isDeleting, onRemove, onToggleStartUp, onPriority, onReplace }) {
     const fileRef = useRef();
     return (
-        <div className={`nt-img-slot${isMain ? ' main' : ''}${isDeleting ? ' deleting' : ''}`}>
-            {isDeleting && <div className="nt-slot-deleting-overlay">⏳</div>}
-            <img src={img.previewSrc} alt={`صورة ${idx + 1}`} className="nt-slot-img" />
-            {isMain && <div className="nt-main-badge">⭐ رئيسية</div>}
-            {img.file && <div className="nt-new-badge-slot">جديدة</div>}
-            {!img.file && img.serverUrl && <div className="nt-server-badge-slot">{isMain ? '⭐ محفوظة' : 'محفوظة'}</div>}
-            <div className="nt-slot-actions">
-                {!isMain && <button className="nt-slot-btn promote" onClick={onSetMain} disabled={isDeleting}>⭐</button>}
-                <button className="nt-slot-btn replace" onClick={() => fileRef.current.click()} disabled={isDeleting}>🔄</button>
-                <button className="nt-slot-btn remove" onClick={onRemove} disabled={isDeleting}>✕</button>
+        <div className="nt-img-card">
+            <div className={`nt-img-slot${img.startUp ? ' main' : ''}${isDeleting ? ' deleting' : ''}`}>
+                {isDeleting && <div className="nt-slot-deleting-overlay">⏳</div>}
+                <img src={img.previewSrc} alt={`صورة ${idx + 1}`} className="nt-slot-img" />
+                {img.startUp && <div className="nt-main-badge">⭐ بداية</div>}
+                {img.file && <div className="nt-new-badge-slot">جديدة</div>}
+                {!img.file && img.serverUrl && <div className="nt-server-badge-slot">محفوظة</div>}
+                <div className="nt-slot-actions">
+                    <button className="nt-slot-btn replace" onClick={() => fileRef.current.click()} disabled={isDeleting}>🔄</button>
+                    <button className="nt-slot-btn remove" onClick={onRemove} disabled={isDeleting}>✕</button>
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => { onReplace(e.target.files[0]); e.target.value = ''; }} />
             </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                onChange={e => { onReplace(e.target.files[0]); e.target.value = ''; }} />
+            <div className="nt-img-controls">
+                <label className="nt-chk">
+                    <input type="checkbox" checked={!!img.startUp} onChange={onToggleStartUp} disabled={isDeleting} />
+                    صورة البداية
+                </label>
+                <div className="nt-prio">
+                    <span>الترتيب</span>
+                    <select value={img.priority ?? idx + 1} onChange={e => onPriority(Number(e.target.value))} disabled={isDeleting}>
+                        {Array.from({ length: total }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                </div>
+            </div>
         </div>
     );
 }
@@ -561,7 +575,7 @@ const CSS = `
 .nt-img-hint { color: #6b7280; font-size: .68rem; font-weight: 600; text-align: center; }
 .nt-img-types { color: #d0d3d8; font-size: .62rem; background: #f0f1f2; padding: 2px 10px; border-radius: 2px; }
 .nt-multi-img-wrap { margin-bottom: 4px; }
-.nt-imgs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; margin-bottom: 4px; }
+.nt-imgs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 10px; margin-bottom: 4px; }
 .nt-img-slot {
     position: relative; border-radius: 6px; overflow: hidden;
     border: 2px solid #d0d3d8; background: #000;
@@ -586,6 +600,17 @@ const CSS = `
 .nt-slot-btn.replace { background: #0865a8; color: #fff; }
 .nt-slot-btn.remove { background: #dc2626; color: #fff; }
 .nt-slot-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.nt-img-card { display: flex; flex-direction: column; gap: 6px; }
+.nt-img-controls {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    background: #f8f9fa; border: 1.5px solid #d0d3d8; border-radius: 3px; padding: 5px 8px;
+}
+.nt-chk { display: flex; align-items: center; gap: 5px; font-size: .68rem; font-weight: 700; color: #374151; cursor: pointer; }
+.nt-chk input { width: 15px; height: 15px; accent-color: #f57c00; cursor: pointer; }
+.nt-prio { display: flex; align-items: center; gap: 4px; font-size: .66rem; font-weight: 700; color: #6b7280; }
+.nt-prio select { padding: 2px 4px; border: 1.5px solid #d0d3d8; border-radius: 3px; font-family: inherit; font-size: .72rem; background: #fff; }
+.nt-prio select:focus { border-color: #f57c00; outline: none; }
 
 .nt-rte-block { border-radius: 3px; border: 1.5px solid #d0d3d8; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
 .nt-rte-hdr { background: #f8f9fa; padding: 10px 16px; border-bottom: 1.5px solid #f0f1f2; display: flex; align-items: center; gap: 9px; }
@@ -745,7 +770,9 @@ async function apiFetch(path, opts = {}) {
 }
 
 // ── FormData builder ──────────────────────────────────────────────────────────
-// API fields: Id, Title, Details, Date, ShowFlag, Images (files), ImageUrl, ImageUrls
+// API fields: Id, Title, Details, Date, ShowFlag,
+//             Images (new files), NewPics[i] (meta for Images[i]),
+//             ExistingPics[i] (PicId / StartUpPic / Priority for saved images)
 function buildFormData(form, images, isNew) {
     const fd = new FormData();
     fd.append('Id', isNew ? '0' : String(form.id));
@@ -754,21 +781,19 @@ function buildFormData(form, images, isNew) {
     fd.append('Date', form.date ? `${form.date}T00:00:00.000Z` : '');
     fd.append('ShowFlag', String(form.showFlag));
 
-    // Separate new file uploads from existing server URLs
-    const newFiles = images.filter(img => img.file);
-    const serverImgs = images.filter(img => !img.file && img.serverUrl);
+    // existing (already saved) images → update checkbox + priority
+    images.filter(i => !i.file && i.picId).forEach((img, i) => {
+        fd.append(`ExistingPics[${i}].PicId`, String(img.picId));
+        fd.append(`ExistingPics[${i}].StartUpPic`, String(!!img.startUp));
+        fd.append(`ExistingPics[${i}].Priority`, String(img.priority));
+    });
 
-    // All new file uploads go as Images[]
-    newFiles.forEach(img => fd.append('Images', img.file));
-
-    // Main image URL (server image marked main, or the first server image)
-    const mainServer = serverImgs.find(img => img.isMain) || serverImgs[0];
-    fd.append('ImageUrl', mainServer?.serverUrl || 'pending');
-
-    // Extra server image URLs
-    const extraServerImgs = serverImgs.filter(img => img !== mainServer);
-    extraServerImgs.forEach(img => fd.append('ImageUrls', img.serverUrl));
-
+    // new files — Images[i] and NewPics[i] must stay in the same order
+    images.filter(i => i.file).forEach((img, i) => {
+        fd.append('Images', img.file);
+        fd.append(`NewPics[${i}].StartUpPic`, String(!!img.startUp));
+        fd.append(`NewPics[${i}].Priority`, String(img.priority));
+    });
     return fd;
 }
 
@@ -844,7 +869,7 @@ export default function NewsTab() {
     // Detail GET response shape:
     // {
     //   id, title, details, publishedAt, imageUrl, imageUrls,
-    //   images: [ { picId, imageUrl, isMain }, ... ]
+    //   images: [ { picId, imageUrl, isMain, priority }, ... ]
     // }
     // Note: showFlag is NOT in detail response — keep from list or form state
     const pickById = async (id, listItem) => {
@@ -870,7 +895,7 @@ export default function NewsTab() {
             // Show main image immediately from list
             const mainUrl = resolveImg(listItem.imageUrl);
             if (mainUrl) {
-                setImages([{ file: null, previewSrc: mainUrl, serverUrl: listItem.imageUrl, picId: null, isMain: true }]);
+                setImages([{ file: null, previewSrc: mainUrl, serverUrl: listItem.imageUrl, picId: null, startUp: true, priority: 1 }]);
             } else {
                 setImages([]);
             }
@@ -897,31 +922,28 @@ export default function NewsTab() {
 
             let slots = [];
             if (imagesArr.length > 0) {
-                // Sort: main first, then others in order
-                const sorted = [...imagesArr].sort((a, b) => (b.isMain ? 1 : 0) - (a.isMain ? 1 : 0));
-                slots = sorted
-                    .map(img => {
+                slots = [...imagesArr]
+                    .sort((a, b) => (a.priority ?? 9999) - (b.priority ?? 9999))
+                    .map((img, i) => {
                         const resolved = resolveImg(img.imageUrl);
                         if (!resolved) return null;
                         return {
-                            file: null,
-                            previewSrc: resolved,
-                            serverUrl: img.imageUrl,
+                            file: null, previewSrc: resolved, serverUrl: img.imageUrl,
                             picId: img.picId ?? null,
-                            isMain: img.isMain ?? false,
+                            startUp: !!img.isMain,
+                            priority: i + 1,          // old rows have NULL priority → normalised here
                         };
-                    })
-                    .filter(Boolean);
+                    }).filter(Boolean);
             } else {
                 // Fallback: use imageUrl + imageUrls if images[] is empty
                 const mainResolved = resolveImg(item.imageUrl);
                 if (mainResolved) {
-                    slots.push({ file: null, previewSrc: mainResolved, serverUrl: item.imageUrl, picId: null, isMain: true });
+                    slots.push({ file: null, previewSrc: mainResolved, serverUrl: item.imageUrl, picId: null, startUp: true, priority: 1 });
                 }
                 const extras = Array.isArray(item.imageUrls) ? item.imageUrls : [];
                 extras.forEach(u => {
                     const r = resolveImg(u);
-                    if (r) slots.push({ file: null, previewSrc: r, serverUrl: u, picId: null, isMain: false });
+                    if (r) slots.push({ file: null, previewSrc: r, serverUrl: u, picId: null, startUp: false, priority: slots.length + 1 });
                 });
             }
 

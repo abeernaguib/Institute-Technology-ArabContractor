@@ -33,31 +33,31 @@ const stripHtml = (html) =>
 //   Shape A (new): { imageUrl, imageUrls: ['url1', 'url2', ...] }
 //   Shape B (new): { images: [{ imageUrl, isMain }, ...] }
 //   Shape C (old): { imageUrl }  — single image only
+// Returns { all, cover }
+//   all   = every image in priority order (gallery + lightbox)
+//   cover = first start-up image (hero + SEO), else the first image
 function buildImagesArray(item) {
-    if (!item) return [];
+    if (!item) return { all: [], cover: null };
 
-    // Shape B: structured array with isMain flag
     if (Array.isArray(item.images) && item.images.length > 0) {
-        return [...item.images]
-            .sort((a, b) => (b.isMain ? 1 : 0) - (a.isMain ? 1 : 0))
-            .map(i => resolveImg(i.imageUrl))
-            .filter(Boolean);
+        const sorted = [...item.images]
+            .sort((a, b) => (a.priority ?? 9999) - (b.priority ?? 9999))
+            .map(i => ({ url: resolveImg(i.imageUrl), isMain: !!i.isMain }))
+            .filter(i => i.url);
+        const all = sorted.map(i => i.url);
+        const cover = (sorted.find(i => i.isMain) || sorted[0])?.url ?? null;
+        return { all, cover };
     }
 
-    const result = [];
-
-    // Main image first
+    // fallback: old response shape
+    const all = [];
     const main = resolveImg(item.imageUrl);
-    if (main) result.push(main);
-
-    // Shape A: imageUrls array of extra images
-    const extras = item.imageUrls ?? item.ImageUrls ?? [];
-    extras.forEach(u => {
+    if (main) all.push(main);
+    (item.imageUrls ?? item.ImageUrls ?? []).forEach(u => {
         const r = resolveImg(u);
-        if (r && !result.includes(r)) result.push(r);
+        if (r && !all.includes(r)) all.push(r);
     });
-
-    return result;
+    return { all, cover: all[0] ?? null };
 }
 
 const STYLES = `
@@ -261,9 +261,7 @@ const NewsDetails = () => {
     const [relatedNews, setRelatedNews] = useState([]);
     const [modalIdx, setModalIdx] = useState(null);
 
-    // Resolved images array (strings) — index 0 is always the main/cover image
-    const allImages = buildImagesArray(newsItem);
-    const mainImage = allImages[0] ?? null;
+    const { all: allImages, cover: mainImage } = buildImagesArray(newsItem);
 
     useEffect(() => {
         injectStyles();

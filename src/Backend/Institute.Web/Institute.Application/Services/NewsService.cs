@@ -45,11 +45,11 @@ namespace Institute.Application.Services
             await _newsRepo.SaveChangesAsync();
 
             if (dto.Images != null && dto.Images.Any())
-                await UploadAndSavePicsAsync(entity.NewsId, dto.Images);
+                await UploadAndSavePicsAsync(entity.NewsId, dto.Images, dto.NewPics);
 
-            var blobNames = await GetExistingBlobNames(entity.NewsId);
+            await EnsureStartUpAsync(entity.NewsId);
 
-            return ToDto(entity, blobNames);
+            return ToDto(entity, await GetExistingBlobNames(entity.NewsId));
         }
 
         // ── UPDATE ───────────────────────────────
@@ -65,19 +65,31 @@ namespace Institute.Application.Services
             _newsRepo.Update(entity);
             await _newsRepo.SaveChangesAsync();
 
-            if (dto.Images != null && dto.Images.Any())
+            // ✅ update checkbox + priority of existing images
+            var pics = (await _picRepo.GetAllAsync()).Where(p => p.NewsId == id).ToList();
+            if (dto.ExistingPics != null)
             {
-                var lastPriority = (await _picRepo.GetAllAsync())
-                    .Where(p => p.NewsId == id)
-                    .OrderByDescending(p => p.PicPeriorty)
-                    .FirstOrDefault()?.PicPeriorty ?? 0;
+                foreach (var m in dto.ExistingPics)
+                {
+                    var pic = pics.FirstOrDefault(p => p.PicId == m.PicId);
+                    if (pic == null) continue;
 
-                await UploadAndSavePicsAsync(entity.NewsId, dto.Images, lastPriority);
+                    pic.StartUpPic = m.StartUpPic;
+                    pic.PicPeriorty = m.Priority;
+                    _picRepo.Update(pic);
+                }
+                await _picRepo.SaveChangesAsync();
             }
 
-            var blobNames = await GetExistingBlobNames(entity.NewsId);
+            if (dto.Images != null && dto.Images.Any())
+            {
+                var lastPriority = pics.Max(p => p.PicPeriorty) ?? 0;
+                await UploadAndSavePicsAsync(id, dto.Images, dto.NewPics, lastPriority);
+            }
 
-            return ToDto(entity, blobNames);
+            await EnsureStartUpAsync(id);
+
+            return ToDto(entity, await GetExistingBlobNames(id));
         }
 
         // ── DELETE NEWS ───────────────────────────
@@ -111,36 +123,30 @@ namespace Institute.Application.Services
         // ── DELETE SINGLE IMAGE ───────────────────
         public async Task<bool> DeleteImageAsync(int newsId, int picId)
         {
-            // تأكد إن الصورة موجودة وتابعة لنفس الخبر
             var pic = (await _picRepo.GetAllAsync())
                 .FirstOrDefault(p => p.PicId == picId && p.NewsId == newsId);
-
             if (pic == null) return false;
 
-            // امسح من Azure Blob Storage
             if (!string.IsNullOrWhiteSpace(pic.ImageName))
                 await _blobStorage.DeleteFileAsync(pic.ImageName, Container, Folder);
 
-            // امسح من الـ DB
             _picRepo.Delete(pic);
             await _picRepo.SaveChangesAsync();
 
-            // ✅ أعد ترتيب الـ Priority للصور الباقية
             var remaining = (await _picRepo.GetAllAsync())
                 .Where(p => p.NewsId == newsId)
                 .OrderBy(p => p.PicPeriorty)
                 .ToList();
 
+            // renumber priority only — do NOT touch StartUpPic anymore
             for (int i = 0; i < remaining.Count; i++)
             {
                 remaining[i].PicPeriorty = i + 1;
-                remaining[i].StartUpPic = (i == 0); // الأولى دايماً هي الرئيسية
                 _picRepo.Update(remaining[i]);
             }
+            if (remaining.Any()) await _picRepo.SaveChangesAsync();
 
-            if (remaining.Any())
-                await _picRepo.SaveChangesAsync();
-
+            await EnsureStartUpAsync(newsId);
             return true;
         }
 
@@ -148,24 +154,41 @@ namespace Institute.Application.Services
         private async Task UploadAndSavePicsAsync(
             int newsId,
             List<IFormFile> images,
+            List<NewsPicMetaDto>? metas,
             int startPriority = 0)
         {
-            int priority = startPriority + 1;
+            int next = startPriority + 1;
 
-            foreach (var image in images)
+            for (int i = 0; i < images.Count; i++)
             {
-                var blobPath = await _blobStorage.UploadFileAsync(image, Container, Folder);
-                var fileName = Path.GetFileName(blobPath);
+                var meta = metas != null && i < metas.Count ? metas[i] : null;
+                var blobPath = await _blobStorage.UploadFileAsync(images[i], Container, Folder);
 
                 await _picRepo.AddAsync(new NewsPic
                 {
                     NewsId = newsId,
-                    ImageName = fileName,
-                    StartUpPic = priority == 1,
-                    PicPeriorty = priority++
+                    ImageName = Path.GetFileName(blobPath),
+                    StartUpPic = meta?.StartUpPic ?? (next == 1),
+                    PicPeriorty = meta?.Priority ?? next
                 });
+                next++;
             }
 
+            await _picRepo.SaveChangesAsync();
+        }
+
+        // a news item must always have at least one start-up image
+        private async Task EnsureStartUpAsync(int newsId)
+        {
+            var pics = (await _picRepo.GetAllAsync())
+                .Where(p => p.NewsId == newsId)
+                .OrderBy(p => p.PicPeriorty)
+                .ToList();
+
+            if (pics.Count == 0 || pics.Any(p => p.StartUpPic == true)) return;
+
+            pics[0].StartUpPic = true;
+            _picRepo.Update(pics[0]);
             await _picRepo.SaveChangesAsync();
         }
 

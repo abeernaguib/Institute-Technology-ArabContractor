@@ -39,22 +39,14 @@ namespace Institute.API.Controllers
             var spec = new NewsWithMainPicSpec(newsParams);
             var news = await _repo.GetAllWithSpecAsync(spec);
 
-            // ✅ بدل الـ mapper — بنبني يدوياً عشان نضيف ImageUrls
             var data = news.Select(x => new NewsListDto
             {
                 Id = x.NewsId,
                 Title = x.ATitel,
                 PublishedAt = x.NewsDate ?? DateTime.UtcNow,
-                ImageUrl = BuildImageUrl(
-                    x.NewsPics?
-                    .OrderBy(p => p.PicPeriorty)
-                    .FirstOrDefault()?.ImageName),
-
-                // ✅ زيادة — كل الصور
-                ImageUrls = x.NewsPics?
-                    .OrderBy(p => p.PicPeriorty)
-                    .Select(p => BuildImageUrl(p.ImageName))
-                    .ToList()
+                ImageUrl = BuildImageUrl(NewsPicHelper.GetCover(x.NewsPics)?.ImageName),
+                ImageUrls = NewsPicHelper.Ordered(x.NewsPics)
+                    .Select(p => BuildImageUrl(p.ImageName)).ToList()
             }).ToList();
 
             var countSpec = new NewsWithFiltersForCountSpec(newsParams);
@@ -76,12 +68,17 @@ namespace Institute.API.Controllers
             if (news == null) return NotFound();
 
             var dto = _mapper.Map<NewsDetailsDto>(news);
+            var ordered = NewsPicHelper.Ordered(news.NewsPics);
 
-            // ✅ زيادة — كل الصور
-            dto.ImageUrls = news.NewsPics?
-                .OrderBy(p => p.PicPeriorty)
-                .Select(p => BuildImageUrl(p.ImageName))
-                .ToList();
+            dto.ImageUrl = BuildImageUrl(NewsPicHelper.GetCover(news.NewsPics)?.ImageName);
+            dto.ImageUrls = ordered.Select(p => BuildImageUrl(p.ImageName)).ToList();
+            dto.Images = ordered.Select(p => new NewsImageDto
+            {
+                PicId = p.PicId,
+                ImageUrl = BuildImageUrl(p.ImageName),
+                IsMain = p.StartUpPic ?? false,
+                Priority = p.PicPeriorty
+            }).ToList();
 
             return Ok(dto);
         }
