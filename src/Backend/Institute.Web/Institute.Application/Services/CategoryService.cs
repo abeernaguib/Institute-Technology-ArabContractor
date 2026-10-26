@@ -59,10 +59,49 @@ namespace Institute.Application.Services
             return Build(null);
         }
 
+        // ══════════════════════════════════════════════════════════════
+        // ✱ CHANGED: آخر الكورسات المتاحة
+        // الكورس الحقيقي = مش قسم (DetailsFlag != true) ومالوش أبناء
+        // لو أي أب فوقه MainFlag != true (مش متعلّم عليه "عرض قسم رئيسي")
+        // الكورس بيختفي معاه
+        // ⚠ الكورس نفسه MainFlag بتاعه مش بيتفحص (الافتراضي false للكورسات)
+        // الفلترة بتحصل قبل Take عشان الكورسات المخفية ما تاخدش أماكن
+        // ══════════════════════════════════════════════════════════════
         public async Task<IReadOnlyList<Planwork>> GetLatestCoursesAsync(int count = 20)
         {
-            var spec = new LatestCoursesSpecification(count);
-            return await _planworkRepository.GetAllWithSpecAsync(spec);
+            var all = (await _planworkRepository.GetAllAsync()).ToList();
+            var byId = all.ToDictionary(x => x.ChildId);
+
+            var parentIds = all
+                .Where(x => x.ParentId.HasValue)
+                .Select(x => x.ParentId!.Value)
+                .ToHashSet();
+
+            // true لو أي أب فوق الكورس مخفي
+            bool HasHiddenAncestor(Planwork p)
+            {
+                var visited = new HashSet<int> { p.ChildId };   // حماية من الـ Infinite Loop
+                var parentId = p.ParentId;
+
+                while (parentId.HasValue && visited.Add(parentId.Value))
+                {
+                    if (!byId.TryGetValue(parentId.Value, out var parent))
+                        return false;
+
+                    if (parent.MainFlag != true)               // مش متعلّم عليه = مخفي
+                        return true;
+
+                    parentId = parent.ParentId;
+                }
+                return false;
+            }
+
+            return all
+                .Where(p => p.DetailsFlag != true && !parentIds.Contains(p.ChildId)) // كورس حقيقي
+                .Where(p => !HasHiddenAncestor(p))                                   // كل الآباء ظاهرين
+                .OrderByDescending(p => p.ChildId)                                   // الأحدث دخولاً
+                .Take(count)
+                .ToList();
         }
     }
 }

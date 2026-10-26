@@ -272,9 +272,8 @@ namespace Institute.API.Controllers
         // ══════════════════════════════════════════════════════════════
         // GET /api/course/latest
         // بيجيب آخر 20 كورس متاحين
-        // بيستخدم الـ CategoryService اللي فيها Logic الترتيب والفلترة
-        // ⚠ راجع CategoryService.GetLatestCoursesAsync — غالباً فيها
-        //   نفس فلتر CourseDate != null ولازم يتشال منها
+        // ✱ CHANGED: CategoryService.GetLatestCoursesAsync بقت بتستبعد
+        //   أي كورس أحد آبائه مش متعلّم عليه "عرض قسم رئيسي" (MainFlag != true)
         // ══════════════════════════════════════════════════════════════
         [HttpGet("latest")]
         public async Task<IActionResult> GetLatestCourses()
