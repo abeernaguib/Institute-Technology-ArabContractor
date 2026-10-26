@@ -1,5 +1,27 @@
 ﻿import React, { useState, useEffect } from 'react';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Must match the encoding done in LecturersTab.jsx (encodeRichText).
+// The admin page base64-encodes `details` and `edu` to avoid the WAF 403, so
+// the public page has to decode them. Legacy plain-HTML values are left as-is.
+// ─────────────────────────────────────────────────────────────────────────────
+function decodeRichText(value) {
+    if (!value) return value;
+    let v = String(value).trim();
+    // Only base64 characters allowed; plain HTML/text fails this check
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(v)) return value;
+    if (v.length % 4 === 1) return value; // can't be valid base64
+    while (v.length % 4 !== 0) v += '=';  // restore missing padding
+    try {
+        const decoded = decodeURIComponent(escape(atob(v)));
+        // Real decoded content should not contain control characters
+        if (/[\u0000-\u0008\u000E-\u001F]/.test(decoded)) return value;
+        return decoded;
+    } catch {
+        return value; // not actually base64, show as-is
+    }
+}
+
 const Instructors = () => {
     const [selectedLecturer, setSelectedLecturer] = useState(null);
     const [lecturers, setLecturers] = useState([]);
@@ -17,8 +39,6 @@ const Instructors = () => {
     };
 
     const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23dde3ea' width='100' height='100'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='44' fill='%23899aaa'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";
-
-    
 
     useEffect(() => {
         const fetchLecturers = async () => {
@@ -45,7 +65,11 @@ const Instructors = () => {
             const response = await fetch(`${API_BASE_URL}/Lecturer/${lecturerId}`);
             if (!response.ok) throw new Error('فشل في تحميل تفاصيل المحاضر');
             const detailedData = await response.json();
-            setSelectedLecturer(detailedData);
+            setSelectedLecturer({
+                ...detailedData,
+                edu: decodeRichText(detailedData.edu),
+                details: decodeRichText(detailedData.details),
+            });
         } catch (err) {
             alert('حدث خطأ في تحميل تفاصيل المحاضر');
         }
@@ -63,14 +87,28 @@ const Instructors = () => {
         const hasLi = div.querySelector('li') !== null;
 
         if (hasH5 || hasP) {
+            // text of an h5 without the text of <p> nested inside it
+            const ownText = (node) => {
+                const c = node.cloneNode(true);
+                c.querySelectorAll('p').forEach(p => p.remove());
+                return c.textContent.trim();
+            };
+            // if no <p> has real text, the h5 lines are the content, not headings
+            const hasTextP = Array.from(div.querySelectorAll('p')).some(p => p.textContent.trim());
+
             div.querySelectorAll('h5, p').forEach((node) => {
-                const text = node.textContent.trim();
-                if (!text) return;
                 if (node.tagName === 'H5') {
+                    const text = ownText(node);
+                    if (!text) return;
+                    if (!hasTextP) {
+                        current.items.push(text);
+                        return;
+                    }
                     if (current.title !== null || current.items.length > 0) sections.push(current);
                     current = { title: text, items: [] };
                 } else {
-                    current.items.push(text);
+                    const text = node.textContent.trim();
+                    if (text) current.items.push(text);
                 }
             });
             if (current.title !== null || current.items.length > 0) sections.push(current);
@@ -79,17 +117,18 @@ const Instructors = () => {
 
         if (hasLi) {
             const items = Array.from(div.querySelectorAll('li')).map(li => li.textContent.trim()).filter(Boolean);
-            return [{ title: null, items }];
+            return items.length ? [{ title: null, items }] : [];
         }
 
-        const divTags = div.querySelectorAll('div');
-        if (divTags.length > 0) {
-            const items = Array.from(divTags).map(d => d.textContent.trim()).filter(Boolean);
-            return [{ title: null, items }];
+        // Use only the innermost divs so nested divs don't duplicate text
+        const leafDivs = Array.from(div.querySelectorAll('div')).filter(d => !d.querySelector('div'));
+        if (leafDivs.length > 0) {
+            const items = leafDivs.map(d => d.textContent.trim()).filter(Boolean);
+            return items.length ? [{ title: null, items }] : [];
         }
 
         const lines = htmlString.replace(/<[^>]+>/g, '\n').split('\n').map(l => l.trim()).filter(Boolean);
-        return [{ title: null, items: lines }];
+        return lines.length ? [{ title: null, items: lines }] : [];
     };
 
     const renderParsedContent = (htmlString) => {
@@ -98,13 +137,13 @@ const Instructors = () => {
         return sections.map((section, sIdx) => (
             <div key={sIdx} className={sIdx > 0 ? 'mt-5' : ''}>
                 {section.title && (
-                    <p className="mb-2 text-sm font-bold text-blue-700">{section.title}</p>
+                    <p className="mb-2 text-sm font-bold text-blue-700 break-words">{section.title}</p>
                 )}
                 <div className="space-y-2">
                     {section.items.map((item, iIdx) => (
                         <div key={iIdx} className="flex items-start gap-2">
                             <span className="mt-[6px] h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></span>
-                            <p className="text-sm leading-relaxed text-gray-700">{item}</p>
+                            <p className="min-w-0 break-words text-sm leading-relaxed text-gray-700">{item}</p>
                         </div>
                     ))}
                 </div>
@@ -166,6 +205,11 @@ const Instructors = () => {
     const CVDialog = ({ lecturer, onClose }) => {
         if (!lecturer) return null;
         const src = getPhotoSrc(lecturer.pic);
+
+        // Build the content first, so a section is rendered only if it has something to show
+        const eduContent = renderParsedContent(lecturer.edu);
+        const detailsContent = renderParsedContent(lecturer.details);
+
         return (
             <div
                 className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black bg-opacity-50"
@@ -207,12 +251,12 @@ const Instructors = () => {
                                     <h3 className="text-xl font-bold text-blue-700">المؤهل الرئيسي</h3>
                                 </div>
                                 <div className="rounded-lg border border-gray-300 bg-yellow-50 p-4">
-                                    <p className="text-sm leading-relaxed text-gray-700">{lecturer.mainEdu}</p>
+                                    <p className="break-words text-sm leading-relaxed text-gray-700">{lecturer.mainEdu}</p>
                                 </div>
                             </div>
                         )}
 
-                        {lecturer.edu && (
+                        {eduContent && (
                             <>
                                 <div className="mb-6">
                                     <div className="mb-3 flex items-center gap-2">
@@ -222,14 +266,14 @@ const Instructors = () => {
                                         <h3 className="text-xl font-bold text-blue-700">التعليم والشهادات</h3>
                                     </div>
                                     <div className="rounded-lg border border-gray-300 bg-yellow-50 p-4">
-                                        {renderParsedContent(lecturer.edu)}
+                                        {eduContent}
                                     </div>
                                 </div>
                                 <hr className="my-6 border-gray-300" />
                             </>
                         )}
 
-                        {lecturer.details && (
+                        {detailsContent && (
                             <>
                                 <div className="mb-6">
                                     <div className="mb-3 flex items-center gap-2">
@@ -239,7 +283,7 @@ const Instructors = () => {
                                         <h3 className="text-xl font-bold text-blue-700">الخبرات والتفاصيل</h3>
                                     </div>
                                     <div className="rounded-lg border border-gray-300 bg-yellow-50 p-4">
-                                        {renderParsedContent(lecturer.details)}
+                                        {detailsContent}
                                     </div>
                                 </div>
                                 <hr className="my-6 border-gray-300" />
@@ -268,7 +312,7 @@ const Instructors = () => {
                                             <svg className="h-5 w-5 flex-shrink-0 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                                             </svg>
-                                            <p className="text-sm text-gray-700"><span className="font-bold">البريد الإلكتروني: </span>{lecturer.email}</p>
+                                            <p className="break-all text-sm text-gray-700"><span className="font-bold">البريد الإلكتروني: </span>{lecturer.email}</p>
                                         </div>
                                     )}
                                 </div>

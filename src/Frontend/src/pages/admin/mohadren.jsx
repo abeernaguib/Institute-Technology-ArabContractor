@@ -708,7 +708,7 @@ const LecturersTab = () => {
                                 name="certificates"
                                 value={form.certificates}
                                 onChange={handleChange}
-                                placeholder="حاصل على بكالوريوس الهندسة – قسم ميكانيكا&#10;حاصل على درجة الماجستير بتقدير امتياز&#10;حاصل على درجة الدكتوراه – جامعة القاهرة"
+                                placeholder="مثال: حاصل على بكالوريوس الهندسة – قسم ميكانيكا "
                                 minHeight={120}
                             />
 
