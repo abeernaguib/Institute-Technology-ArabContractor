@@ -183,7 +183,7 @@ namespace Institute.API.Controllers
                 .Select(c => new CourseCardDto
                 {
                     Id = c.ChildId,
-                    Priority = c.Priority,          // NEW
+                    Priority = c.Priority ?? 0,          // NEW
                     Slug = c.Slug,
                     Title = c.ServiceTitle,
                     Place = c.CoursePlace,
