@@ -1,7 +1,7 @@
 // src/components/admin/tabs/TeamTab.jsx
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { T, API_BASE as API_ROOT } from '../constants';
+import { T, API_BASE as API_ROOT } from '../../components/admin/constants';
 
 const API_BASE = `${API_ROOT}/admin/AdminTeam`;
 
