@@ -34,7 +34,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<GetNewsDetailsView> GetNewsDetailsViews { get; set; }
 
     public virtual DbSet<Lecturer> Lecturers { get; set; }
-
+    public virtual DbSet<TeamMember> TeamMembers { get; set; }
     public virtual DbSet<NewsPic> NewsPics { get; set; }
 
     public virtual DbSet<PlanFile> PlanFiles { get; set; }
@@ -640,6 +640,17 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Enrollment>()
             .HasOne(x => x.Round).WithMany().HasForeignKey(x => x.RoundId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // TeamMember
+        modelBuilder.Entity<TeamMember>(entity =>
+        {
+            entity.ToTable("TeamMembers");
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
+            entity.Property(t => t.Role).HasMaxLength(400);
+            entity.Property(t => t.Pic).HasMaxLength(255);
+            entity.HasIndex(t => new { t.Level, t.DisplayOrder });
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

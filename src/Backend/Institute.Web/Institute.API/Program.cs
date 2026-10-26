@@ -112,6 +112,7 @@ builder.Services.AddScoped<INewsService, NewsService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<ILecturerService, LecturerService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddHttpClient<ClerkService>();
 builder.Services.AddScoped(typeof(IClerkService), typeof(ClerkService));
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();

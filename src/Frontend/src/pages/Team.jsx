@@ -1,6 +1,10 @@
-﻿import React from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+
+const API_URL = 'https://icemt.arabcont.com/api/Team';
+
+const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23dde3ea' width='300' height='300'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='120' fill='%23899aaa'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";
 
 /* ─── Design tokens ──────────────────────── */
 const T = {
@@ -73,7 +77,7 @@ const STYLES = `
 
     /* ───────── Org tree (pyramid) ───────── */
     .org-tree { display:flex; flex-direction:column; align-items:center; }
-    .org-top { display:flex; justify-content:center; width:100%; }
+    .org-top { display:flex; justify-content:center; flex-wrap:wrap; gap:24px; width:100%; }
 
     /* vertical line from the director down to the horizontal bar */
     .org-stem { width:2px; height:40px; background:${T.orangeLight}; }
@@ -91,7 +95,9 @@ const STYLES = `
     .org-branch::before {
         content:'';
         position:absolute;
-        top:0; left:0; right:0;
+        top:0;
+        inset-inline-start:0;
+        inset-inline-end:0;
         height:2px;
         background:${T.orangeLight};
     }
@@ -105,8 +111,8 @@ const STYLES = `
         background:${T.orangeLight};
     }
     /* the bar stops at the center on the outer edges so it forms a clean "T" */
-    .org-branch:first-child::before { inset-inline-start:50%; inset-inline-end:0; left:auto; right:auto; }
-    .org-branch:last-child::before  { inset-inline-start:0; inset-inline-end:50%; left:auto; right:auto; }
+    .org-branch:first-child::before { inset-inline-start:50%; inset-inline-end:0; }
+    .org-branch:last-child::before  { inset-inline-start:0; inset-inline-end:50%; }
     .org-branch:only-child::before  { display:none; }
 
     /* little dot where the stem meets the bar */
@@ -191,9 +197,10 @@ const MemberCard = ({ member, large = false }) => (
         {/* Image */}
         <div style={{ position: 'relative', width: '100%', paddingTop: '100%', overflow: 'hidden' }}>
             <img
-                src={member.image}
+                src={member.pic || FALLBACK}
                 alt={member.name}
                 className="team-card__img"
+                onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK; }}
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
             <div
@@ -238,32 +245,35 @@ const MemberCard = ({ member, large = false }) => (
 
 /* ─── Main Component ─────────────────────── */
 const Team = () => {
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const chairman = {
-        name: 'أحمد العصار',
-        role: 'رئيس مجلس الإدارة',
-        image: '/images/team4.jpg',
-    };
+    useEffect(() => {
+        const fetchTeam = async () => {
+            try {
+                setLoading(true);
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error('فشل في تحميل بيانات فريق العمل');
+                const data = await res.json();
+                // Defensive: hide inactive members even if the API returns them
+                setMembers(Array.isArray(data) ? data.filter(m => m.isActive !== false) : []);
+                setError(null);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTeam();
+    }, []);
 
-    const director = {
-        name: 'م. شريف حمدي',
-        role: 'مدير المعهد',
-        image: '/images/team1.jpg',
-    };
-
-    // Order matches the org chart (right → left in RTL)
-    const deputies = [
-        {
-            name: 'طارق منصور',
-            role: 'نائب مدير المعهد للشئون الفنية والاختبارات',
-            image: '/images/team3.jpg',
-        },
-        {
-            name: 'م. محمد صبحي',
-            role: 'نائب مدير المعهد للشئون العلمية والتدريب الفني والمهني',
-            image: '/images/mohamedsobhy.jpg', // ⚠️ add his photo here (replaces team2.jpg)
-        },
-    ];
+    // The API already returns them ordered by level then display order.
+    // Number() so it works whether the API sends 2 or "2".
+    const chairmen = members.filter(m => Number(m.level) === 1);
+    const directors = members.filter(m => Number(m.level) === 2);
+    const deputies = members.filter(m => Number(m.level) === 3);
+    const hasExecutive = directors.length > 0 || deputies.length > 0;
 
     const sectionInner = {
         maxWidth: 'min(1280px, 94vw)',
@@ -353,90 +363,134 @@ const Team = () => {
                 </div>
             </section>
 
-            {/* ══ CHAIRMAN SECTION (top of the pyramid) ══ */}
-            <section
-                className="chairman-cut"
-                style={{
-                    position: 'relative',
-                    background: T.white,
-                    padding: 'clamp(56px,8vw,100px) clamp(16px,6vw,60px) clamp(100px,14vw,160px)',
-                }}
-            >
-                <div style={sectionInner}>
-                    <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,56px)' }}>
-                        <SectionLabel>القيادة العليا</SectionLabel><br />
-                        <SectionHeading>
-                            رئيس <span style={{ color: T.orange }}>مجلس الإدارة</span>
-                        </SectionHeading>
-                        <HeadingBar />
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <MemberCard member={chairman} large={true} />
+            {/* ══ LOADING / ERROR ═════════════════════ */}
+            {loading && (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 20px' }}>
+                    <div style={{ textAlign: 'center', fontFamily: T.font }}>
+                        <div style={{
+                            width: 56, height: 56, margin: '0 auto 16px',
+                            border: `4px solid ${T.gray100}`, borderBottomColor: T.blue,
+                            borderRadius: '50%', animation: 'team-spin 1s linear infinite',
+                        }} />
+                        <style>{`@keyframes team-spin { to { transform: rotate(360deg); } }`}</style>
+                        <p style={{ color: T.gray700 }}>جاري تحميل فريق العمل...</p>
                     </div>
                 </div>
-            </section>
+            )}
+
+            {!loading && error && (
+                <div style={{ maxWidth: 560, margin: '60px auto', padding: '0 20px', fontFamily: T.font }}>
+                    <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: 24, textAlign: 'center' }}>
+                        <p style={{ color: '#b91c1c', fontWeight: 700, marginBottom: 6 }}>حدث خطأ</p>
+                        <p style={{ color: '#dc2626', margin: 0 }}>{error}</p>
+                    </div>
+                </div>
+            )}
+
+            {!loading && !error && members.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '60px 20px', fontFamily: T.font, color: T.gray500 }}>
+                    لا توجد بيانات متاحة حالياً
+                </div>
+            )}
+
+            {/* ══ CHAIRMAN SECTION (top of the pyramid) ══ */}
+            {!loading && !error && chairmen.length > 0 && (
+                <section
+                    className="chairman-cut"
+                    style={{
+                        position: 'relative',
+                        background: T.white,
+                        padding: 'clamp(56px,8vw,100px) clamp(16px,6vw,60px) clamp(100px,14vw,160px)',
+                    }}
+                >
+                    <div style={sectionInner}>
+                        <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,56px)' }}>
+                            <SectionLabel>القيادة العليا</SectionLabel><br />
+                            <SectionHeading>
+                                رئيس <span style={{ color: T.orange }}>مجلس الإدارة</span>
+                            </SectionHeading>
+                            <HeadingBar />
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 24 }}>
+                            {chairmen.map(m => <MemberCard key={m.id} member={m} large={true} />)}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* ══ CONNECTOR: chairman → director ══════ */}
-            <div style={{
-                position: 'relative', zIndex: 10,
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                marginTop: '-28px', marginBottom: '-28px',
-                pointerEvents: 'none',
-            }}>
+            {!loading && !error && chairmen.length > 0 && hasExecutive && (
                 <div style={{
-                    width: '2px',
-                    height: 'clamp(40px,6vw,70px)',
-                    background: `linear-gradient(to bottom, ${T.white}, ${T.orangeLight})`,
-                    opacity: 0.7,
-                }} />
-                <div style={{
-                    width: '12px', height: '12px',
-                    borderRadius: '50%',
-                    background: T.orange,
-                    boxShadow: `0 0 0 4px rgba(245,124,0,0.25)`,
-                }} />
-            </div>
+                    position: 'relative', zIndex: 10,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    marginTop: '-28px', marginBottom: '-28px',
+                    pointerEvents: 'none',
+                }}>
+                    <div style={{
+                        width: '2px',
+                        height: 'clamp(40px,6vw,70px)',
+                        background: `linear-gradient(to bottom, ${T.white}, ${T.orangeLight})`,
+                        opacity: 0.7,
+                    }} />
+                    <div style={{
+                        width: '12px', height: '12px',
+                        borderRadius: '50%',
+                        background: T.orange,
+                        boxShadow: `0 0 0 4px rgba(245,124,0,0.25)`,
+                    }} />
+                </div>
+            )}
 
             {/* ══ EXECUTIVE SECTION: director → deputies ══ */}
-            <section
-                className="team-cut"
-                style={{
-                    position: 'relative',
-                    background: T.blue,
-                    padding: 'clamp(80px,12vw,150px) clamp(16px,6vw,60px) clamp(100px,14vw,160px)',
-                }}
-            >
-                <div style={sectionInner}>
-                    <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,56px)' }}>
-                        <SectionLabel light>الإدارة التنفيذية</SectionLabel><br />
-                        <SectionHeading light>
-                            القيادات{' '}
-                            <span style={{ color: T.orangeLight }}>التنفيذية</span>
-                        </SectionHeading>
-                        <HeadingBar light />
-                    </div>
-
-                    <div className="org-tree">
-                        {/* Level 2: Institute director */}
-                        <div className="org-top">
-                            <MemberCard member={director} large={true} />
+            {!loading && !error && hasExecutive && (
+                <section
+                    className="team-cut"
+                    style={{
+                        position: 'relative',
+                        background: T.blue,
+                        padding: 'clamp(80px,12vw,150px) clamp(16px,6vw,60px) clamp(100px,14vw,160px)',
+                    }}
+                >
+                    <div style={sectionInner}>
+                        <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,56px)' }}>
+                            <SectionLabel light>الإدارة التنفيذية</SectionLabel><br />
+                            <SectionHeading light>
+                                القيادات{' '}
+                                <span style={{ color: T.orangeLight }}>التنفيذية</span>
+                            </SectionHeading>
+                            <HeadingBar light />
                         </div>
 
-                        <div className="org-stem" />
-                        <div className="org-dot" />
-
-                        {/* Level 3: Deputies */}
-                        <div className="org-level">
-                            {deputies.map((member) => (
-                                <div className="org-branch" key={member.name}>
-                                    <MemberCard member={member} />
+                        <div className="org-tree">
+                            {/* Level 2: Institute director */}
+                            {directors.length > 0 && (
+                                <div className="org-top">
+                                    {directors.map(m => <MemberCard key={m.id} member={m} large={true} />)}
                                 </div>
-                            ))}
+                            )}
+
+                            {directors.length > 0 && deputies.length > 0 && (
+                                <>
+                                    <div className="org-stem" />
+                                    <div className="org-dot" />
+                                </>
+                            )}
+
+                            {/* Level 3: Deputies */}
+                            {deputies.length > 0 && (
+                                <div className="org-level">
+                                    {deputies.map((m) => (
+                                        <div className="org-branch" key={m.id}>
+                                            <MemberCard member={m} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* ══ BLACK CLOSING STRIP ══════════════════ */}
             <div style={{

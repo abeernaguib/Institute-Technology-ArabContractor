@@ -1,8 +1,9 @@
 // src/components/admin/tabs/TeamTab.jsx
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { T } from "../../components/admin/constants";
+import { useAuth } from '@clerk/clerk-react';
+import { T, API_BASE as API_ROOT } from '../constants';
 
-const API_BASE = 'https://icemt.arabcont.com/api/admin/AdminTeam';
+const API_BASE = `${API_ROOT}/admin/AdminTeam`;
 
 const LEVELS = [
     { value: 1, label: 'رئيس مجلس الإدارة' },
@@ -39,7 +40,23 @@ function initials(name = '') {
     return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '؟';
 }
 
+const httpError = (res) =>
+    res.status === 401 || res.status === 403
+        ? 'غير مصرح لك بهذا الإجراء (سجّل الدخول مرة أخرى)'
+        : `HTTP ${res.status}`;
+
 const TeamTab = () => {
+    const { getToken } = useAuth();
+
+    // AdminTeamController has [Authorize]: attach the Clerk token to every request.
+    // Does NOT set Content-Type, so FormData uploads keep their multipart boundary.
+    const authFetch = useCallback(async (url, options = {}) => {
+        const token = await getToken();
+        const headers = { ...(options.headers || {}) };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        return fetch(url, { ...options, headers });
+    }, [getToken]);
+
     const [members, setMembers] = useState([]);
     const [selected, setSelected] = useState(null);
     const [form, setForm] = useState({ ...BLANK });
@@ -64,8 +81,8 @@ const TeamTab = () => {
     const fetchAll = async (selectId = null) => {
         setListLoading(true);
         try {
-            const res = await fetch(API_BASE);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const res = await authFetch(API_BASE);
+            if (!res.ok) throw new Error(httpError(res));
             const mapped = (await res.json()).map(apiToForm);
             setMembers(mapped);
             const target = mapped.find(m => m.id === selectId) || mapped[0];
@@ -114,8 +131,8 @@ const TeamTab = () => {
     const uploadPhoto = async (id, file) => {
         const fd = new FormData();
         fd.append('file', file);
-        const res = await fetch(`${API_BASE}/${id}/photo`, { method: 'POST', body: fd });
-        if (!res.ok) throw new Error(`فشل رفع الصورة: HTTP ${res.status}`);
+        const res = await authFetch(`${API_BASE}/${id}/photo`, { method: 'POST', body: fd });
+        if (!res.ok) throw new Error(`فشل رفع الصورة: ${httpError(res)}`);
     };
 
     const handleSave = async () => {
@@ -127,12 +144,12 @@ const TeamTab = () => {
             let id = form.id;
 
             if (isNew) {
-                const res = await fetch(API_BASE, { method: 'POST', headers, body });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const res = await authFetch(API_BASE, { method: 'POST', headers, body });
+                if (!res.ok) throw new Error(httpError(res));
                 id = (await res.json()).id;
             } else {
-                const res = await fetch(`${API_BASE}/${form.id}`, { method: 'PUT', headers, body });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const res = await authFetch(`${API_BASE}/${form.id}`, { method: 'PUT', headers, body });
+                if (!res.ok) throw new Error(httpError(res));
             }
 
             if (pendingPhotoRef.current) {
@@ -161,8 +178,8 @@ const TeamTab = () => {
         if (!deleteConfirm) { setDeleteConfirm(true); return; }
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/${selected.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const res = await authFetch(`${API_BASE}/${selected.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(httpError(res));
             setDeleteConfirm(false);
             await fetchAll();
             toast('تم حذف العضو', 'error');
