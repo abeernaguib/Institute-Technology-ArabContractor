@@ -1017,7 +1017,7 @@ const PlanworkTab = () => {
 
                                     {!form.isParent && (
                                         <Field label="عدد الأيام">
-                                            <input className="lec-inp" name="days" value={form.days} onChange={handleChange} placeholder="مثال: 5 أو الأحد والإثنين" />
+                                            <input className="lec-inp" name="days" value={form.days} onChange={handleChange} placeholder="مثال: 5 ,ارقام فقظ" />
                                         </Field>
                                     )}
 

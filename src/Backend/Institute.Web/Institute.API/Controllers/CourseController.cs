@@ -95,6 +95,8 @@ namespace Institute.API.Controllers
         // بيشتغل Recursive عشان يجمع الكورسات من كل المستويات
         // سواء كانت مباشرة تحت البرنامج أو تحت محاور/عناوين تنظيمية
         // ✱ الكورسات بدون مواعيد بتظهر (Date = null و Rounds = [])
+        // ✱ CHANGED: الترتيب حسب الـ Priority اللي الأدمن حطه
+        //   (الصفر / الفاضي بييجي في الآخر)، وعند التساوي بالـ Id
         // ══════════════════════════════════════════════════════════════
         [HttpGet("programs/{slug}/courses")]
         public async Task<IActionResult> GetProgramCourses(string slug)
@@ -123,8 +125,11 @@ namespace Institute.API.Controllers
                 ProgramId = program.ChildId,
                 Slug = program.Slug,
                 ProgramName = program.ServiceTitle,
+                // CHANGED: order by admin priority (0 / empty goes last), ties by Id
                 Courses = courses
-                    .OrderBy(c => c.Id)
+                    .OrderBy(c => c.Priority > 0 ? 0 : 1)
+                    .ThenBy(c => c.Priority)
+                    .ThenBy(c => c.Id)
                     .ToList()
             });
         }
@@ -154,6 +159,7 @@ namespace Institute.API.Controllers
         // بتجمع الكورسات من مستوى معين وكل المستويات اللي تحته
         // ✱ CHANGED: كورس حقيقي = IsCourse (مش قسم ومالوش أبناء)
         // عنوان تنظيمي = أي حاجة تانية (بيتنزل فيه Recursive)
+        // ✱ NEW: بيرجع Priority مع كل كورس عشان الترتيب النهائي
         // ══════════════════════════════════════════════════════════════
         private List<CourseCardDto> GetCoursesRecursive(
             List<Planwork> planworks,
@@ -177,6 +183,7 @@ namespace Institute.API.Controllers
                 .Select(c => new CourseCardDto
                 {
                     Id = c.ChildId,
+                    Priority = c.Priority,          // NEW
                     Slug = c.Slug,
                     Title = c.ServiceTitle,
                     Place = c.CoursePlace,
@@ -277,6 +284,9 @@ namespace Institute.API.Controllers
         }
 
         // GET /api/course/sponsored
+        // ✱ CHANGED: الأربع كورسات اللي بتظهر جوه كل قسم ممول
+        //   بقت بترتيب الـ Priority اللي الأدمن حطه (الصفر / الفاضي في الآخر)
+        //   بدل ما كانت بتعرض أحدث أربعة
         [HttpGet("sponsored")]
         public async Task<IActionResult> GetSponsored()
         {
@@ -311,7 +321,9 @@ namespace Institute.API.Controllers
                     }
 
                     var all = GetCoursesRecursive(planworks, noFiles, p.ChildId)
-                        .OrderByDescending(c => c.Id)
+                        .OrderBy(c => c.Priority > 0 ? 0 : 1)
+                        .ThenBy(c => c.Priority)
+                        .ThenBy(c => c.Id)
                         .ToList();
 
                     return (object)new

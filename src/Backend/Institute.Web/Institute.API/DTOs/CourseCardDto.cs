@@ -3,6 +3,8 @@
     public class CourseCardDto
     {
         public int Id { get; set; }
+        public int Priority { get; set; }          // NEW
+
         public string? Slug { get; set; }   
         public string? Title { get; set; }
         public string? Place { get; set; }
