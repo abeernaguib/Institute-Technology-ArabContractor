@@ -279,7 +279,21 @@ namespace Institute.API.Controllers
         public async Task<IActionResult> GetLatestCourses()
         {
             var courses = await _categoryService.GetLatestCoursesAsync(20);
-            return Ok(courses);
+            // ✱ CHANGED: ما نرجعش الـ Entity كامل (فيه PlanUser/PlanPass/OnlineLink)
+            var result = courses.Select(c => new
+            {
+                childId = c.ChildId,
+                parentId = c.ParentId,
+                slug = c.Slug,
+                serviceTitle = c.ServiceTitle,
+                courseDesc = c.CourseDesc,
+                coursePlace = c.CoursePlace,
+                courseDate = c.CourseDate,
+                planCost = c.PlanCost,
+                isOnline = c.IsOnline,
+                onlineCost = c.OnlineCost
+            });
+            return Ok(result);
         }
 
         // GET /api/course/sponsored
