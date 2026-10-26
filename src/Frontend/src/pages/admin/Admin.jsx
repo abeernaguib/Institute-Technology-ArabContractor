@@ -26,7 +26,7 @@ import NewsTab from './NewsTab';
 import BooksTab from './BooksTab';
 import PlanworkTab from './PlanworkTab';
 import SettingsTab from './SettingsTab';
-import TeamTab from '../../components/admin/tabs/TeamTab';
+import TeamTab from './TeamTab';
 
 // permissionName MUST match Permission.Name in the DB (case-insensitive).
 const TABS = [
