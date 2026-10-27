@@ -123,6 +123,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IPlanworkService, PlanworkService>();
 builder.Services.AddScoped<IPlanFileService, PlanFileService>();
 builder.Services.AddSingleton<IBlobStorage, BlobStorage>();
+builder.Services.AddScoped<IRefundNotificationService, RefundNotificationService>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IUserPermissionService, UserPermissionService>();

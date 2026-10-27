@@ -17,19 +17,25 @@ namespace Institute.API.Controllers
         private readonly ICheckoutService _checkoutService;
         private readonly BankPaymentService _bankPaymentService;
         private readonly IUserPermissionService _permissionService;
+        private readonly IRefundNotificationService _refundNotification;
+        private readonly ILogger<RefundController> _logger;
 
         public RefundController(
             IRefundService refundService,
             ICurrentUserService currentUser,
             ICheckoutService checkoutService,
             BankPaymentService bankPaymentService,
-            IUserPermissionService permissionService)
+            IUserPermissionService permissionService,
+            IRefundNotificationService refundNotification,
+            ILogger<RefundController> logger)
         {
             _refundService = refundService;
             _currentUser = currentUser;
             _checkoutService = checkoutService;
             _bankPaymentService = bankPaymentService;
             _permissionService = permissionService;
+            _refundNotification = refundNotification;
+            _logger = logger;
         }
 
         // ═══════════════════════════════════════════════════════════════
@@ -73,6 +79,16 @@ namespace Institute.API.Controllers
                     accountHolder: dto.AccountHolder,
                     iban: dto.Iban
                 );
+
+                // Email failure must never affect the refund request itself
+                try
+                {
+                    await _refundNotification.NotifyRefundRequestedAsync(refund.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Refund-requested email failed. RefundId={Id}", refund.Id);
+                }
 
                 return Ok(new
                 {
