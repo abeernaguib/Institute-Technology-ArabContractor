@@ -61,6 +61,7 @@ export function normalizeRefund(r) {
         courseId: r.planworkId ?? r.PlanworkId ?? r.planwork_id ?? r.courseId ?? r.CourseId,
         enrollmentId: r.enrollmentId ?? r.EnrollmentId ?? null,
         attendanceMode: normalizeAttendanceMode(r),
+        isOnline: r.isOnline ?? r.IsOnline,
         amount: r.amount ?? r.Amount ?? 0,
         currency: r.currency ?? r.Currency ?? 'EGP',
         reason: r.reason ?? r.Reason ?? '',

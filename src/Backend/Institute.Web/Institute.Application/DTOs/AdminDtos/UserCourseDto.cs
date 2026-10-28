@@ -8,7 +8,8 @@ namespace Institute.Application.DTOs.AdminDtos
 {
     public class UserCourseDto
     {
-        public int EnrollmentId { get; set; } 
+        public int EnrollmentId { get; set; }
+        public int PlanworkId { get; set; }
         public string Title { get; set; }
         public DateTime EnrolledAt { get; set; }
         public decimal? CoursePrice { get; set; }

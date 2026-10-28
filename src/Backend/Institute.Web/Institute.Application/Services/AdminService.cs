@@ -85,11 +85,12 @@ namespace Institute.Application.Services
                     .Select(e => new UserCourseDto
                     {
                         EnrollmentId = e.Id,
+                        PlanworkId = e.PlanworkId,                   // ← new
                         Title = e.Planwork.ServiceTitle,
                         CoursePrice = e.Planwork.PlanCost,
                         EnrolledAt = e.EnrolledAt,
                         Attended = e.Attended,
-                        IsOnline = e.IsOnline,                       // ← new
+                        IsOnline = e.IsOnline,
                         RoundStart = RoundStart(e.RoundId, roundsById),
                         RoundEnd = RoundEnd(e.RoundId, roundsById)
                     })
