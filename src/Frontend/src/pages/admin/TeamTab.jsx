@@ -2,7 +2,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { T, API_BASE as API_ROOT } from '../../components/admin/constants';
-import { RichTextEditor } from './LecturersTab';
+import { RichTextEditor } from './mohadren';
 // Adjust this path to the same depth as your T import if needed
 import { encodeRichText, decodeRichText, isBlankHtml } from '../../utils/richText';
 
