@@ -89,6 +89,7 @@ namespace Institute.Application.Services
                         CoursePrice = e.Planwork.PlanCost,
                         EnrolledAt = e.EnrolledAt,
                         Attended = e.Attended,
+                        IsOnline = e.IsOnline,                       // ← new
                         RoundStart = RoundStart(e.RoundId, roundsById),
                         RoundEnd = RoundEnd(e.RoundId, roundsById)
                     })
@@ -121,6 +122,7 @@ namespace Institute.Application.Services
                         Username = e.User.Username,
                         Email = e.User.Email,
                         EnrolledAt = e.EnrolledAt,
+                        IsOnline = e.IsOnline,                         // ← new
                         RoundStart = RoundStart(e.RoundId, roundsById),
                         RoundEnd = RoundEnd(e.RoundId, roundsById)
                     }).ToList()

@@ -7,6 +7,17 @@ import { T, ITEMS_PER_PAGE } from '../constants';
 import { rtlExport, getAttendanceModeUI } from '../helpers';
 import { exportExcel, exportPDF, exportWord, buildAttRows, withExport } from '../exportHelpers';
 import { Pagination } from '../Pagination';
+
+// Online / on-site for THIS enrollment (what the student signed up for).
+// Returns null when the API did not send the flag, so we can fall back to the old UI.
+function getCourseModeUI(course) {
+    const flag = course?.isOnline ?? course?.IsOnline;
+    if (flag === undefined || flag === null) return null;
+    return flag
+        ? { label: '💻 أونلاين', style: { background: '#e0f2fe', color: '#0369a1' } }
+        : { label: '🏢 حضوري', style: { background: '#f3f4f6', color: '#374151' } };
+}
+
 export function AttendanceTab({ rows, loading, attendance, attendanceSaving, error, setError, courseFilter, setCourseFilter, userSearch, setUserSearch, currentPage, setCurrentPage, coursesData, toggleAttendance, setExporting, setExportError }) {
     const exportRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -67,14 +78,19 @@ export function AttendanceTab({ rows, loading, attendance, attendanceSaving, err
                                             const k = String(eid);
                                             const attended = !!attendance[k];
                                             const saving = !!attendanceSaving[k];
-                                            const mode = getAttendanceModeUI(row.course.attendanceMode);
+                                            const courseMode = getCourseModeUI(row.course);          // online / on-site
+                                            const mode = getAttendanceModeUI(row.course.attendanceMode); // old fallback
                                             return (
                                                 <tr key={k + idx}>
                                                     <td style={{ color: T.gray500, fontSize: '.68rem', textAlign: 'center' }}>{rowNum}</td>
                                                     <td><div className="adm-uc"><div className="adm-av">{(row.user.firstName || row.user.username || '?')[0]}{(row.user.lastName || '')[0]}</div><span className="adm-uname">{row.user.firstName || row.user.username} {row.user.lastName}</span></div></td>
                                                     <td className="adm-email">{row.user.email}</td>
                                                     <td style={{ color: T.blue, fontWeight: 700 }}>{row.course.title}</td>
-                                                    <td style={{ textAlign: 'center' }}><span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span></td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        {courseMode
+                                                            ? <span className="adm-mode-badge" style={courseMode.style}>{courseMode.label}</span>
+                                                            : <span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span>}
+                                                    </td>
                                                     <td style={{ textAlign: 'center' }}>
                                                         <div className={`adm-chk${saving ? ' spin' : attended ? ' on' : ''}`} onClick={() => !saving && toggleAttendance(eid, attended)}>{!saving && attended && '✓'}</div>
                                                     </td>

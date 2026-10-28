@@ -7,6 +7,18 @@ import { T, ITEMS_PER_PAGE } from '../constants';
 import { rtlExport } from '../helpers';
 import { exportExcel, exportPDF, exportWord, buildCoursesRows, withExport } from '../exportHelpers';
 import { Pagination } from '../Pagination';
+
+// true / false / undefined (flag not sent by the API)
+const getOnlineFlag = (u) => u?.isOnline ?? u?.IsOnline;
+
+function getModeUI(u) {
+    const flag = getOnlineFlag(u);
+    if (flag === undefined || flag === null) return null;
+    return flag
+        ? { label: '💻 أونلاين', style: { background: '#e0f2fe', color: '#0369a1' } }
+        : { label: '🏢 حضوري', style: { background: '#f3f4f6', color: '#374151' } };
+}
+
 export function CoursesTab({ data, loading, error, searchQuery, setSearchQuery, dateFrom, setDateFrom, dateTo, setDateTo, currentPage, setCurrentPage, expandedRow, setExpandedRow, setExporting, setExportError }) {
     const exportRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -51,26 +63,44 @@ export function CoursesTab({ data, loading, error, searchQuery, setSearchQuery, 
                                         <tbody>
                                             {paginated.map((c, idx) => {
                                                 const rowNum = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
+                                                const onlineCount = c.enrolledUsers.filter(u => getOnlineFlag(u) === true).length;
+                                                const onsiteCount = c.enrolledUsers.filter(u => getOnlineFlag(u) === false).length;
+                                                const hasModeInfo = onlineCount + onsiteCount > 0;
                                                 return (
                                                     <React.Fragment key={c.id}>
                                                         <tr className={expandedRow === c.id ? 'xopen' : ''}>
                                                             <td style={{ color: T.gray500, fontSize: '.68rem', textAlign: 'center' }}>{rowNum}</td>
                                                             <td style={{ fontWeight: 700, color: T.blue }}>📚 {c.title}</td>
-                                                            <td style={{ textAlign: 'center' }}><span className="adm-cb or">{c.enrolledUsers.length}</span></td>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                <span className="adm-cb or">{c.enrolledUsers.length}</span>
+                                                                {hasModeInfo && (
+                                                                    <div style={{ fontSize: '.62rem', color: T.gray500, marginTop: 3 }}>
+                                                                        💻 {onlineCount} • 🏢 {onsiteCount}
+                                                                    </div>
+                                                                )}
+                                                            </td>
                                                             <td style={{ textAlign: 'center' }}>{c.enrolledUsers.length > 0 ? <span className={`adm-pill or${expandedRow === c.id ? ' op' : ''}`} onClick={() => setExpandedRow(expandedRow === c.id ? null : c.id)}>{expandedRow === c.id ? '▲ إخفاء' : '▼ عرض'}</span> : <span style={{ color: T.gray300 }}>—</span>}</td>
                                                         </tr>
                                                         {expandedRow === c.id && (
                                                             <tr className="adm-xrow"><td colSpan={4}>
                                                                 <div className="adm-xin">
-                                                                    {c.enrolledUsers.map(u => (
-                                                                        <div className="adm-mc" key={u.enrollmentId ?? u.email}>
-                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-                                                                                <div className="adm-av or sm">{(u.firstName || u.username || '?')[0]}{(u.lastName || '')[0]}</div>
-                                                                                <div><div className="adm-mt or">{u.firstName || u.username} {u.lastName}</div><div className="adm-ms">✉ {u.email}</div></div>
+                                                                    {c.enrolledUsers.map(u => {
+                                                                        const mode = getModeUI(u);
+                                                                        return (
+                                                                            <div className="adm-mc" key={u.enrollmentId ?? u.email}>
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
+                                                                                    <div className="adm-av or sm">{(u.firstName || u.username || '?')[0]}{(u.lastName || '')[0]}</div>
+                                                                                    <div><div className="adm-mt or">{u.firstName || u.username} {u.lastName}</div><div className="adm-ms">✉ {u.email}</div></div>
+                                                                                </div>
+                                                                                {u.date && <div className="adm-md">📅 {u.date}</div>}
+                                                                                {mode && (
+                                                                                    <span className="adm-mode-badge" style={{ ...mode.style, display: 'inline-block', marginTop: 4 }}>
+                                                                                        {mode.label}
+                                                                                    </span>
+                                                                                )}
                                                                             </div>
-                                                                            {u.date && <div className="adm-md">📅 {u.date}</div>}
-                                                                        </div>
-                                                                    ))}
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             </td></tr>
                                                         )}

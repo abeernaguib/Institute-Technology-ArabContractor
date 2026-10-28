@@ -13,5 +13,6 @@ namespace Institute.Application.DTOs.AdminDtos
         public DateTime EnrolledAt { get; set; }
         public string? RoundStart { get; set; }
         public string? RoundEnd { get; set; }
+        public bool IsOnline { get; set; }
     }
 }

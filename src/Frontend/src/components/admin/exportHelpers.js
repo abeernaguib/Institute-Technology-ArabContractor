@@ -274,6 +274,15 @@ export async function exportWord(filename, reportTitle, subtitle, headers, rows,
 // ════════════════════════════════════════════════════════════════════════════
 // Row builders  (called by each tab to produce export data)
 // ════════════════════════════════════════════════════════════════════════════
+
+// online / on-site label for one enrollment (falls back to the old value when the flag is missing)
+function modeText(x) {
+    const flag = x?.isOnline ?? x?.IsOnline;
+    if (flag === true) return 'أونلاين';
+    if (flag === false) return 'حضوري';
+    return getAttendanceModeUI(x?.attendanceMode).text;
+}
+
 export function buildUsersRows(users) {
     const headers = ['#', 'الاسم الكامل', 'البريد الإلكتروني', 'رقم الموبايل', 'اسم الدورة', 'طريقة الحضور', 'تاريخ التسجيل'];
     const rows = [];
@@ -284,7 +293,7 @@ export function buildUsersRows(users) {
             rows.push([n++, `${u.firstName} ${u.lastName}`, u.email, phone, '—', '—', '—']);
         } else {
             u.enrolledCourses.forEach((c, i) => {
-                const mode = getAttendanceModeUI(c.attendanceMode).text;
+                const mode = modeText(c);
                 rows.push(i === 0
                     ? [n++, `${u.firstName} ${u.lastName}`, u.email, phone, c.title, mode, c.date || '—']
                     : ['', '', '', '', c.title, mode, c.date || '—']);
@@ -303,7 +312,7 @@ export function buildCoursesRows(courses) {
             rows.push([n++, c.title, c.category, '—', '—', '—', '—']);
         } else {
             c.enrolledUsers.forEach((u, i) => {
-                const mode = getAttendanceModeUI(u.attendanceMode).text;
+                const mode = modeText(u);
                 rows.push(i === 0
                     ? [n++, c.title, c.category, `${u.firstName} ${u.lastName}`, u.email, mode, u.date || '—']
                     : ['', '', '', `${u.firstName} ${u.lastName}`, u.email, mode, u.date || '—']);
@@ -320,7 +329,7 @@ export function buildAttRows(attRows, attendance) {
         `${r.user.firstName || r.user.username} ${r.user.lastName}`.trim(),
         r.user.email,
         r.course.title,
-        getAttendanceModeUI(r.course.attendanceMode).text,
+        modeText(r.course),
         attendance[String(r.course.enrollmentId)] ? 'حضر' : 'غائب',
     ]);
     return { headers, rows };

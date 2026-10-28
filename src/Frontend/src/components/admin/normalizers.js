@@ -17,6 +17,7 @@ export function normalizeUser(u) {
             date: fmtDate(c.enrolledAt),
             attended: !!(c.attended),
             attendanceMode: normalizeAttendanceMode(c),
+            isOnline: c.isOnline ?? c.IsOnline,
             certificateUrl: c.certificateUrl ?? null,
             certificateName: c.certificateName ?? null,
             _userId: u.id,
@@ -43,6 +44,7 @@ export function normalizeCourse(c) {
                 date: fmtDate(u.enrolledAt),
                 attended: !!(u.attended ?? false),
                 attendanceMode: normalizeAttendanceMode(u),
+                isOnline: u.isOnline ?? u.IsOnline,
                 certificateUrl: u.certificateUrl ?? null,
                 certificateName: u.certificateName ?? null,
             };

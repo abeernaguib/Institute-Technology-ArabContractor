@@ -13,6 +13,8 @@ namespace Institute.Application.DTOs.AdminDtos
         public DateTime EnrolledAt { get; set; }
         public decimal? CoursePrice { get; set; }
         public bool Attended { get; set; }
+        public bool IsOnline { get; set; }          // ← new: true = online, false = on-site
+
         public string? RoundStart { get; set; }
         public string? RoundEnd { get; set; }
     }
