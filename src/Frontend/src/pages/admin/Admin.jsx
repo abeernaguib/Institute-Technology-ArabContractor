@@ -10,7 +10,7 @@ import { normalizeUser, normalizeCourse, normalizeRefund } from '../../component
 import Sidebar from '../../components/admin/Sidebar';
 import PageHero from '../../components/admin/PageHero';
 import StatCards from '../../components/admin/StatCards';
-import FinancialTab from './FinancialTab';
+import FinancialTab from './Financialtab';
 
 import UsersTab from '../../components/admin/tabs/UsersTab';
 import CoursesTab from '../../components/admin/tabs/CoursesTab';

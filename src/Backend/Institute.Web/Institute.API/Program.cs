@@ -129,6 +129,7 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IUserPermissionService, UserPermissionService>();
 builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddScoped<IRefundService, RefundService>();
+builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>();
 
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));

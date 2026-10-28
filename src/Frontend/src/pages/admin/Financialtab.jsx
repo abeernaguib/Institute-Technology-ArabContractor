@@ -23,6 +23,17 @@ const CHART_COLORS = [T.blue, T.orange, T.green, T.purple, '#ec4899', '#06b6d4',
 const ITEMS_PER_PAGE = 15;
 const REPORT_TITLE = 'التقرير المالي — إيرادات المعهد';
 const FIN_HEADERS = ['#', 'اسم المستخدم', 'البريد الإلكتروني', 'الدورة', 'سعر الدورة (EGP)', 'تاريخ التسجيل', 'الحضور', 'إجمالي المستخدم (EGP)'];
+const MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+const PRESETS = [
+    { k: 'all', l: 'الكل' },
+    { k: 'today', l: 'اليوم' },
+    { k: '7', l: 'آخر 7 أيام' },
+    { k: '30', l: 'آخر 30 يوم' },
+    { k: 'month', l: 'هذا الشهر' },
+    { k: 'lastmonth', l: 'الشهر الماضي' },
+    { k: 'year', l: 'هذا العام' },
+];
 
 // ── Auth ──
 async function getToken() {
@@ -53,7 +64,25 @@ function formatDateAr(raw) {
     try { return new Date(raw).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
     catch { return raw; }
 }
-function buildExportRows(rows, grandTotal) {
+function toInputDate(d) {
+    const z = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+}
+function presetRange(k) {
+    const now = new Date();
+    const today = toInputDate(now);
+    if (k === 'today') return [today, today];
+    if (k === '7') { const d = new Date(); d.setDate(d.getDate() - 6); return [toInputDate(d), today]; }
+    if (k === '30') { const d = new Date(); d.setDate(d.getDate() - 29); return [toInputDate(d), today]; }
+    if (k === 'month') return [toInputDate(new Date(now.getFullYear(), now.getMonth(), 1)), today];
+    if (k === 'lastmonth') return [
+        toInputDate(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
+        toInputDate(new Date(now.getFullYear(), now.getMonth(), 0)),
+    ];
+    if (k === 'year') return [toInputDate(new Date(now.getFullYear(), 0, 1)), today];
+    return ['', ''];
+}
+function buildExportRows(rows, totals) {
     const data = [];
     let n = 1;
     rows.forEach(r => {
@@ -64,7 +93,13 @@ function buildExportRows(rows, grandTotal) {
             );
         });
     });
-    data.push(['', '', '', '', '', '', 'الإجمالي الكلي', grandTotal]);
+    if (totals.showRefunds) {
+        data.push(['', '', '', '', '', '', 'إجمالي الفترة (قبل المرتجعات)', totals.gross]);
+        data.push(['', '', '', '', '', '', 'المرتجعات', totals.refunds]);
+        data.push(['', '', '', '', '', '', 'الصافي', totals.net]);
+    } else {
+        data.push(['', '', '', '', '', '', 'إجمالي المعروض', totals.net]);
+    }
     return data;
 }
 
@@ -111,6 +146,22 @@ const CSS = `
 .fin-cb-fill.blue{background:linear-gradient(90deg,#0865a8,#1a84d4);}
 .fin-cb-amt{font-size:.72rem;font-weight:900;color:#f57c00;min-width:75px;text-align:left;}
 .fin-cb-count{font-size:.62rem;color:#6b7280;min-width:48px;text-align:left;}
+
+/* ── Period filter ── */
+.fin-period{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1.5px solid #d0d3d8;border-right:4px solid #0865a8;border-radius:6px;padding:12px 18px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.fin-period.on{border-right-color:#f57c00;background:#fffaf4;}
+.fin-period-lbl{font-size:.78rem;font-weight:900;color:#0a0a0a;}
+.fin-period-dates{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.fin-period-dates label{font-size:.7rem;font-weight:700;color:#6b7280;}
+.fin-date{padding:7px 10px;border-radius:6px;border:1.5px solid #d0d3d8;background:#f0f1f2;color:#0a0a0a;font-family:"Noto Kufi Arabic",sans-serif;font-size:.76rem;outline:none;}
+.fin-date:focus{border-color:#f57c00;background:#fff;box-shadow:0 0 0 3px rgba(245,124,0,0.1);}
+.fin-presets{display:flex;gap:6px;flex-wrap:wrap;}
+.fin-preset{padding:7px 12px;border-radius:4px;border:1.5px solid #d0d3d8;background:#f0f1f2;color:#374151;font-family:"Noto Kufi Arabic",sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .14s;}
+.fin-preset:hover{border-color:#f57c00;color:#f57c00;}
+.fin-preset.act{background:#0865a8;border-color:#0865a8;color:#fff;}
+.fin-period-note{width:100%;font-size:.68rem;color:#6b7280;font-weight:700;}
+.fin-period-note b{color:#bf5200;}
+
 .fin-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;background:#fff;border:1.5px solid #d0d3d8;border-radius:6px;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
 .fin-search-input{padding:9px 14px;border-radius:6px;border:1.5px solid #d0d3d8;background:#f0f1f2;color:#0a0a0a;font-family:"Noto Kufi Arabic",sans-serif;font-size:.8rem;outline:none;direction:rtl;transition:border .18s,box-shadow .18s;min-width:220px;}
 .fin-search-input:focus{border-color:#f57c00;background:#fff;box-shadow:0 0 0 3px rgba(245,124,0,0.1);}
@@ -165,8 +216,9 @@ const CSS = `
 .fin-ld p,.fin-empty p{color:#6b7280;font-size:.8rem;font-family:"Noto Kufi Arabic",sans-serif;text-align:center;padding:60px 20px;}
 `;
 function injectStyles() {
-    if (document.getElementById('fin-styles-v4')) return;
-    const el = document.createElement('style'); el.id = 'fin-styles-v4'; el.textContent = CSS;
+    if (document.getElementById('fin-styles-v5')) return;
+    const old = document.getElementById('fin-styles-v4'); if (old) old.remove();
+    const el = document.createElement('style'); el.id = 'fin-styles-v5'; el.textContent = CSS;
     document.head.appendChild(el);
 }
 
@@ -228,15 +280,13 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => 
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
-export default function FinancialTab() {
+export default function FinancialTab({ authFetch, API_BASE }) {
     injectStyles();
 
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState([]);
-    const [usersData, setUsersData] = useState([]);
-    const [planworks, setPlanworks] = useState([]);
-    const [refunds, setRefunds] = useState([]);
-    const [stats, setStats] = useState(null);
+    const [report, setReport] = useState(null);
+    const [fetching, setFetching] = useState(false);
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('total_desc');
     const [page, setPage] = useState(1);
@@ -246,58 +296,80 @@ export default function FinancialTab() {
     const [exportError, setExportError] = useState(null);
     const exportRef = useRef(null);
 
+    // Period filter (drives the whole page + exports)
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [preset, setPreset] = useState('all');
+    const hasFilter = !!(dateFrom || dateTo);
+
+    const applyPreset = k => {
+        const [f, t] = presetRange(k);
+        setDateFrom(f); setDateTo(t); setPreset(k); setPage(1); setExpanded(null);
+    };
+    const onCustomDate = (which, v) => {
+        if (which === 'from') setDateFrom(v); else setDateTo(v);
+        setPreset('custom'); setPage(1); setExpanded(null);
+    };
+
     useEffect(() => {
         const h = e => { if (exportRef.current && !exportRef.current.contains(e.target)) setExportMenu(false); };
         document.addEventListener('mousedown', h);
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
+    // Everything on the page comes from one endpoint, re-fetched when the period changes
     useEffect(() => {
-        const errs = [];
-        Promise.allSettled([
-            apiFetch('/Admin/users'),
-            apiFetch('/Admin/planworks'),
-            apiFetch('/Refund/admin/all'),
-            apiFetch('/Admin/stats'),
-        ]).then(([u, p, r, s]) => {
-            if (u.status === 'fulfilled' && Array.isArray(u.value)) setUsersData(u.value);
-            else errs.push('فشل تحميل بيانات المستخدمين');
-            if (p.status === 'fulfilled' && Array.isArray(p.value)) setPlanworks(p.value);
-            else errs.push('فشل تحميل بيانات الدورات');
-            if (r.status === 'fulfilled') {
-                setRefunds(Array.isArray(r.value) ? r.value : (r.value?.data ?? []));
-            } else errs.push('فشل تحميل المرتجعات');
-            if (s.status === 'fulfilled' && s.value) setStats(s.value);
-            setErrors(errs);
-            setLoading(false);
-        });
-    }, []);
+        let cancelled = false;
+        setFetching(true);
+        const qs = new URLSearchParams();
+        if (dateFrom) qs.set('from', dateFrom);
+        if (dateTo) qs.set('to', dateTo);
+        const suffix = qs.toString() ? `?${qs}` : '';
+        // Prefer the dashboard's own authFetch + API_BASE (works on localhost and production)
+        const request = (authFetch && API_BASE)
+            ? authFetch(`${API_BASE}/Financial/report${suffix}`).then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            : apiFetch(`/Financial/report${suffix}`);
+        request
+            .then(d => { if (!cancelled) { setReport(d); setErrors([]); } })
+            .catch(e => { if (!cancelled) setErrors([`فشل تحميل التقرير المالي (${e?.message || 'خطأ'})`]); })
+            .finally(() => { if (!cancelled) { setLoading(false); setFetching(false); } });
+        return () => { cancelled = true; };
+    }, [dateFrom, dateTo, authFetch, API_BASE]);
 
-    // ── Rows ──
-    const allRows = useMemo(() =>
-        usersData.filter(u => u.courses?.length > 0).map(u => ({
-            id: u.id, username: u.username || '', email: u.email || '',
-            courses: u.courses.map(c => ({
-                title: c.title || '—', price: Number(c.coursePrice || 0),
-                date: formatDateAr(c.enrolledAt), rawDate: c.enrolledAt, attended: c.attended,
-            })),
-            totalPaid: u.courses.reduce((s, c) => s + Number(c.coursePrice || 0), 0),
-        }))
-        , [usersData]);
+    // ── Derived data (all numbers come from the backend) ──
+    const summary = report?.summary || {};
+    const allRows = useMemo(() => (report?.rows || []).map(u => ({
+        id: u.userId,
+        username: u.username || u.email || '',
+        email: u.email || '',
+        courses: (u.courses || []).map(c => ({
+            title: c.title || '—',
+            price: Number(c.price || 0),
+            date: formatDateAr(c.paidAt),
+            rawDate: c.paidAt,
+            attended: c.attended,
+            refunded: Number(c.refunded || 0),
+        })),
+        totalPaid: Number(u.totalPaid || 0),
+    })), [report]);
 
-    // ── KPIs ──
-    const grandTotal = allRows.reduce((s, r) => s + r.totalPaid, 0);
-    const totalRefunds = refunds.filter(r => r.status === 'Approved' || r.status === 'Sent').reduce((s, r) => s + (Number(r.amount) || 0), 0);
-    const netRevenue = grandTotal - totalRefunds;
-    const totalEnrollments = stats?.enrollmentsCount ?? allRows.reduce((s, r) => s + r.courses.length, 0);
+    const grandTotal = Number(summary.gross || 0);          // before refunds
+    const totalRefunds = Number(summary.refundsSent || 0);  // money actually sent back
+    const pendingRefunds = Number(summary.refundsPending || 0);
+    const netRevenue = Number(summary.net || 0);
+    const totalEnrollments = Number(summary.enrollments || 0);
+    const refundsCount = Number(summary.refundsCount || 0);
     const avgPerUser = allRows.length > 0 ? Math.round(netRevenue / allRows.length) : 0;
     const maxPayer = allRows.length > 0 ? allRows.reduce((a, b) => a.totalPaid > b.totalPaid ? a : b) : null;
 
-    // ── Course revenue ──
     const courseRevenue = useMemo(() =>
-        [...planworks].sort((a, b) => (b.totalRevenue || 0) - (a.totalRevenue || 0))
-            .map(p => ({ title: p.serviceTitle || '—', total: Number(p.totalRevenue || 0), count: Number(p.usersCount || 0) }))
-        , [planworks]);
+        (report?.courses || [])
+            .map(c => ({ title: c.title || '—', total: Number(c.revenue || 0), count: Number(c.count || 0) }))
+            .sort((a, b) => b.total - a.total)
+        , [report]);
     const maxCourseRev = courseRevenue[0]?.total || 1;
 
     // ── Pie ──
@@ -310,17 +382,16 @@ export default function FinancialTab() {
 
     // ── Monthly ──
     const monthlyData = useMemo(() => {
-        const MN = ['يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-        const map = {};
-        allRows.forEach(r => r.courses.forEach(c => {
-            if (!c.rawDate) return;
-            const d = new Date(c.rawDate); if (isNaN(d.getTime())) return;
-            const k = MN[d.getMonth()];
-            if (!map[k]) map[k] = { month: k, revenue: 0, enrollments: 0, order: d.getMonth() };
-            map[k].revenue += c.price; map[k].enrollments += 1;
-        }));
-        return Object.values(map).sort((a, b) => a.order - b.order);
-    }, [allRows]);
+        const list = report?.monthly || [];
+        const multiYear = new Set(list.map(x => x.year)).size > 1;
+        return [...list]
+            .sort((a, b) => (a.year * 12 + a.month) - (b.year * 12 + b.month))
+            .map(x => ({
+                month: multiYear ? `${MONTHS_AR[x.month - 1]} ${x.year}` : MONTHS_AR[x.month - 1],
+                revenue: Number(x.revenue || 0),
+                enrollments: Number(x.enrollments || 0),
+            }));
+    }, [report]);
 
     // ── Filter / sort / paginate ──
     const q = search.toLowerCase();
@@ -333,24 +404,39 @@ export default function FinancialTab() {
     });
     const paginated = sorted.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-    // ── Exports ──
+    // ── Period labels ──
+    const periodLabel = hasFilter
+        ? `${dateFrom || 'البداية'} ← ${dateTo || 'اليوم'}`
+        : 'كل الفترات';
+    const reportTitle = `${REPORT_TITLE} (${periodLabel})`;
+    const fileSuffix = hasFilter ? `_${dateFrom || 'start'}_${dateTo || 'now'}` : '';
+
+    // ── Exports (follow the period filter + the table search/sort) ──
     const doExport = fn => async () => {
         setExporting(true); setExportMenu(false); setExportError(null);
         try { await fn(); }
         catch (e) { setExportError('فشل التصدير: ' + (e?.message || 'خطأ')); }
         finally { setExporting(false); }
     };
-    const rows4export = () => buildExportRows(sorted, netRevenue);
-    const handleExcel = () => exportExcel('التقرير-المالي.xlsx', REPORT_TITLE, FIN_HEADERS, rows4export(), LOGO_SRC);
+    const rows4export = () => {
+        const searching = !!search.trim();
+        const shown = sorted.reduce((s, r) => s + r.totalPaid, 0);
+        return buildExportRows(sorted, {
+            gross: grandTotal, refunds: totalRefunds, net: searching ? shown : netRevenue,
+            // refunds can't be attributed to a text search, so only show net when the whole period is exported
+            showRefunds: !searching,
+        });
+    };
+    const handleExcel = () => exportExcel(`التقرير-المالي${fileSuffix}.xlsx`, reportTitle, FIN_HEADERS, rows4export(), LOGO_SRC);
     const handlePDF = () => {
         const { headers, rows } = rtlExport(FIN_HEADERS, rows4export());
-        return exportPDF('التقرير-المالي.pdf', REPORT_TITLE, headers, rows, '', LOGO_SRC);
+        return exportPDF(`التقرير-المالي${fileSuffix}.pdf`, reportTitle, headers, rows, '', LOGO_SRC);
     };
-    const handleWord = () => exportWord('التقرير-المالي.docx', REPORT_TITLE, '', FIN_HEADERS, rows4export(), LOGO_SRC);
+    const handleWord = () => exportWord(`التقرير-المالي${fileSuffix}.docx`, reportTitle, '', FIN_HEADERS, rows4export(), LOGO_SRC);
 
     const kpis = [
         { icon: '💰', val: `${fmtMoney(grandTotal)} EGP`, lbl: 'إجمالي الإيرادات', sub: 'قبل المرتجعات', cls: 'orange', color: '#f57c00' },
-        { icon: '🔻', val: `${fmtMoney(totalRefunds)} EGP`, lbl: 'إجمالي المرتجعات', sub: `${refunds.length} طلب مرتجع`, cls: 'red', color: '#dc2626' },
+        { icon: '🔻', val: `${fmtMoney(totalRefunds)} EGP`, lbl: 'إجمالي المرتجعات', sub: `${refundsCount} طلب مرتجع`, cls: 'red', color: '#dc2626' },
         { icon: '✅', val: `${fmtMoney(netRevenue)} EGP`, lbl: 'صافي الإيرادات', sub: 'بعد خصم المرتجعات', cls: 'green', color: '#16a34a' },
         { icon: '📚', val: totalEnrollments, lbl: 'إجمالي الاشتراكات', sub: `عبر ${courseRevenue.length} دورة`, cls: 'blue', color: '#0865a8' },
         { icon: '👥', val: allRows.length, lbl: 'العملاء الدافعون', sub: `متوسط ${fmtMoney(avgPerUser)} EGP`, cls: 'purple', color: '#7c3aed' },
@@ -370,12 +456,36 @@ export default function FinancialTab() {
 
             {errors.map((e, i) => <div className="fin-err" key={i}>⚠️ {e}</div>)}
 
-            {/* ── Hero: shows NET revenue after refunds ── */}
+            {/* ── Period filter: controls everything below ── */}
+            <div className={`fin-period${hasFilter ? ' on' : ''}`}>
+                <span className="fin-period-lbl">📅 الفترة{fetching ? ' ⏳' : ''}</span>
+                <div className="fin-period-dates">
+                    <label>من</label>
+                    <input type="date" className="fin-date" value={dateFrom} max={dateTo || undefined}
+                        onChange={e => onCustomDate('from', e.target.value)} />
+                    <label>إلى</label>
+                    <input type="date" className="fin-date" value={dateTo} min={dateFrom || undefined}
+                        onChange={e => onCustomDate('to', e.target.value)} />
+                </div>
+                <div className="fin-presets">
+                    {PRESETS.map(p => (
+                        <button key={p.k} className={`fin-preset${preset === p.k ? ' act' : ''}`} onClick={() => applyPreset(p.k)}>{p.l}</button>
+                    ))}
+                </div>
+                {hasFilter && (
+                    <div className="fin-period-note">
+                        الأرقام والرسوم والتصدير كلها للفترة: <b>{periodLabel}</b>
+                        {pendingRefunds > 0 && <> · مرتجعات موافق عليها ولم تُرسل بعد: <b>{fmtMoney(pendingRefunds)}</b> EGP</>}
+                    </div>
+                )}
+            </div>
+
+            {/* ── Hero ── */}
             <div className="fin-income-hero">
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div className="fin-total-label">✅ صافي الإيرادات الكلية (بعد المرتجعات)</div>
+                    <div className="fin-total-label">✅ صافي الإيرادات {hasFilter ? 'للفترة' : 'الكلية'} (بعد المرتجعات)</div>
                     <div className="fin-total-amount"><span className="fin-currency">EGP</span>{fmtMoney(netRevenue)}</div>
-                    <div className="fin-total-sub">من {allRows.length} مستخدم · {totalEnrollments} تسجيل</div>
+                    <div className="fin-total-sub">من {allRows.length} مستخدم · {totalEnrollments} تسجيل{hasFilter ? ` · ${periodLabel}` : ''}</div>
                 </div>
                 <div className="fin-income-pills">
                     {[
@@ -526,8 +636,8 @@ export default function FinancialTab() {
                     <option value="name">الاسم أبجديًا</option>
                 </select>
                 <div className="fin-expw" ref={exportRef} style={{ marginRight: 'auto' }}>
-                    <button className="fin-expbtn" disabled={exporting} onClick={() => setExportMenu(p => !p)}>
-                        {exporting ? '⏳ جاري التصدير...' : '⬇ تصدير التقرير ▾'}
+                    <button className="fin-expbtn" disabled={exporting || sorted.length === 0} onClick={() => setExportMenu(p => !p)}>
+                        {exporting ? '⏳ جاري التصدير...' : `⬇ تصدير ${hasFilter ? 'الفترة' : 'التقرير'} ▾`}
                     </button>
                     {exportMenu && (
                         <div className="fin-expmenu">
@@ -544,7 +654,7 @@ export default function FinancialTab() {
             {/* Table */}
             <div className="fin-card">
                 {sorted.length === 0
-                    ? <div className="fin-empty"><p>لا توجد نتائج مطابقة</p></div>
+                    ? <div className="fin-empty"><p>{hasFilter ? 'لا توجد تسجيلات في هذه الفترة' : 'لا توجد نتائج مطابقة'}</p></div>
                     : <>
                         <div className="fin-table-wrap">
                             <table className="fin-tbl">
@@ -596,6 +706,7 @@ export default function FinancialTab() {
                                                                             <span className="fin-course-chip-name">📖 {c.title}</span>
                                                                             <span style={{ width: 1, height: 14, background: '#d0d3d8', display: 'inline-block', margin: '0 4px' }} />
                                                                             <span className="fin-course-chip-price">{fmtMoney(c.price)} EGP</span>
+                                                                            {c.refunded > 0 && <span style={{ fontSize: '.6rem', fontWeight: 700, color: '#dc2626' }}>↩ مرتجع {fmtMoney(c.refunded)}</span>}
                                                                             {c.date && <span style={{ fontSize: '.62rem', color: '#6b7280' }}>📅 {c.date}</span>}
                                                                             {c.attended != null && (
                                                                                 <span style={{ fontSize: '.6rem', fontWeight: 700, padding: '2px 7px', borderRadius: 3, background: c.attended ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.08)', color: c.attended ? '#16a34a' : '#dc2626', border: `1px solid ${c.attended ? '#86efac' : 'rgba(220,38,38,0.3)'}` }}>
@@ -620,7 +731,7 @@ export default function FinancialTab() {
                                 <tfoot>
                                     <tr style={{ background: '#044478' }}>
                                         <td colSpan={4} style={{ padding: '12px 16px', fontWeight: 900, color: '#fff', fontSize: '.82rem', fontFamily: '"Noto Kufi Arabic",sans-serif' }}>
-                                            ✅ صافي الإيرادات الكلية (بعد المرتجعات)
+                                            ✅ صافي الإيرادات {hasFilter ? 'للفترة' : 'الكلية'} (بعد المرتجعات)
                                         </td>
                                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                                             <span style={{ fontWeight: 900, fontSize: '1rem', color: '#ff9a3c' }}>{fmtMoney(netRevenue)} EGP</span>
