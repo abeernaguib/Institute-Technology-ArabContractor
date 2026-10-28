@@ -1,5 +1,4 @@
-﻿// TeamController.cs  (public, same as LecturerController)
-using Institute.Application.Interfaces.IService;
+﻿using Institute.Application.Interfaces.IService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Institute.API.Controllers
@@ -13,5 +12,12 @@ namespace Institute.API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _service.GetPublicAsync());
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _service.GetPublicByIdAsync(id);
+            return result == null ? NotFound() : Ok(result);
+        }
     }
 }

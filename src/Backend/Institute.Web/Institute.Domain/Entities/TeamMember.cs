@@ -7,6 +7,9 @@ public partial class TeamMember
     public string? Role { get; set; }
     public int Level { get; set; } = 3;          // 1 chairman, 2 director, 3 deputies
     public int DisplayOrder { get; set; }
-    public string? Pic { get; set; }              // file name in blob "team" folder, or a site path like /images/team1.jpg
+    public string? Pic { get; set; }
     public bool IsActive { get; set; } = true;
+
+    public string? Email { get; set; }
+    public string? Details { get; set; }          // rich text (base64 from the admin): qualifications + experience
 }

@@ -1,4 +1,4 @@
-﻿// TeamMemberResponseDto.cs
+﻿// TeamMemberResponseDto.cs  (admin + public CV details)
 namespace Institute.Application.DTOs
 {
     public class TeamMemberResponseDto
@@ -9,6 +9,8 @@ namespace Institute.Application.DTOs
         public int Level { get; set; }
         public int DisplayOrder { get; set; }
         public bool IsActive { get; set; }
-        public string? Pic { get; set; }   // full URL
+        public string? Pic { get; set; }
+        public string? Email { get; set; }
+        public string? Details { get; set; }
     }
 }

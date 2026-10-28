@@ -1,6 +1,8 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+// Adjust this path to where your richText utils live
+import { decodeRichText, parseHTMLContent } from "../utils/richText";
 
 const API_URL = 'https://icemt.arabcont.com/api/Team';
 
@@ -66,6 +68,23 @@ const STYLES = `
     .team-card__name { transition: color 0.3s; }
     .team-card:hover .team-card__name { color:${T.orange} !important; }
 
+    /* CV button on the card */
+    .team-card__cv {
+        margin-top: 12px;
+        background: ${T.orange};
+        color: ${T.white};
+        border: none;
+        border-radius: 4px;
+        padding: 9px 18px;
+        font-family: ${T.font};
+        font-size: clamp(12px,1.4vw,14px);
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.25s, opacity 0.25s;
+    }
+    .team-card__cv:hover { background: ${T.orangeDark}; }
+    .team-card__cv:disabled { opacity: 0.6; cursor: wait; }
+
     /* breadcrumb link */
     .bc-link { transition:color 0.25s; }
     .bc-link:hover { color:${T.orange} !important; }
@@ -130,6 +149,55 @@ const STYLES = `
         .org-branch:not(:first-child)::after { height:32px; }
         .org-branch { padding-top:32px; }
     }
+
+    /* ───────── CV dialog ───────── */
+    .cv-overlay {
+        position:fixed; inset:0; z-index:1000;
+        background:rgba(0,0,0,0.55);
+        overflow-y:auto;
+        display:flex; align-items:flex-start; justify-content:center;
+        padding:90px 16px 40px;
+    }
+    .cv-modal {
+        width:100%; max-width:760px; margin:auto 0;
+        background:${T.white}; border-radius:16px; overflow:hidden;
+        box-shadow:0 24px 64px rgba(0,0,0,0.35);
+        font-family:${T.font};
+    }
+    .cv-head {
+        position:relative; text-align:center; padding:28px 20px;
+        background:linear-gradient(135deg, ${T.blueDark}, ${T.blue});
+    }
+    .cv-close {
+        position:absolute; top:14px; left:14px;
+        width:38px; height:38px; border:none; border-radius:50%;
+        background:rgba(255,255,255,0.15); color:${T.white};
+        font-size:20px; line-height:1; cursor:pointer;
+    }
+    .cv-close:hover { background:rgba(255,255,255,0.3); }
+    .cv-photo {
+        display:block; margin:0 auto 14px;
+        width:96px; height:96px; border-radius:50%; object-fit:cover;
+        border:4px solid ${T.white}; background:#e5e7eb;
+    }
+    .cv-name { margin:0 0 6px; font-size:clamp(18px,2.4vw,24px); font-weight:800; color:${T.white}; }
+    .cv-role { margin:0; font-size:clamp(12px,1.5vw,15px); color:rgba(255,255,255,0.85); line-height:1.7; }
+    .cv-body { padding:24px; max-height:calc(100vh - 280px); overflow-y:auto; }
+    .cv-section { margin-bottom:22px; }
+    .cv-section-title { margin:0 0 10px; font-size:18px; font-weight:800; color:${T.blue}; }
+    .cv-box { border:1px solid ${T.gray300}; background:#fffbeb; border-radius:8px; padding:14px 16px; }
+    .cv-sub { margin:0 0 8px; font-size:14px; font-weight:700; color:${T.blue}; overflow-wrap:anywhere; }
+    .cv-item { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
+    .cv-dot { flex-shrink:0; width:8px; height:8px; margin-top:9px; border-radius:50%; background:${T.orange}; }
+    .cv-text { margin:0; min-width:0; font-size:14px; line-height:1.8; color:${T.gray700}; overflow-wrap:anywhere; }
+    .cv-contact { margin:0; font-size:14px; color:${T.gray700}; overflow-wrap:anywhere; }
+    .cv-contact b { color:${T.black}; }
+    .cv-close-btn {
+        width:100%; border:none; border-radius:8px; padding:12px;
+        background:${T.orange}; color:${T.white};
+        font-family:${T.font}; font-size:15px; font-weight:700; cursor:pointer;
+    }
+    .cv-close-btn:hover { background:${T.orangeDark}; }
 `;
 
 /* ─── Sub-components ─────────────────────── */
@@ -171,7 +239,7 @@ const HeadingBar = ({ light = false }) => (
 );
 
 /* ─── Member Card ────────────────────────── */
-const MemberCard = ({ member, large = false }) => (
+const MemberCard = ({ member, large = false, onOpenCv, loadingCv = false }) => (
     <motion.div
         className={`team-card ${large ? 'team-card--large' : ''}`}
         initial={{ opacity: 0, y: 28 }}
@@ -239,15 +307,106 @@ const MemberCard = ({ member, large = false }) => (
             }}>
                 {member.role}
             </p>
+
+            {member.hasCv && (
+                <button
+                    type="button"
+                    className="team-card__cv"
+                    disabled={loadingCv}
+                    onClick={() => onOpenCv && onOpenCv(member.id)}
+                >
+                    {loadingCv ? 'جاري التحميل...' : 'السيرة الذاتية'}
+                </button>
+            )}
         </div>
     </motion.div>
 );
+
+/* ─── CV helpers + dialog ────────────────── */
+const renderSections = (html) => {
+    const sections = parseHTMLContent(html);
+    if (!sections.length) return null;
+    return sections.map((section, sIdx) => (
+        <div key={sIdx} style={{ marginTop: sIdx > 0 ? 18 : 0 }}>
+            {section.title && <p className="cv-sub">{section.title}</p>}
+            {section.items.map((item, iIdx) => (
+                <div className="cv-item" key={iIdx}>
+                    <span className="cv-dot" />
+                    <p className="cv-text">{item}</p>
+                </div>
+            ))}
+        </div>
+    ));
+};
+
+const CVDialog = ({ member, onClose }) => {
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', onKey);
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [onClose]);
+
+    const detailsContent = renderSections(member.details);
+    const isEmpty = !detailsContent && !member.email;
+
+    return (
+        <div className="cv-overlay" onClick={onClose}>
+            <div className="cv-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="cv-head">
+                    <button type="button" className="cv-close" onClick={onClose} aria-label="إغلاق">✕</button>
+                    <img
+                        className="cv-photo"
+                        src={member.pic || FALLBACK}
+                        alt={member.name}
+                        onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK; }}
+                    />
+                    <h2 className="cv-name">{member.name}</h2>
+                    {member.role && <p className="cv-role">{member.role}</p>}
+                </div>
+
+                <div className="cv-body">
+                    {detailsContent && (
+                        <div className="cv-section">
+                            <h3 className="cv-section-title">المؤهلات والخبرات</h3>
+                            <div className="cv-box">{detailsContent}</div>
+                        </div>
+                    )}
+
+                    {member.email && (
+                        <div className="cv-section">
+                            <h3 className="cv-section-title">وسائل الإتصال</h3>
+                            <div className="cv-box">
+                                <p className="cv-contact"><b>البريد الإلكتروني: </b><bdi>{member.email}</bdi></p>
+                            </div>
+                        </div>
+                    )}
+
+                    {isEmpty && (
+                        <p className="cv-text" style={{ textAlign: 'center', marginBottom: 20 }}>
+                            لا توجد بيانات متاحة حالياً
+                        </p>
+                    )}
+
+                    <button type="button" className="cv-close-btn" onClick={onClose}>إغلاق</button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 /* ─── Main Component ─────────────────────── */
 const Team = () => {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const [cvMember, setCvMember] = useState(null);
+    const [cvLoadingId, setCvLoadingId] = useState(null);
 
     useEffect(() => {
         const fetchTeam = async () => {
@@ -267,6 +426,25 @@ const Team = () => {
         };
         fetchTeam();
     }, []);
+
+    // Fetches the full record (details + email) on demand and opens the dialog
+    const openCv = async (id) => {
+        try {
+            setCvLoadingId(id);
+            const res = await fetch(`${API_URL}/${id}`);
+            if (!res.ok) throw new Error('failed');
+            const d = await res.json();
+            setCvMember({ ...d, details: decodeRichText(d.details) });
+        } catch {
+            alert('حدث خطأ في تحميل السيرة الذاتية');
+        } finally {
+            setCvLoadingId(null);
+        }
+    };
+
+    const closeCv = useCallback(() => setCvMember(null), []);
+
+    const cardProps = (m) => ({ member: m, onOpenCv: openCv, loadingCv: cvLoadingId === m.id });
 
     // The API already returns them ordered by level then display order.
     // Number() so it works whether the API sends 2 or "2".
@@ -413,7 +591,7 @@ const Team = () => {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 24 }}>
-                            {chairmen.map(m => <MemberCard key={m.id} member={m} large={true} />)}
+                            {chairmen.map(m => <MemberCard key={m.id} {...cardProps(m)} large={true} />)}
                         </div>
                     </div>
                 </section>
@@ -466,7 +644,7 @@ const Team = () => {
                             {/* Level 2: Institute director */}
                             {directors.length > 0 && (
                                 <div className="org-top">
-                                    {directors.map(m => <MemberCard key={m.id} member={m} large={true} />)}
+                                    {directors.map(m => <MemberCard key={m.id} {...cardProps(m)} large={true} />)}
                                 </div>
                             )}
 
@@ -482,7 +660,7 @@ const Team = () => {
                                 <div className="org-level">
                                     {deputies.map((m) => (
                                         <div className="org-branch" key={m.id}>
-                                            <MemberCard member={m} />
+                                            <MemberCard {...cardProps(m)} />
                                         </div>
                                     ))}
                                 </div>
@@ -507,6 +685,7 @@ const Team = () => {
                 </p>
             </div>
 
+            {cvMember && <CVDialog member={cvMember} onClose={closeCv} />}
         </div>
     );
 };

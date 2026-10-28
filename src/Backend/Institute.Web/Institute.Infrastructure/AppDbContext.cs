@@ -649,6 +649,7 @@ public partial class AppDbContext : DbContext
             entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
             entity.Property(t => t.Role).HasMaxLength(400);
             entity.Property(t => t.Pic).HasMaxLength(255);
+            entity.Property(t => t.Email).HasMaxLength(300);
             entity.HasIndex(t => new { t.Level, t.DisplayOrder });
         });
 

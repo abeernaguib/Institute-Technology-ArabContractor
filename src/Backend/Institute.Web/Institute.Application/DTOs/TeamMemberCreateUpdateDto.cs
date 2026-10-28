@@ -16,5 +16,10 @@ namespace Institute.Application.DTOs
 
         public int DisplayOrder { get; set; }
         public bool IsActive { get; set; } = true;
+
+        [MaxLength(300)]
+        public string? Email { get; set; }
+
+        public string? Details { get; set; }
     }
 }

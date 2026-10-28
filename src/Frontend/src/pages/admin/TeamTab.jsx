@@ -2,6 +2,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { T, API_BASE as API_ROOT } from '../../components/admin/constants';
+import { RichTextEditor } from './LecturersTab';
+// Adjust this path to the same depth as your T import if needed
+import { encodeRichText, decodeRichText, isBlankHtml } from '../../utils/richText';
 
 const API_BASE = `${API_ROOT}/admin/AdminTeam`;
 
@@ -21,6 +24,8 @@ function apiToForm(m) {
         displayOrder: m.displayOrder ?? 0,
         isActive: m.isActive ?? true,
         photo: m.pic || null,
+        email: m.email || '',
+        details: decodeRichText(m.details || ''),
     };
 }
 
@@ -31,10 +36,16 @@ function formToApi(f) {
         level: Number(f.level),
         displayOrder: Number(f.displayOrder) || 0,
         isActive: !!f.isActive,
+        email: f.email,
+        // empty editor -> '' ; otherwise base64 (WAF workaround, same as lecturers)
+        details: isBlankHtml(f.details) ? '' : encodeRichText(f.details),
     };
 }
 
-const BLANK = { id: 0, name: '', role: '', level: 3, displayOrder: 0, isActive: true, photo: null };
+const BLANK = {
+    id: 0, name: '', role: '', level: 3, displayOrder: 0, isActive: true, photo: null,
+    email: '', details: '',
+};
 
 function initials(name = '') {
     return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '؟';
@@ -357,6 +368,18 @@ const TeamTab = () => {
                                         <input className="lec-inp" type="number" name="displayOrder" value={form.displayOrder} onChange={handleChange} />
                                     </div>
                                     <div className="lec-field" style={{ gridColumn: '1/-1' }}>
+                                        <label className="lec-label">البريد الإلكتروني</label>
+                                        <input
+                                            className="lec-inp"
+                                            type="email"
+                                            name="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            placeholder="example@domain.com"
+                                            style={{ direction: 'ltr', textAlign: 'right' }}
+                                        />
+                                    </div>
+                                    <div className="lec-field" style={{ gridColumn: '1/-1' }}>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                                             <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} />
                                             <span className="lec-label" style={{ margin: 0 }}>ظاهر في صفحة فريق العمل</span>
@@ -366,6 +389,17 @@ const TeamTab = () => {
                             </div>
 
                             <div className="lec-divider" />
+
+                            <RichTextEditor
+                                icon="📋"
+                                label="المؤهلات والخبرات"
+                                sub="حدد النص أولاً ثم اختر الخط أو الحجم أو اللون — يمكن إضافة روابط"
+                                name="details"
+                                value={form.details}
+                                onChange={handleChange}
+                                placeholder="المؤهلات العلمية والخبرات العملية والمشروعات..."
+                                minHeight={160}
+                            />
 
                             {/* Actions */}
                             <div className="lec-actions">

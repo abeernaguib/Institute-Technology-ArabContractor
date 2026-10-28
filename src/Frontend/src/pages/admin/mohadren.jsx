@@ -130,7 +130,7 @@ function getComputedAtCursor(editorEl, cssProp) {
 // ══════════════════════════════════════════════════════════════════════════════
 // ── RichTextEditor ────────────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
-function RichTextEditor({ icon, label, sub, name, value, onChange, placeholder, minHeight = 120 }) {
+export function RichTextEditor({ icon, label, sub, name, value, onChange, placeholder, minHeight = 120 }) {
     const editorRef = useRef(null);
     const savedSelRef = useRef(null);
     const lastValueRef = useRef(null);

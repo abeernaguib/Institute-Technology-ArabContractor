@@ -23,6 +23,7 @@ namespace Institute.Application.Services
             _config = config;
         }
 
+        // ── Mapping ───────────────────────────────────────────────────────────
         private TeamMemberResponseDto ToDto(TeamMember t) => new()
         {
             Id = t.Id,
@@ -31,20 +32,50 @@ namespace Institute.Application.Services
             Level = t.Level,
             DisplayOrder = t.DisplayOrder,
             IsActive = t.IsActive,
-            Pic = GetImageUrl(t.Pic)
+            Pic = GetImageUrl(t.Pic),
+            Email = t.Email,
+            Details = t.Details
+        };
+
+        private TeamMemberListDto ToListDto(TeamMember t) => new()
+        {
+            Id = t.Id,
+            Name = t.Name,
+            Role = t.Role,
+            Level = t.Level,
+            Pic = GetImageUrl(t.Pic),
+            HasCv = !string.IsNullOrWhiteSpace(t.Details)
+                 || !string.IsNullOrWhiteSpace(t.Email)
         };
 
         private static IEnumerable<TeamMember> Order(IEnumerable<TeamMember> list) =>
             list.OrderBy(t => t.Level).ThenBy(t => t.DisplayOrder).ThenBy(t => t.Id);
 
-        // ── PUBLIC (active only) ──────────────────────────────────────────────
-        public async Task<IEnumerable<TeamMemberResponseDto>> GetPublicAsync()
+        private static void Apply(TeamMember e, TeamMemberCreateUpdateDto dto)
         {
-            var all = await _repo.GetAllAsync();
-            return Order(all.Where(t => t.IsActive)).Select(ToDto).ToList();
+            e.Name = dto.Name.Trim();
+            e.Role = dto.Role?.Trim();
+            e.Level = dto.Level;
+            e.DisplayOrder = dto.DisplayOrder;
+            e.IsActive = dto.IsActive;
+            e.Email = dto.Email?.Trim();
+            e.Details = dto.Details;   // base64 string, stored exactly as sent
         }
 
-        // ── ADMIN (everyone) ──────────────────────────────────────────────────
+        // ── PUBLIC ────────────────────────────────────────────────────────────
+        public async Task<IEnumerable<TeamMemberListDto>> GetPublicAsync()
+        {
+            var all = await _repo.GetAllAsync();
+            return Order(all.Where(t => t.IsActive)).Select(ToListDto).ToList();
+        }
+
+        public async Task<TeamMemberResponseDto?> GetPublicByIdAsync(int id)
+        {
+            var entity = await _repo.GetByIdAsync(id);
+            return entity == null || !entity.IsActive ? null : ToDto(entity);
+        }
+
+        // ── ADMIN ─────────────────────────────────────────────────────────────
         public async Task<IEnumerable<TeamMemberResponseDto>> GetAllAsync()
         {
             var all = await _repo.GetAllAsync();
@@ -59,14 +90,8 @@ namespace Institute.Application.Services
 
         public async Task<TeamMemberResponseDto> CreateAsync(TeamMemberCreateUpdateDto dto)
         {
-            var entity = new TeamMember
-            {
-                Name = dto.Name.Trim(),
-                Role = dto.Role?.Trim(),
-                Level = dto.Level,
-                DisplayOrder = dto.DisplayOrder,
-                IsActive = dto.IsActive
-            };
+            var entity = new TeamMember();
+            Apply(entity, dto);
 
             await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
@@ -78,11 +103,7 @@ namespace Institute.Application.Services
             var entity = await _repo.GetByIdAsync(id);
             if (entity == null) return null;
 
-            entity.Name = dto.Name.Trim();
-            entity.Role = dto.Role?.Trim();
-            entity.Level = dto.Level;
-            entity.DisplayOrder = dto.DisplayOrder;
-            entity.IsActive = dto.IsActive;
+            Apply(entity, dto);
 
             _repo.Update(entity);
             await _repo.SaveChangesAsync();
@@ -114,8 +135,6 @@ namespace Institute.Application.Services
             return GetImageUrl(fileNameOnly);
         }
 
-        // Blob file name -> full URL. Values that are already a URL or a site path
-        // (the seeded /images/... photos) are returned as they are.
         private string? GetImageUrl(string? pic)
         {
             if (string.IsNullOrWhiteSpace(pic)) return null;
