@@ -19,6 +19,10 @@
  *    Saved images go as ExistingPics[i].{PicId,StartUpPic,Priority}; new files go
  *    as Images + NewPics[i].{StartUpPic,Priority} in the same order.
  * 10. Clerk token is fetched on demand (no window.__clerkToken).
+ * 11. Image delete (X) now asks for confirmation first (inline overlay on the
+ *     image) instead of deleting immediately. The X / upload buttons are larger,
+ *     carry a text label, and show a tooltip. They are always visible on touch
+ *     devices.
  *
  * API:
  * GET    /api/admin/AdminNews/getAllNews?PageIndex=1&PageSize=100
@@ -345,6 +349,10 @@ function MultiImageUploader({ images, onChange, newsId, onServerImageDeleted }) 
 
 function MultiImageSlot({ img, idx, total, isDeleting, onRemove, onToggleStartUp, onPriority, onReplace }) {
     const fileRef = useRef();
+    const [confirming, setConfirming] = useState(false);
+
+    const isSaved = !img.file && !!img.picId;   // already stored on the server
+
     return (
         <div className="nt-img-card">
             <div className={`nt-img-slot${img.startUp ? ' main' : ''}${isDeleting ? ' deleting' : ''}`}>
@@ -353,13 +361,45 @@ function MultiImageSlot({ img, idx, total, isDeleting, onRemove, onToggleStartUp
                 {img.startUp && <div className="nt-main-badge">⭐ بداية</div>}
                 {img.file && <div className="nt-new-badge-slot">جديدة</div>}
                 {!img.file && img.serverUrl && <div className="nt-server-badge-slot">محفوظة</div>}
+
                 <div className="nt-slot-actions">
-                    <button className="nt-slot-btn replace" onClick={() => fileRef.current.click()} disabled={isDeleting}>🔄</button>
-                    <button className="nt-slot-btn remove" onClick={onRemove} disabled={isDeleting}>✕</button>
+                    <button type="button" className="nt-slot-btn replace" data-tip="استبدال بصورة أخرى"
+                        aria-label="استبدال الصورة"
+                        onClick={() => fileRef.current.click()} disabled={isDeleting}>
+                        📤 <span>رفع</span>
+                    </button>
+                    <button type="button" className="nt-slot-btn remove" data-tip="حذف الصورة"
+                        aria-label="حذف الصورة"
+                        onClick={() => setConfirming(true)} disabled={isDeleting}>
+                        ✕ <span>حذف</span>
+                    </button>
                 </div>
+
+                {/* Delete confirmation */}
+                {confirming && !isDeleting && (
+                    <div className="nt-slot-confirm">
+                        <div className="nt-slot-confirm-msg">
+                            {isSaved
+                                ? 'سيتم حذف هذه الصورة نهائياً من السيرفر. هل أنت متأكد؟'
+                                : 'هل تريد إزالة هذه الصورة؟'}
+                        </div>
+                        <div className="nt-slot-confirm-btns">
+                            <button type="button" className="nt-slot-confirm-yes"
+                                onClick={() => { setConfirming(false); onRemove(); }}>
+                                نعم، احذف
+                            </button>
+                            <button type="button" className="nt-slot-confirm-no"
+                                onClick={() => setConfirming(false)}>
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
                     onChange={e => { onReplace(e.target.files[0]); e.target.value = ''; }} />
             </div>
+
             <div className="nt-img-controls">
                 <label className="nt-chk">
                     <input type="checkbox" checked={!!img.startUp} onChange={onToggleStartUp} disabled={isDeleting} />
@@ -576,8 +616,11 @@ const CSS = `
 .nt-img-types { color: #d0d3d8; font-size: .62rem; background: #f0f1f2; padding: 2px 10px; border-radius: 2px; }
 .nt-multi-img-wrap { margin-bottom: 4px; }
 .nt-imgs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 10px; margin-bottom: 4px; }
+
+/* overflow is visible so the tooltips can extend past the image edge;
+   the image and overlays carry their own border-radius instead */
 .nt-img-slot {
-    position: relative; border-radius: 6px; overflow: hidden;
+    position: relative; border-radius: 6px; overflow: visible;
     border: 2px solid #d0d3d8; background: #000;
     aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
     transition: border-color .2s, box-shadow .2s;
@@ -585,21 +628,74 @@ const CSS = `
 .nt-img-slot.main { border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,.2); }
 .nt-img-slot.deleting { opacity: .5; pointer-events: none; }
 .nt-slot-deleting-overlay {
-    position: absolute; inset: 0; z-index: 10;
+    position: absolute; inset: 0; z-index: 10; border-radius: inherit;
     background: rgba(0,0,0,.5); display: flex;
     align-items: center; justify-content: center; font-size: 1.4rem;
 }
-.nt-slot-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nt-slot-img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 4px; }
 .nt-main-badge { position: absolute; top: 5px; right: 5px; background: #f57c00; color: #fff; font-size: .55rem; font-weight: 800; padding: 2px 8px; border-radius: 3px; pointer-events: none; z-index: 2; }
 .nt-new-badge-slot { position: absolute; top: 5px; left: 5px; background: #f59e0b; color: #fff; font-size: .52rem; font-weight: 800; padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 2; }
 .nt-server-badge-slot { position: absolute; top: 5px; left: 5px; background: #0865a8; color: #fff; font-size: .52rem; font-weight: 800; padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 2; }
-.nt-slot-actions { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; gap: 4px; padding: 5px; opacity: 0; transition: opacity .18s; }
-.nt-img-slot:hover .nt-slot-actions { opacity: 1; }
-.nt-slot-btn { border: none; border-radius: 3px; padding: 4px 7px; font-size: .7rem; cursor: pointer; font-family: inherit; font-weight: 700; line-height: 1; }
+
+/* action bar: larger buttons with text labels; always visible on touch devices */
+.nt-slot-actions {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 7px; opacity: 0; transition: opacity .18s;
+    border-radius: 0 0 4px 4px; z-index: 3;
+}
+.nt-img-slot:hover .nt-slot-actions,
+.nt-slot-actions:focus-within { opacity: 1; }
+@media (hover: none) { .nt-slot-actions { opacity: 1; } }
+
+.nt-slot-btn {
+    border: none; border-radius: 4px; padding: 6px 12px; min-height: 30px;
+    font-size: .74rem; cursor: pointer; font-family: inherit; font-weight: 800; line-height: 1;
+    display: inline-flex; align-items: center; gap: 5px; position: relative;
+}
+.nt-slot-btn span { font-size: .7rem; }
 .nt-slot-btn.promote { background: #f57c00; color: #fff; }
 .nt-slot-btn.replace { background: #0865a8; color: #fff; }
 .nt-slot-btn.remove { background: #dc2626; color: #fff; }
 .nt-slot-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Tooltip (CSS only, driven by data-tip) */
+.nt-slot-btn[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0a0a0a; color: #fff; font-size: .68rem; font-weight: 700;
+    padding: 5px 10px; border-radius: 4px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; z-index: 30;
+}
+.nt-slot-btn[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: #0a0a0a; border-bottom: 0;
+    opacity: 0; transition: opacity .15s; z-index: 30;
+}
+.nt-slot-btn[data-tip]:hover::after,
+.nt-slot-btn[data-tip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+.nt-slot-btn[data-tip]:hover::before,
+.nt-slot-btn[data-tip]:focus-visible::before { opacity: 1; }
+
+/* Delete confirmation overlay */
+.nt-slot-confirm {
+    position: absolute; inset: 0; z-index: 20; border-radius: 4px;
+    background: rgba(10,10,10,.88);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 10px; text-align: center; direction: rtl;
+}
+.nt-slot-confirm-msg { color: #fff; font-size: .72rem; font-weight: 700; line-height: 1.6; }
+.nt-slot-confirm-btns { display: flex; gap: 6px; }
+.nt-slot-confirm-yes, .nt-slot-confirm-no {
+    border: none; border-radius: 4px; padding: 6px 12px;
+    font-family: inherit; font-size: .72rem; font-weight: 800; cursor: pointer;
+}
+.nt-slot-confirm-yes { background: #dc2626; color: #fff; }
+.nt-slot-confirm-yes:hover { background: #b91c1c; }
+.nt-slot-confirm-no { background: #f0f1f2; color: #374151; }
+.nt-slot-confirm-no:hover { background: #d0d3d8; }
 
 .nt-img-card { display: flex; flex-direction: column; gap: 6px; }
 .nt-img-controls {
