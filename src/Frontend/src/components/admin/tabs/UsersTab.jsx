@@ -7,6 +7,15 @@ import { rtlExport, getAttendanceModeUI } from '../helpers';
 import { exportExcel, exportPDF, exportWord, buildUsersRows, withExport } from '../exportHelpers';
 import { Pagination } from '../Pagination';
 
+// Online / on-site for one enrollment. Returns null when the flag was not sent,
+// so the old attendance-mode badge is used as a fallback.
+function getModeUI(flag) {
+    if (flag === undefined || flag === null) return null;
+    return flag
+        ? { label: '💻 أونلاين', style: { background: '#e0f2fe', color: '#0369a1' } }
+        : { label: '🏢 حضوري', style: { background: '#f3f4f6', color: '#374151' } };
+}
+
 export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, dateFrom, setDateFrom, dateTo, setDateTo, currentPage, setCurrentPage, expandedRow, setExpandedRow, attendance, certificates, setExporting, setExportError }) {
     const exportRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -71,13 +80,17 @@ export function UsersTab({ data, loading, error, searchQuery, setSearchQuery, da
                                                                 <div className="adm-xin">
                                                                     {u.enrolledCourses.map(c => {
                                                                         const ck = String(c.enrollmentId ?? `${u.id}-${c.id}`);
-                                                                        const mode = getAttendanceModeUI(c.attendanceMode);
+                                                                        const courseMode = getModeUI(c.isOnline);                    // online / on-site
+                                                                        const mode = getAttendanceModeUI(c.attendanceMode);          // old fallback
                                                                         return (
                                                                             <div className="adm-mc" key={ck}>
                                                                                 <div className="adm-mt">📚 {c.title}</div>
                                                                                 {c.date && <div className="adm-md">📅 {c.date}</div>}
                                                                                 <div className="adm-md">
-                                                                                    طريقة الحضور: <span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span>
+                                                                                    طريقة الحضور:{' '}
+                                                                                    {courseMode
+                                                                                        ? <span className="adm-mode-badge" style={courseMode.style}>{courseMode.label}</span>
+                                                                                        : <span className={`adm-mode-badge ${mode.cls}`}>{mode.label}</span>}
                                                                                 </div>
                                                                                 <div style={{ marginTop: 5, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                                                                                     <span className={`adm-att-badge ${attendance[String(c.enrollmentId)] ? 'on' : 'off'}`} style={{ fontSize: '.62rem' }}>{attendance[String(c.enrollmentId)] ? '✅ حضر' : '❌ غائب'}</span>

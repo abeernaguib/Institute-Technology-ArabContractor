@@ -37,6 +37,17 @@ export function renderTextToImage(text, {
     return canvas.toDataURL('image/png');
 }
 
+// Column width (in characters) from the header + the longest cell.
+// A plain loop instead of Math.max(...bigArray), which can throw RangeError on very large reports.
+function colWidth(headers, rows, i, cap) {
+    let max = String(headers[i] ?? '').length;
+    for (const r of rows) {
+        const len = String(r[i] ?? '').length;
+        if (len > max) max = len;
+    }
+    return Math.min(max + 6, cap);
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // Excel export
 // ════════════════════════════════════════════════════════════════════════════
@@ -48,7 +59,7 @@ export async function exportExcel(filename, reportTitle, headers, rows, logoSrc)
         wb.views = [{ rightToLeft: true }];
         const ws = wb.addWorksheet('التقرير', { views: [{ rightToLeft: true }] });
         ws.columns = headers.map((h, i) => ({
-            width: Math.min(Math.max(h.length, ...rows.map(r => String(r[i] ?? '').length)) + 6, 50),
+            width: colWidth(headers, rows, i, 50),
         }));
         const logoB64 = await getLogoBase64(logoSrc);
         if (logoB64) {
@@ -103,7 +114,7 @@ export async function exportExcel(filename, reportTitle, headers, rows, logoSrc)
         ...rows,
     ];
     const ws2 = XLSX.utils.aoa_to_sheet(wsData);
-    ws2['!cols'] = headers.map((h, i) => ({ wch: Math.min(Math.max(h.length, ...rows.map(r => String(r[i] ?? '').length)) + 6, 55) }));
+    ws2['!cols'] = headers.map((h, i) => ({ wch: colWidth(headers, rows, i, 55) }));
     ws2['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }];
     const wb2 = XLSX.utils.book_new();
     wb2.Workbook = { Views: [{ RTL: true }] };
@@ -335,8 +346,10 @@ export function buildAttRows(attRows, attendance) {
     return { headers, rows };
 }
 
+// NEW: added the "طريقة الحضور" column (online / on-site). r.course is the enrolled
+// course from usersData, which already carries isOnline (see normalizers.js).
 export function buildCertRows(certRows, certificates, attendance) {
-    const headers = ['#', 'اسم المستخدم', 'البريد الإلكتروني', 'الدورة', 'الحضور', 'الشهادة'];
+    const headers = ['#', 'اسم المستخدم', 'البريد الإلكتروني', 'الدورة', 'طريقة الحضور', 'الحضور', 'الشهادة'];
     const rows = certRows.map((r, i) => {
         const cert = certificates[r.certKey] ?? (r.altKey ? certificates[r.altKey] : undefined);
         const isAtt = !!attendance[String(r.enrollmentId)];
@@ -345,6 +358,7 @@ export function buildCertRows(certRows, certificates, attendance) {
             `${r.user.firstName || r.user.username} ${r.user.lastName}`.trim(),
             r.user.email,
             r.course.title,
+            modeText(r.course),
             isAtt ? 'حضر' : 'غائب',
             cert ? (cert.name && cert.name !== 'uploaded' ? cert.name : 'مرفوعة') : 'لم تُرفع',
         ];
@@ -361,7 +375,10 @@ export function buildRefundRows(filteredRefunds, usersData, coursesData) {
         const enr = (u.enrolledCourses || []).find(ec =>
             (r.enrollmentId != null && ec.enrollmentId === r.enrollmentId) || ec.id === r.courseId
         );
-        const mode = getAttendanceModeUI(r.attendanceMode ?? enr?.attendanceMode).text;
+        const mode = modeText({
+            isOnline: r.isOnline ?? enr?.isOnline,
+            attendanceMode: r.attendanceMode ?? enr?.attendanceMode,
+        });
         return [i + 1, r.refNumber || r.id, `${u.firstName} ${u.lastName}`.trim(), u.email, c.title, mode, r.amount, r.currency, sm.label, r.reason || '', r.requestedAt || ''];
     });
     return { headers, rows };
