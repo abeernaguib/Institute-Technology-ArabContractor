@@ -231,6 +231,7 @@ namespace Institute.API.Controllers
             UserEmail = r.User?.Email,
             PlanworkId = r.PlanworkId,
             CourseTitle = r.Planwork?.ServiceTitle,
+            IsOnline = r.IsOnline,                       // ← new
             Amount = r.Amount,
             Currency = r.Currency,
             Reason = r.Reason,

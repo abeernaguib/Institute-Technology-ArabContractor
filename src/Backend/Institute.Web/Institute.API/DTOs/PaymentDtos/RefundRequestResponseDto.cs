@@ -60,6 +60,7 @@
         public string? UserEmail { get; set; }
         public int PlanworkId { get; set; }
         public string? CourseTitle { get; set; }
+        public bool? IsOnline { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; } = "EGP";
         public string Reason { get; set; } = null!;

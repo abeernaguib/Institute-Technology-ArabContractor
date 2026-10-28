@@ -16,6 +16,7 @@ namespace Institute.Application.Services
         private readonly IRepository<Planwork> _planworkRepo;
         private readonly ILogger<RefundService> _logger;
         private readonly IRepository<PlanworkRound> _roundRepo;
+        private readonly IRepository<OrderItem> _orderItemRepo;     // ← new
 
         public RefundService(
             IRepository<RefundRequest> refundRepo,
@@ -24,7 +25,8 @@ namespace Institute.Application.Services
             IRepository<Payment> paymentRepo,
             IRepository<Planwork> planworkRepo,
             ILogger<RefundService> logger,
-            IRepository<PlanworkRound> roundRepo)
+            IRepository<PlanworkRound> roundRepo,
+            IRepository<OrderItem> orderItemRepo)                   // ← new
         {
             _refundRepo = refundRepo;
             _orderRepo = orderRepo;
@@ -33,6 +35,7 @@ namespace Institute.Application.Services
             _planworkRepo = planworkRepo;
             _logger = logger;
             _roundRepo = roundRepo;
+            _orderItemRepo = orderItemRepo;                         // ← new
         }
 
         // ─── Create ───────────────────────────────────────────────────────
@@ -122,7 +125,12 @@ namespace Institute.Application.Services
             spec.AddInclude(r => r.User);
             spec.AddInclude(r => r.Order);
             spec.AddInclude(r => r.Planwork);
-            return (await _refundRepo.GetAllWithSpecAsync(spec)).FirstOrDefault();
+            var refund = (await _refundRepo.GetAllWithSpecAsync(spec)).FirstOrDefault();
+
+            if (refund != null)
+                await FillIsOnlineAsync(new[] { refund });          // ← new
+
+            return refund;
         }
 
         public async Task<IReadOnlyList<RefundRequest>> GetAllAsync(string? statusFilter = null)
@@ -139,7 +147,9 @@ namespace Institute.Application.Services
             spec.AddInclude(r => r.Planwork);
             spec.AddOrderByDescending(r => r.RequestedAt);
 
-            return await _refundRepo.GetAllWithSpecAsync(spec);
+            var refunds = await _refundRepo.GetAllWithSpecAsync(spec);
+            await FillIsOnlineAsync(refunds);                       // ← new
+            return refunds;
         }
 
         public async Task<IReadOnlyList<RefundRequest>> GetByUserIdAsync(int userId)
@@ -148,7 +158,10 @@ namespace Institute.Application.Services
             spec.AddInclude(r => r.Order);
             spec.AddInclude(r => r.Planwork);
             spec.AddOrderByDescending(r => r.RequestedAt);
-            return await _refundRepo.GetAllWithSpecAsync(spec);
+
+            var refunds = await _refundRepo.GetAllWithSpecAsync(spec);
+            await FillIsOnlineAsync(refunds);                       // ← new
+            return refunds;
         }
 
         // ─── Admin actions ─────────────────────────────────────────────────
@@ -249,6 +262,31 @@ namespace Institute.Application.Services
         }
 
         // ─── Helpers ──────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Fills the [NotMapped] IsOnline flag from the OrderItem that matches
+        /// (OrderId, PlanworkId). Works even after the enrollment was deleted.
+        /// One query for the whole list, not one per refund.
+        /// </summary>
+        private async Task FillIsOnlineAsync(IEnumerable<RefundRequest> refunds)
+        {
+            var list = refunds.ToList();
+            if (list.Count == 0) return;
+
+            var orderIds = list.Select(r => r.OrderId).Distinct().ToList();
+
+            var items = await _orderItemRepo.GetAllWithSpecAsync(
+                new BaseSpecification<OrderItem>(i => orderIds.Contains(i.OrderId)));
+
+            var lookup = items
+                .GroupBy(i => (i.OrderId, i.PlanworkId))
+                .ToDictionary(g => g.Key, g => g.First().IsOnline);
+
+            foreach (var r in list)
+                r.IsOnline = lookup.TryGetValue((r.OrderId, r.PlanworkId), out var online)
+                    ? online
+                    : (bool?)null;
+        }
 
         /// <summary>
         /// W7 FIX: collision-resistant ref number using CSPRNG.

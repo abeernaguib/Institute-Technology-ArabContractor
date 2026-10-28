@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Institute.Domain.Entities
 {
@@ -49,5 +50,9 @@ namespace Institute.Domain.Entities
         public AppUser User { get; set; } = null!;
         public Order Order { get; set; } = null!;
         public Planwork Planwork { get; set; } = null!;
+
+        // Not a DB column: filled by RefundService from the matching OrderItem
+        [NotMapped]
+        public bool? IsOnline { get; set; }
     }
 }
