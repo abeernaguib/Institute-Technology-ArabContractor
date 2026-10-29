@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -8,12 +9,12 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import CloseIcon from '@mui/icons-material/Close';
 
 const F = '"Noto Kufi Arabic",serif';
 const C = { o: '#f57c00', b: '#0865a8', bd: '#044474', w: '#fff', k: '#0a0a0a', k2: '#111827', g1: '#f9fafb', g2: '#f3f4f6', g3: '#e5e7eb', g5: '#6b7280', g7: '#374151' };
 
-// ── change these paths to match your files ──
 const IMG = {
     clac: '/images/clac/1789471122001.jpeg',
     icemt: '/images/clac/finallogo.jpg',
@@ -131,6 +132,23 @@ function Btn({ href, orange, outline, children }) {
 
 export default function ClacPage() {
     const [open, setOpen] = useState(2); // CLAC 030 open by default, like the infographic
+    const [chartOpen, setChartOpen] = useState(false);
+    const [zoomed, setZoomed] = useState(false);
+
+    const closeChart = () => { setChartOpen(false); setZoomed(false); };
+
+    // modal: Esc to close + lock page scroll
+    useEffect(() => {
+        if (!chartOpen) return;
+        const onKey = (e) => { if (e.key === 'Escape') { setChartOpen(false); setZoomed(false); } };
+        window.addEventListener('keydown', onKey);
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prev;
+        };
+    }, [chartOpen]);
 
     return (
         <div dir="rtl" style={{ fontFamily: F, background: C.w, overflowX: 'hidden' }}>
@@ -149,6 +167,15 @@ export default function ClacPage() {
                 .cl-row:nth-child(odd){background:${C.g1};}
                 @media(max-width:640px){.cl-row{grid-template-columns:1fr;gap:2px;}}
                 .cl-step{background:${C.w};border:1px solid ${C.g3};border-radius:14px;padding:22px;}
+
+                .cl-chart-btn{display:flex;align-items:center;gap:clamp(14px,2.5vw,24px);width:100%;max-width:640px;margin-top:24px;padding:14px;background:${C.w};border:2px solid ${C.b};border-right:6px solid ${C.o};border-radius:14px;cursor:pointer;font-family:${F};box-shadow:0 8px 24px rgba(8,101,168,.12);transition:transform .25s,box-shadow .25s;}
+                .cl-chart-btn:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(8,101,168,.22);}
+                .cl-chart-thumb{position:relative;flex-shrink:0;width:clamp(120px,22vw,200px);aspect-ratio:4/3;border-radius:10px;overflow:hidden;border:1px solid ${C.g3};background:${C.g2};}
+                .cl-chart-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+                .cl-chart-zoom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,68,116,.45);color:#fff;opacity:0;transition:opacity .25s;}
+                .cl-chart-btn:hover .cl-chart-zoom{opacity:1;}
+                @keyframes clFade{from{opacity:0}to{opacity:1}}
+                @keyframes clPop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
             `}</style>
 
             {/* HERO */}
@@ -274,10 +301,30 @@ export default function ClacPage() {
                             );
                         })}
                     </div>
-                    <a href={IMG.overview} target="_blank" rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 20, fontFamily: F, fontSize: '.82rem', fontWeight: 700, color: C.b, textDecoration: 'none' }}>
-                        عرض مخطط المقررات الكامل (Online &amp; Offline) <OpenInNewIcon sx={{ fontSize: 15 }} />
-                    </a>
+
+                    {/* CHART CARD → opens modal */}
+                    <button
+                        type="button"
+                        onClick={() => setChartOpen(true)}
+                        className="cl-chart-btn"
+                        aria-label="عرض مخطط المقررات الكامل"
+                    >
+                        <span className="cl-chart-thumb">
+                            <img src={IMG.overview} alt="" loading="lazy" />
+                            <span className="cl-chart-zoom"><ZoomInIcon sx={{ fontSize: 30 }} /></span>
+                        </span>
+                        <span style={{ textAlign: 'right', flex: 1 }}>
+                            <span style={{ display: 'block', fontFamily: F, fontWeight: 900, fontSize: 'clamp(1rem,1.8vw,1.3rem)', color: C.k, lineHeight: 1.6 }}>
+                                عرض مخطط المقررات الكامل
+                            </span>
+                            <span style={{ display: 'block', fontFamily: 'sans-serif', direction: 'ltr', textAlign: 'right', fontWeight: 800, fontSize: '.85rem', color: C.o, marginTop: 2 }}>
+                                ONLINE &amp; OFFLINE
+                            </span>
+                            <span style={{ display: 'block', fontFamily: F, fontSize: '.78rem', color: C.g5, marginTop: 6 }}>
+                                اضغط لعرض الصورة بحجم كبير
+                            </span>
+                        </span>
+                    </button>
                 </div>
             </section>
 
@@ -387,6 +434,65 @@ export default function ClacPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ── CHART MODAL ── */}
+            {chartOpen && createPortal(
+                <div
+                    onClick={closeChart}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="مخطط المقررات"
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,.88)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        padding: 'clamp(12px,3vw,32px)', animation: 'clFade .25s ease',
+                    }}
+                >
+                    <button
+                        onClick={closeChart}
+                        aria-label="إغلاق"
+                        style={{
+                            position: 'absolute', top: 'clamp(12px,2vw,24px)', left: 'clamp(12px,2vw,24px)',
+                            width: 46, height: 46, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,.4)',
+                            background: 'rgba(255,255,255,.15)', color: '#fff', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
+                        }}
+                    >
+                        <CloseIcon />
+                    </button>
+
+                    <div style={{ fontFamily: F, color: '#fff', fontWeight: 800, fontSize: 'clamp(.9rem,1.6vw,1.1rem)', marginBottom: 12, textAlign: 'center' }}>
+                        مخطط برامج CLAC — Online &amp; Offline
+                    </div>
+
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            maxWidth: '96vw', maxHeight: '82vh', overflow: 'auto', borderRadius: 10,
+                            background: '#fff', boxShadow: '0 20px 60px rgba(0,0,0,.5)',
+                            animation: 'clPop .3s cubic-bezier(.22,1,.36,1)',
+                        }}
+                    >
+                        <img
+                            src={IMG.overview}
+                            alt="مخطط مقررات CLAC"
+                            onClick={() => setZoomed(z => !z)}
+                            style={{
+                                display: 'block',
+                                width: zoomed ? 'max(1400px, 100%)' : 'auto',
+                                maxWidth: zoomed ? 'none' : '96vw',
+                                maxHeight: zoomed ? 'none' : '82vh',
+                                cursor: zoomed ? 'zoom-out' : 'zoom-in',
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ fontFamily: F, color: 'rgba(255,255,255,.6)', fontSize: '.75rem', marginTop: 10 }}>
+                        اضغط على الصورة للتكبير / التصغير
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 }
