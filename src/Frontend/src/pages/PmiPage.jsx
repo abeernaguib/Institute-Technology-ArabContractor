@@ -38,10 +38,10 @@ const programs = [
 ];
 
 const lecturers = [
-    { name: 'د. شعبان عثمان', certs: ['PMP', 'RMP', 'CAPM', 'PMOCP'], note: 'خبرة في إدارة المخاطر ومكاتب المشروعات', photo: P('lecturers/د شعبان عثمان 2.jpeg') },
-    { name: 'هبة عادل عباس', certs: ['PMP', 'PMOCP'], note: 'خبرة في إدارة المشروعات والتطوير المؤسسي', photo: P('lecturers/د هبه عادل.jpg') },
-    { name: 'م. محمد غانم', certs: ['PMP'], note: '', photo: P('lecturers/د محمد غانم.jpeg') },
-    { name: 'د. محمد حاتم محمد', certs: ['PMP'], note: '', photo: P('lecturers/د محمد حاتم.jpeg') },
+    { name: 'د. شعبان عثمان', certs: ['PMP', 'RMP', 'CAPM', 'PMOCP'], note: 'خبرة في إدارة المخاطر ومكاتب المشروعات', photo: P('lecturers/shabaan2.jpeg') },
+    { name: 'هبة عادل عباس', certs: ['PMP', 'PMOCP'], note: 'خبرة في إدارة المشروعات والتطوير المؤسسي', photo: P('lecturers/heba.jpg') },
+    { name: 'م. محمد غانم', certs: ['PMP'], note: '', photo: P('lecturers/ghanem.jpeg') },
+    { name: 'د. محمد حاتم محمد', certs: ['PMP'], note: '', photo: P('lecturers/hatem.jpeg') },
 ];
 
 const certSamples = [
@@ -168,7 +168,7 @@ export default function PmiPage() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
                         <img src="/images/pmi/PMI-Logo.png" alt="Project Management Institute" style={{ height: 90, objectFit: 'contain' }} />
-                        <img src="/images/pmi/finaaaaal logo English.png" alt="ICEMT" style={{ height: 90, objectFit: 'contain' }} />
+                        <img src="/images/pmi/finallogo.png" alt="ICEMT" style={{ height: 90, objectFit: 'contain' }} />
                     </div>
                 </div>
             </section>
