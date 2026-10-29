@@ -35,6 +35,7 @@ import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import logo from '../assets/The-Role-of-Technology-in-Modern-Society-1024x570.jpg';
 
 
@@ -140,6 +141,10 @@ const craftItems = [
     { Icon: SchoolIcon, title: 'التعليم الفني', text: 'بروتوكول تعاون مع وزارة التربية لتطوير الثانويات الصناعية وكوادرها.', link: '/technical-education' },
     { Icon: AssignmentTurnedInIcon, title: 'الاختبارات والتقييم', text: 'اختبارات سيكومترية وتقييمات تخصصية في اللغة والحاسب والهندسة.', link: '/tests' },
 ];
+
+const PMI_WA = 'https://wa.me/201201737593?text=' + encodeURIComponent('مرحبًا، أرغب في الاستفسار عن برامج PMI');
+const CLAC_WA = 'https://wa.me/201109754459?text=' + encodeURIComponent('مرحبًا، أرغب في الاستفسار عن برامج CLAC');
+const CLAC_FORM = 'https://forms.cloud.microsoft/r/Aq55wCC9Tv';
 
 const TeamsIcon = ({ size = 42 }) => (
     <svg width={size} height={size} viewBox="0 0 2228.833 2073.333" xmlns="http://www.w3.org/2000/svg">
@@ -883,7 +888,9 @@ export default function Home() {
 /* dots float over the photo */
 .emb-dots{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(to top,rgba(0,0,0,.45),transparent);pointer-events:none;}
 .emb-dots button{pointer-events:auto;}
-
+.pmi-strip{display:flex;align-items:center;gap:clamp(16px,3vw,32px);flex-wrap:wrap;padding:clamp(18px,3vw,30px);background:${C.w};border:2px solid ${C.g3};border-right:5px solid ${C.o};border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.05);transition:box-shadow .3s,border-color .3s;}
+.pmi-strip:hover{box-shadow:0 12px 34px rgba(245,124,0,.14);}
+@media(max-width:700px){.pmi-strip{flex-direction:column;align-items:flex-start;}}
 @media(max-width:860px){
   .emb-card{grid-template-columns:1fr;}
   .emb-media{order:-1;min-height:0;height:clamp(240px,62vw,380px);}
@@ -1240,6 +1247,62 @@ export default function Home() {
 
                         {/* slider = left side (RTL) */}
                         <EmbassySlider images={embassyImages} />
+                    </div>
+                </div>
+            </section>
+            {/* ── PMI (compact) ── */}
+            <section style={{ background: C.g1, padding: 'clamp(28px,4vw,48px) clamp(16px,4vw,56px)' }}>
+                <div className="W" style={{ padding: 0 }}>
+                    <div className="pmi-strip">
+                        <img src="/images/pmi/PNI-ATP-2026.png" alt="PMI Authorized Training Partner" loading="lazy"
+                            style={{ width: 'clamp(76px,9vw,104px)', height: 'auto', flexShrink: 0 }} />
+
+                        <div style={{ flex: 1, minWidth: 240 }}>
+                            <Eyebrow>شريك تدريب معتمد · ATP 4066</Eyebrow>
+                            <h3 style={{ fontFamily: F, fontSize: 'clamp(1.05rem,2vw,1.5rem)', fontWeight: 900, color: C.k, lineHeight: 1.5, margin: '0 0 12px' }}>
+                                برامج PMI للإعداد لشهادات إدارة المشروعات
+                            </h3>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                {['PMP', 'PMI-RMP', 'PMO', 'CAPM', 'PMI-CP'].map(c => (
+                                    <span key={c} style={{ fontFamily: F, fontSize: '.72rem', fontWeight: 800, color: C.b, background: 'rgba(8,101,168,.08)', border: '1px solid rgba(8,101,168,.2)', padding: '4px 12px', borderRadius: 20 }}>{c}</span>
+                                ))}
+                                <span style={{ fontFamily: F, fontSize: '.72rem', fontWeight: 800, color: C.o, background: 'rgba(245,124,0,.1)', border: '1px solid rgba(245,124,0,.25)', padding: '4px 12px', borderRadius: 20 }}>
+                                    خصومات على الامتحانات الدولية
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
+                            <SolidBtn to="/pmi" orange>عرض التفاصيل <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn>
+                            <SolidBtn href={PMI_WA}><WhatsAppIcon sx={{ fontSize: 18 }} /> واتساب</SolidBtn>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── CLAC (compact) ── */}
+            <section style={{ background: C.w, padding: 'clamp(8px,2vw,24px) clamp(16px,4vw,56px) clamp(28px,4vw,48px)' }}>
+                <div className="W" style={{ padding: 0 }}>
+                    <div className="pmi-strip" style={{ borderRightColor: C.b }}>
+                        <img src="/images/clac/1789471122001.jpeg" alt="CLAC" loading="lazy"
+                            style={{ width: 'clamp(76px,9vw,104px)', height: 'auto', flexShrink: 0 }} />
+
+                        <div style={{ flex: 1, minWidth: 240 }}>
+                            <Eyebrow>بالتعاون مع د.م. شريف الهجان</Eyebrow>
+                            <h3 style={{ fontFamily: F, fontSize: 'clamp(1.05rem,2vw,1.5rem)', fontWeight: 900, color: C.k, lineHeight: 1.5, margin: '0 0 12px' }}>
+                                برامج CLAC: الجوانب التعاقدية والقانونية في صناعة التشييد
+                            </h3>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                {['خمس مقررات متخصصة', 'حضوري أو أونلاين', 'شهادة مشتركة معتمدة'].map(t => (
+                                    <span key={t} style={{ fontFamily: F, fontSize: '.72rem', fontWeight: 800, color: C.b, background: 'rgba(8,101,168,.08)', border: '1px solid rgba(8,101,168,.2)', padding: '4px 12px', borderRadius: 20 }}>{t}</span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
+                            <SolidBtn to="/clac" orange>عرض التفاصيل <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></SolidBtn>
+                            <SolidBtn href={CLAC_FORM}>سجّل اهتمامك</SolidBtn>
+                        </div>
                     </div>
                 </div>
             </section>

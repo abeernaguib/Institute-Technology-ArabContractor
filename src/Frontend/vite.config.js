@@ -4,17 +4,15 @@ import prerender from '@prerenderer/rollup-plugin'
 import PuppeteerRenderer from '@prerenderer/renderer-puppeteer'
 
 const API = 'https://icemt.arabcont.com/api';
-
 // Cap on prerendered news pages (newest first), to keep build time sane
 const MAX_NEWS = 200;
-
 const STATIC_ROUTES = [
     '/', '/overview', '/mission', '/news', '/library', '/customers',
     '/certifications', '/team', '/instructors', '/future-leaders',
     '/protocols', '/contact', '/gallery', '/vocational-training',
     '/gesr-el-suez', '/shobra', '/online-training', '/Technical_Schools',
     '/technical-education', '/training-methods', '/onsite-training',
-    '/cea-program', '/tests',
+    '/cea-program', '/tests', '/pmi',
 ];
 
 async function getJson(url) {
@@ -121,7 +119,15 @@ export default defineConfig(async ({ command }) => {
         ],
         server: {
             port: 5173,
-            strictPort: false
+            strictPort: false,
+            // Dev-only proxy: avoids CORS by sending /api/* through the Vite server
+            proxy: {
+                '/api': {
+                    target: 'https://icemt.arabcont.com',
+                    changeOrigin: true,
+                    secure: false,
+                },
+            },
         },
         optimizeDeps: {
             include: [

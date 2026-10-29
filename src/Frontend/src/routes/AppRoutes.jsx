@@ -35,6 +35,8 @@ const TrainingMethods = lazy(() => import('../pages/TrainingMethods'));
 const OnsiteTraining = lazy(() => import('../pages/OnsiteTraining_fixed'));
 const CEAProgram = lazy(() => import('../pages/CEAProgram'));
 const TestsSection = lazy(() => import('../pages/TestsSection'));
+const PmiPage = lazy(() => import('../pages/PmiPage')); // NEW
+const ClacPage = lazy(() => import('../pages/ClacPage')); // NEW
 
 // ─── Cart / Checkout / Payment ───────────────────────────────────────────────
 const ShoppingCartPage = lazy(() => import('../pages/ShoppingCartPage'));
@@ -104,6 +106,8 @@ const AppRoutes = () => {
                     <Route path="/onsite-training" element={<OnsiteTraining />} />
                     <Route path="/cea-program" element={<CEAProgram />} />
                     <Route path="/tests" element={<TestsSection />} />
+                    <Route path="/pmi" element={<PmiPage />} /> {/* NEW */}
+                    <Route path="/clac" element={<ClacPage />} /> {/* NEW */}
 
                     {/* Cart / Checkout / Payment */}
                     <Route path="/cart" element={<ShoppingCartPage />} />
