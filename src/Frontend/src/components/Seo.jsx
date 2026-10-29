@@ -4,6 +4,10 @@ import { useLocation } from 'react-router-dom';
 const SITE = 'https://icemt.arabcont.com';
 const DEFAULT_IMAGE = `${SITE}/withbackgr.jpg`;
 
+// How long the prerender robot waits before saving the page (ms).
+// Raised from 3000 so heavy lazy-loaded pages (like /pmi) finish rendering first.
+const RENDER_DELAY = 5000;
+
 // create the meta tag if it doesn't exist, otherwise update it
 function setMeta(attr, key, content) {
     let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -42,7 +46,7 @@ export default function Seo({ title, description, image = DEFAULT_IMAGE, noindex
         link.setAttribute('href', url);
 
         // Tell the prerender robot: "the page is ready, save it now"
-        const t = setTimeout(() => document.dispatchEvent(new Event('render-event')), 3000);
+        const t = setTimeout(() => document.dispatchEvent(new Event('render-event')), RENDER_DELAY);
         return () => clearTimeout(t);
     }, [title, description, image, noindex, pathname]);
 
