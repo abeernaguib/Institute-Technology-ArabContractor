@@ -16,9 +16,9 @@ const C = { o: '#f57c00', b: '#0865a8', bd: '#044474', w: '#fff', k: '#0a0a0a', 
 // ── change these paths to match your files ──
 const IMG = {
     clac: '/images/clac/1789471122001.jpeg',
-    icemt: '/images/clac/finaaaaal logo English .jpg',
+    icemt: '/images/clac/finallogo.jpg',
     banner: '/images/clac/1760184010163.jpeg',
-    qr: '/images/clac/QRCode for استمارة تسجيل اهتمام ببرامج CLAC.png',
+    qr: '/images/clac/QR.png',
     overview: '/images/clac/Clac.jpeg',
 };
 const FORM = 'https://forms.cloud.microsoft/r/Aq55wCC9Tv';
