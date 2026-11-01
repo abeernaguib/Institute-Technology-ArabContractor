@@ -263,18 +263,18 @@ const MemberCard = ({ member, large = false, onOpenCv, loadingCv = false }) => (
         }}
     >
         {/* Image */}
-        <div style={{ position: 'relative', width: '100%', paddingTop: '100%', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', width: '100%', paddingTop: '120%', overflow: 'hidden', background: T.gray50 }}>
             <img
                 src={member.pic || FALLBACK}
                 alt={member.name}
                 className="team-card__img"
                 onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK; }}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
             />
             <div
                 className="team-card__overlay"
                 style={{
-                    position: 'absolute', inset: 0, opacity: 0,
+                    position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none',
                     background: 'linear-gradient(to bottom, transparent 50%, rgba(4,68,120,0.55) 100%)',
                 }}
             />
