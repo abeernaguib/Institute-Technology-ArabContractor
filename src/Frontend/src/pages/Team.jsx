@@ -56,9 +56,9 @@ const STYLES = `
     .team-card__bar { height:4px; background:linear-gradient(to left,${T.orange},${T.blue}); transform:scaleX(0); transform-origin:right; transition:transform 0.38s cubic-bezier(.4,0,.2,1); }
     .team-card:hover .team-card__bar { transform:scaleX(1); }
 
-    /* image zoom */
+    /* image zoom (kept subtle so the photo is never cropped) */
     .team-card__img { transition: transform 0.5s cubic-bezier(.4,0,.2,1); }
-    .team-card:hover .team-card__img { transform:scale(1.06); }
+    .team-card:hover .team-card__img { transform:scale(1.03); }
 
     /* image overlay fade */
     .team-card__overlay { transition: opacity 0.38s cubic-bezier(.4,0,.2,1); }
@@ -262,7 +262,7 @@ const MemberCard = ({ member, large = false, onOpenCv, loadingCv = false }) => (
                 : `0 2px 12px rgba(0,0,0,0.07)`,
         }}
     >
-        {/* Image */}
+        {/* Image: 4:5 frame, photo fully visible (contain) so nothing is cropped */}
         <div style={{ position: 'relative', width: '100%', paddingTop: '120%', overflow: 'hidden', background: T.gray50 }}>
             <img
                 src={member.pic || FALLBACK}
