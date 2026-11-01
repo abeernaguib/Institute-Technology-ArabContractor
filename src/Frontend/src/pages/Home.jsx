@@ -819,8 +819,23 @@ export default function Home() {
         .news-swiper .swiper-button-prev{right:-24px;}.news-swiper .swiper-button-next{left:-24px;right:auto;}
         .news-swiper .swiper-button-prev::after,.news-swiper .swiper-button-next::after{font-size:12px!important;font-weight:900;}
         .news-swiper .swiper-button-prev:hover,.news-swiper .swiper-button-next:hover{background:${C.b};border-color:${C.b};color:#fff!important;}
-        .news-swiper .swiper-pagination-bullet-active{background:${C.o};}
-        @media(max-width:600px){.news-swiper .swiper-button-prev,.news-swiper .swiper-button-next{display:none!important;}}
+.news-swiper .swiper-pagination-bullet-active{background:${C.o};}
+
+.cert-swiper .swiper-pagination-bullet{
+  background:rgba(255,255,255,.45);
+  opacity:1;
+  width:9px;
+  height:9px;
+  transition:all .3s ease;
+}
+.cert-swiper .swiper-pagination-bullet:hover{
+  background:rgba(255,255,255,.75);
+}
+.cert-swiper .swiper-pagination-bullet-active{
+  background:${C.b};
+  width:26px;
+  border-radius:999px;
+}        @media(max-width:600px){.news-swiper .swiper-button-prev,.news-swiper .swiper-button-next{display:none!important;}}
 
         .lib-split{
           display:grid;
@@ -1336,7 +1351,7 @@ export default function Home() {
                         </div>
                         <ArrowBtn to="/certifications" inv>عرض الكل</ArrowBtn>
                     </div>
-                    <Swiper modules={[Autoplay, Pagination]} autoplay={{ delay: 4500, disableOnInteraction: false }}
+                    <Swiper className="cert-swiper" modules={[Autoplay, Pagination]} autoplay={{ delay: 4500, disableOnInteraction: false }}
                         pagination={{ clickable: true }} loop spaceBetween={16}
                         breakpoints={{ 0: { slidesPerView: 1 }, 560: { slidesPerView: 2 }, 900: { slidesPerView: 3 } }}
                         style={{ paddingBottom: 44 }}>
