@@ -312,6 +312,38 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
-app.MapFallbackToFile("index.html");
+
+// Serve the prerendered page for a route if it exists
+// (/pmi -> wwwroot/pmi/index.html or wwwroot/pmi.html), otherwise the SPA shell.
+app.MapFallback(async context =>
+{
+    var env = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+    var route = (context.Request.Path.Value ?? "").Trim('/');
+
+    // unknown API routes should be a real 404, not the HTML page
+    if (route.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    var candidates = route.Length == 0
+        ? new[] { "index.html" }
+        : new[] { $"{route}/index.html", $"{route}.html", "index.html" };
+
+    foreach (var candidate in candidates)
+    {
+        var file = env.WebRootFileProvider.GetFileInfo(candidate);
+        if (file.Exists)
+        {
+            context.Response.ContentType = "text/html; charset=utf-8";
+            context.Response.Headers.CacheControl = "no-cache";
+            await context.Response.SendFileAsync(file);
+            return;
+        }
+    }
+
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+});
 
 app.Run();
