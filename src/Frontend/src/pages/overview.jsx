@@ -141,7 +141,7 @@ const serviceCards = [
     {
         title: 'التدريب في موقع العمل',
         description: 'تدريب عملي داخل مواقع العمل يركز على التطبيق ورفع الكفاءة.',
-        path: '/services/on-job-training',
+        path: '/onsite-training',
         icon: <FaHardHat aria-hidden="true" />,
     },
 ];

@@ -33,7 +33,7 @@ const PAGES = {
     '/gesr-el-suez': { title: t('مركز تدريب جسر السويس') },
     '/shobra': { title: t('مركز تدريب شبرا') },
     '/online-training': { title: t('التدريب أونلاين') },
-    '/onsite-training': { title: t('التدريب الحضوري') },
+    '/onsite-training': { title: t('التدريب في الموقع') },
     '/training-methods': { title: t('أساليب التدريب') },
     '/Technical_Schools': { title: t('المدارس الفنية') },
     '/technical-education': { title: t('التعليم الفني') },
