@@ -216,7 +216,7 @@ function Overview() {
                 <div className="overview-bar">
                     <Link to="/" className="overview-home-link">الصفحة الرئيسية</Link>
                     <span className="overview-separator">•</span>
-                    <span>نبذة عامة والخدمات</span>
+                    <span>نبذة عامة </span>
                 </div>
             </div>
 

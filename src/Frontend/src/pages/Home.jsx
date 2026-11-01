@@ -25,7 +25,6 @@ import SchoolIcon from '@mui/icons-material/School';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import NorthEastIcon from '@mui/icons-material/NorthEast';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import HardwareIcon from '@mui/icons-material/Hardware';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
@@ -184,12 +183,23 @@ function buildStats(apiStats) {
     ];
 }
 
-const trainingPrograms = [
-    { Icon: BuildCircleIcon, label: 'برامج للتدريب التحويلى' },
-    { Icon: PeopleAltIcon, label: 'تكوين فرق التنفيذ الذاتى' },
-    { Icon: MenuBookIcon, label: 'الحلول التدريبية المتكاملة' },
-    { Icon: HardwareIcon, label: 'التدريب فى موقع العمل' },
+// ─── ABOUT: program cards (title / description / link) ────────────────────────
+// نفس بيانات كروت صفحة Overview. أي تعديل هنا يجب تكراره في Overview.jsx
+const trainingServices = [
+    { id: 'transformational', title: 'برامج للتدريب التحويلي', shortTitle: 'برامج للتدريب التحويلي', description: '...', path: '/services/transformational-training' },
+    { id: 'project-solutions', title: 'تصميم وتنفيذ حلول تدريب متكاملة للمشروعات', shortTitle: 'الحلول التدريبية المتكاملة', description: '...', path: '/services/project-training-solutions' },
+    { id: 'on-job', title: 'التدريب في موقع العمل', shortTitle: 'التدريب في موقع العمل', description: '...', path: '/onsite-training' },
 ];
+
+const programIcons = {
+    transformational: BuildCircleIcon,
+    'project-solutions': MenuBookIcon,
+    'on-job': HardwareIcon,
+};
+const trainingPrograms = trainingServices.map((s) => ({ ...s, Icon: programIcons[s.id] }));
+
+const aboutTags = ['نمذجة معلومات البناء (BIM)', 'إدارة المشروعات الرقمية', 'الجودة والسلامة', 'مدرسة المقاولون العرب'];
+
 const embassyImages = Array.from({ length: 8 }, (_, i) => ({
     src: `/images/library/IMG-20241012-WA00${10 + i}.jpg`,
     alt: `افتتاح سفارة المعرفة ${i + 1}`,
@@ -885,6 +895,28 @@ export default function Home() {
         @media(max-width:780px){.ab-split{grid-template-columns:1fr;}}
         .prog-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 24px;}
         @media(max-width:480px){.prog-grid{grid-template-columns:1fr;}}
+
+        /* ── About: clickable program cards (same data as Overview) ── */
+        .prog-list{display:grid;gap:10px;margin:16px 0 24px;}
+        .prog-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid ${C.g3};border-radius:8px;background:${C.w};text-decoration:none;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s;}
+        .prog-link:hover{border-color:${C.o};background:rgba(245,124,0,.05);transform:translateY(-2px);box-shadow:0 6px 18px rgba(245,124,0,.12);}
+        .prog-link:focus-visible{outline:2px solid ${C.o};outline-offset:2px;}
+        .prog-link .prog-arrow{margin-inline-start:auto;color:${C.g5};flex-shrink:0;transition:color .2s,transform .2s;}
+        .prog-link:hover .prog-arrow{color:${C.o};transform:translate(-2px,-2px);}
+        .prog-link--full{align-items:flex-start;padding:12px 16px;}
+        .prog-link--full .prog-arrow{margin-top:4px;}
+        .prog-ico{width:38px;height:38px;border-radius:8px;background:rgba(245,124,0,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .prog-txt{display:flex;flex-direction:column;gap:3px;min-width:0;}
+        .prog-txt strong{font-family:${F};font-size:clamp(.78rem,1.05vw,.88rem);font-weight:800;color:${C.k};line-height:1.6;}
+        .prog-txt small{font-family:${F};font-size:.72rem;color:${C.g5};line-height:1.8;}
+        .about-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px;}
+        .about-tag{font-family:${F};font-size:.7rem;font-weight:700;color:${C.b};background:rgba(8,101,168,.08);border:1px solid rgba(8,101,168,.18);padding:4px 12px;border-radius:20px;}
+        .prog-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0 24px;}
+@media(max-width:480px){.prog-chips{grid-template-columns:1fr;}}
+.prog-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid ${C.g3};border-radius:6px;background:${C.w};text-decoration:none;font-family:${F};font-size:clamp(.74rem,1vw,.84rem);font-weight:800;color:${C.k};line-height:1.5;transition:border-color .2s,background .2s,transform .2s;}
+.prog-chip:hover{border-color:${C.o};background:rgba(245,124,0,.05);transform:translateY(-2px);}
+.prog-chip:focus-visible{outline:2px solid ${C.o};outline-offset:2px;}
+.prog-chip:last-child:nth-child(odd){grid-column:1/-1;}
         .why-card{padding:clamp(18px,2.5vw,26px);border:1px solid ${C.g3};border-radius:8px;background:${C.w};transition:border-color .25s,transform .25s;display:flex;flex-direction:column;gap:10px;}
         .why-card:hover{border-color:${C.o};transform:translateY(-3px);}
         .about-img-wrap{opacity:0;overflow:hidden;}
@@ -1022,23 +1054,32 @@ export default function Home() {
                                 <div style={{ fontFamily: F, fontSize: '.68rem', color: 'rgba(255,255,255,.5)', letterSpacing: 2, textTransform: 'uppercase', marginTop: 3 }}>تأسيس المعهد</div>
                             </div>
                         </div>
+
                         <div className="about-txt-wrap" ref={aboutTxtRef}>
                             <Eyebrow>نبذة عامة</Eyebrow>
                             <SplitTitle>رائد في التدريب<br />الهندسي والإداري والمالي و الحرفي</SplitTitle>
                             <div style={{ width: 44, height: 3, background: C.o, margin: '16px 0 18px' }} />
-                            <p style={{ fontFamily: F, fontSize: 'clamp(.86rem,1.25vw,1rem)', color: C.g7, lineHeight: 2, marginBottom: 18, textAlign: 'justify' }}>
-                                أول شركة مقاولات في الشرق الأوسط تُنشئ معهدًا للتدريب منذ أكثر من 45 عامًا. نُعِدّ أجيالًا متميزة في التشييد والإدارة والتقنية، ونخدم الوزارات والهيئات والقطاع الخاص بمعايير الجودة الدولية.
+
+                            <p style={{ fontFamily: F, fontSize: 'clamp(.86rem,1.25vw,1rem)', color: C.g7, lineHeight: 2, marginBottom: 12, textAlign: 'justify' }}>
+                                أول شركة مقاولات في الشرق الأوسط تُنشئ معهدًا للتدريب منذ أكثر من 45 عامًا، والذراع التدريبي المعرفي لشركة «المقاولون العرب»؛ منارة متخصصة في صياغة العقول وتطوير القدرات الهندسية والإدارية والفنية وفق أحدث الرؤى العلمية والتطبيقات العملية.
                             </p>
-                            <div className="prog-grid">
-                                {trainingPrograms.map((p, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `1px solid ${C.g3}`, borderRadius: 8, background: C.w, transition: 'border-color .2s' }}
-                                        onMouseEnter={e => e.currentTarget.style.borderColor = C.o}
-                                        onMouseLeave={e => e.currentTarget.style.borderColor = C.g3}>
-                                        <p.Icon sx={{ fontSize: 18, color: C.o, flexShrink: 0 }} />
-                                        <span style={{ fontFamily: F, fontSize: 'clamp(.72rem,1vw,.82rem)', fontWeight: 700, color: C.k }}>{p.label}</span>
-                                    </div>
+                            <p style={{ fontFamily: F, fontSize: 'clamp(.86rem,1.25vw,1rem)', color: C.g7, lineHeight: 2, marginBottom: 16, textAlign: 'justify' }}>
+                                نقدّم مسارات تدريبية رائدة في نمذجة معلومات البناء (BIM) وإدارة المشروعات الرقمية، ونُرسّخ ثقافة الجودة والسلامة، بالتكامل مع مدرسة المقاولون العرب التي ترفد سوق العمل بعمالة ماهرة، وبشراكات استراتيجية مع أعرق الجامعات والمراكز المتخصصة.
+                            </p>
+
+                            <div className="about-tags">
+                                {aboutTags.map(t => <span key={t} className="about-tag">{t}</span>)}
+                            </div>
+
+                            <div className="prog-chips">
+                                {trainingPrograms.map((p) => (
+                                    <Link key={p.id} to={p.path} className="prog-chip" title={p.description}>
+                                        <p.Icon sx={{ fontSize: 18, color: C.o }} />
+                                        <span>{p.shortTitle}</span>
+                                    </Link>
                                 ))}
                             </div>
+
                             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                                 <SolidBtn to="/overview" orange>تعرف على المعهد</SolidBtn>
                                 <Link to="/mission" className="ob-outline">الرؤية والرسالة <ArrowForwardIosIcon sx={{ fontSize: 11 }} /></Link>

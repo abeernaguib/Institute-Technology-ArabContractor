@@ -1,5 +1,9 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
 
+// Same font as the Overview page (--font in overview.css).
+// Set explicitly here because overview.css only styles <body> once that page's CSS is loaded.
+const FONT = "'Noto Kufi Arabic', serif";
+
 const customers = [
     { id: 1, name: 'جامعة حلوان', image: 'customer01.jpg' },
     { id: 2, name: 'جامعة القاهرة', image: 'customer02.jpg' },
@@ -126,7 +130,10 @@ const CustomerCard = ({ item, index }) => {
                 />
             </div>
 
-            <p className="mt-4 line-clamp-2 px-2 text-center text-xs font-semibold text-gray-500 transition-colors duration-300 group-active:text-[#0865a8] md:text-sm md:group-hover:text-[#0865a8]">
+            <p
+                className="mt-4 line-clamp-2 px-2 text-center text-xs font-semibold leading-relaxed text-gray-500 transition-colors duration-300 group-active:text-[#0865a8] md:text-sm md:group-hover:text-[#0865a8]"
+                style={{ fontFamily: FONT }}
+            >
                 {item.name}
             </p>
         </div>
@@ -137,11 +144,12 @@ const CustomersPage = () => {
     return (
         <div
             dir="rtl"
-            className="min-h-screen bg-white font-['Droid_Arabic_Kufi']"
+            className="min-h-screen bg-white"
+            style={{ fontFamily: FONT }}
         >
             {/* Fixed Overview Bar — SAME STYLE & COLORS */}
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
-                <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
+                <div style={{ textAlign: 'center', fontFamily: FONT, fontSize: '1rem' }}>
                     <a
                         href="/"
                         style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none', marginLeft: '8px' }}
@@ -159,11 +167,14 @@ const CustomersPage = () => {
             <div className="container mx-auto px-9 pt-[110px] pb-24 sm:px-9 lg:px-16">
                 {/* Header */}
                 <div className="mb-16 text-center">
-                    <h1 className="mb-2 text-3xl font-bold text-[#0865a8] md:text-4xl">
+                    <h1
+                        className="mb-2 text-3xl font-black text-[#0865a8] md:text-4xl"
+                        style={{ fontFamily: FONT }}
+                    >
                         عملاؤنا
                     </h1>
                     <div className="mx-auto mb-3 h-1 w-20 rounded-full bg-[#f57c00]" />
-                    <p className="text-gray-600">
+                    <p className="text-gray-600" style={{ fontFamily: FONT }}>
                         نسعى دائمًا لإرضاء العميل بتقديم أفضل الخدمات
                     </p>
                 </div>

@@ -77,7 +77,7 @@ function TransformationalTraining() {
                 <div className="tt-bar">
                     <Link to="/" className="tt-bar-link">الصفحة الرئيسية</Link>
                     <span>•</span>
-                    <Link to="/overview" className="tt-bar-link">نبذة عامة والخدمات</Link>
+                    <Link to="/overview" className="tt-bar-link">نبذة عامة </Link>
                     <span>•</span>
                     <span>برامج للتدريب التحويلي</span>
                 </div>
@@ -206,7 +206,7 @@ function TransformationalTraining() {
                         ويعزز التكامل بين تنمية الموارد البشرية ومتطلبات قطاع التشييد والبناء.
                     </p>
                     <Link to="/overview" className="tt-back">
-                        <FaArrowRight aria-hidden="true" /> العودة إلى نبذة عامة والخدمات
+                        <FaArrowRight aria-hidden="true" /> العودة إلى نبذة عامة 
                     </Link>
                 </div>
             </section>
