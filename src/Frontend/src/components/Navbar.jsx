@@ -64,9 +64,17 @@ const mediaLinks = [
 const label = (item) => item.ar;
 const isPdfPath = (p) => p.endsWith('.pdf');
 
+// RESPONSIVE: compact on lg (1200–1535px), roomy on xl (1536px+)
 const navBtnSx = {
-    px: 1.2, whiteSpace: 'nowrap', fontFamily: FONT,
-    color: '#000', fontSize: '0.85rem',
+    px: { lg: 0.6, xl: 1.2 },
+    minWidth: 'auto',
+    whiteSpace: 'nowrap', fontFamily: FONT,
+    color: '#000',
+    fontSize: { lg: '0.78rem', xl: '0.85rem' },
+    '& .MuiButton-endIcon': {
+        display: { lg: 'none', xl: 'inherit' },
+        marginInlineStart: 0,
+    },
     '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' },
 };
 
@@ -920,6 +928,12 @@ const Navbar = () => {
                     background: #fff !important; color: #f57c00 !important;
                     box-shadow: 0 3px 10px rgba(245,124,0,0.28) !important;
                 }
+
+                /* RESPONSIVE: between 1200px and 1535px the admin button becomes icon-only to save space */
+                @media (min-width: 1200px) and (max-width: 1535.95px) {
+                    .admin-nav-btn { width: 30px !important; }
+                    .admin-nav-btn .admin-nav-label { display: none; }
+                }
             `}</style>
 
             {/* Plain white bar shown only until the real navbar is ready (uses inline styles, so it never looks unstyled) */}
@@ -940,7 +954,13 @@ const Navbar = () => {
                     dir="rtl"
                     sx={{ bgcolor: 'white', color: '#000', py: 0.5, top: 0, zIndex: 1100, height: 70 }}
                 >
-                    <Toolbar sx={{ justifyContent: 'space-between', display: 'flex', px: { xs: 1, md: 4 } }}>
+                    {/* RESPONSIVE: content is centered and capped at 1800px so it doesn't stretch on huge screens */}
+                    <Toolbar sx={{
+                        justifyContent: 'space-between', display: 'flex',
+                        px: { xs: 1, md: 2, xl: 4 },
+                        gap: { lg: 1, xl: 2 },
+                        width: '100%', maxWidth: 1800, mx: 'auto',
+                    }}>
 
                         {/* ── LOGO ── */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
@@ -954,7 +974,8 @@ const Navbar = () => {
                                 <Box component="img" src={logo} alt="ICEMT Logo" className="nav-logo"
                                     sx={{ height: 62, width: 'auto', minWidth: 62, flexShrink: 0 }} />
                                 {!isSmallMobile && (
-                                    <Box sx={{ mx: 1 }}>
+                                    // RESPONSIVE: logo text is hidden between 1200 and 1535px to free up space
+                                    <Box sx={{ mx: 1, display: { xs: 'block', lg: 'none', xl: 'block' } }}>
                                         <Typography variant="body2" sx={{
                                             fontWeight: 'bold', color: '#0865a8', fontSize: '0.8rem',
                                             whiteSpace: 'nowrap', fontFamily: FONT,
@@ -974,7 +995,9 @@ const Navbar = () => {
 
                         {/* ── DESKTOP: Main menu (ordered) ── */}
                         {!isMobile && (
-                            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0 }}>
+                            // RESPONSIVE: the menu can shrink and sits in the middle of the free space
+                            <Stack direction="row" spacing={{ lg: 0, xl: 0.5 }} alignItems="center"
+                                sx={{ flexShrink: 1, flexGrow: 1, minWidth: 0, justifyContent: 'center' }}>
 
                                 {/* 1. عن المعهد */}
                                 <div className="about-dropdown-wrapper">
@@ -1145,10 +1168,11 @@ const Navbar = () => {
                         <ClickAwayListener onClickAway={() => { setSearchFocused(false); setActiveSuggestionIndex(-1); }}>
                             <Box ref={searchBoxRef} sx={{
                                 display: 'flex', alignItems: 'center', flexGrow: 0, flexShrink: 1, justifyContent: 'center',
-                                width: { xs: 'auto', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
-                                maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '300px', lg: '260px', xl: '380px' },
+                                // RESPONSIVE: narrower on lg (1200–1535px), comfortable on xl
+                                width: { xs: 'auto', sm: '350px', md: '300px', lg: '200px', xl: '300px' },
+                                maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '300px', lg: '200px', xl: '300px' },
                                 mx: { xs: 0.5, sm: 1, md: 2 }, position: 'relative',
-                                minWidth: { xs: '120px', sm: '250px', lg: '220px' },
+                                minWidth: { xs: '120px', sm: '250px', lg: '170px' },
                             }}>
                                 <Box component="form" onSubmit={handleSearchSubmit} role="search" sx={{
                                     bgcolor: searchFocused ? '#ffffff' : '#f1f3f4',
@@ -1296,9 +1320,9 @@ const Navbar = () => {
                         {/* ── RIGHT-SIDE CONTROLS ── */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 }, flexShrink: 0 }}>
                             {!isMobile && authLoaded && !adminLoading && isAdmin && (
-                                <Link to="/admin" className="admin-nav-btn">
+                                <Link to="/admin" className="admin-nav-btn" title={t('nav.admin')}>
                                     <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
-                                    {t('nav.admin')}
+                                    <span className="admin-nav-label">{t('nav.admin')}</span>
                                 </Link>
                             )}
 
