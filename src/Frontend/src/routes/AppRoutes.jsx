@@ -37,6 +37,7 @@ const CEAProgram = lazy(() => import('../pages/CEAProgram'));
 const TestsSection = lazy(() => import('../pages/TestsSection'));
 const PmiPage = lazy(() => import('../pages/PmiPage')); // NEW
 const ClacPage = lazy(() => import('../pages/ClacPage')); // NEW
+const TransformationalTraining = lazy(() => import('../pages/TransformationalTraining')); // NEW
 
 // ─── Cart / Checkout / Payment ───────────────────────────────────────────────
 const ShoppingCartPage = lazy(() => import('../pages/ShoppingCartPage'));
@@ -108,6 +109,7 @@ const AppRoutes = () => {
                     <Route path="/tests" element={<TestsSection />} />
                     <Route path="/pmi" element={<PmiPage />} /> {/* NEW */}
                     <Route path="/clac" element={<ClacPage />} /> {/* NEW */}
+                    <Route path="/services/transformational-training" element={<TransformationalTraining />} /> {/* NEW */}
 
                     {/* Cart / Checkout / Payment */}
                     <Route path="/cart" element={<ShoppingCartPage />} />

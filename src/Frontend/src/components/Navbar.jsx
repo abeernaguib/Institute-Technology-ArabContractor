@@ -32,7 +32,7 @@ const FONT = '"Noto Kufi Arabic",serif';
 // ── Menu data ──────────────────────────────────────────────
 // 1) عن المعهد
 const aboutLinks = [
-    { ar: 'نبذة عامة والخدمات', path: '/overview' },
+    { ar: 'نبذة عامة ', path: '/overview' },
     { ar: 'الرؤية والأهداف', path: '/mission' },
     { ar: 'الخطة الاستراتيجية', path: '/pdf/StrategicPlan_2024_2030.pdf' },
     { ar: 'الهيكل التنظيمي', path: '/organizational-structure' },
@@ -46,6 +46,7 @@ const aboutLinks = [
 
 // 3) الخدمات
 const serviceLinks = [
+    { ar: 'التدريب التنفيذي والإشرافي والخدمي', path: '/services/executive-supervisory-service-training' },
     { ar: 'التدريب الحرفى', path: '/vocational-training' },
     { ar: 'التعليم الفنى', path: '/technical-education' },
     { ar: 'التدريب عن بعد', path: '/online-training' },
@@ -1397,8 +1398,22 @@ const Navbar = () => {
                                                     component={node.link ? Link : 'div'}
                                                     to={node.link || undefined}
                                                     onClick={node.link ? toggleDrawer(false) : undefined}
-                                                    sx={{ mb: 0.5, borderRadius: 1, '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' } }}>
-                                                    <ListItemText primary={node.title} primaryTypographyProps={{ fontFamily: FONT, fontSize: '0.82rem', color: '#000', textAlign: 'start', lineHeight: 1.7 }} />
+                                                    sx={{
+                                                        mb: 0.5, borderRadius: 1,
+                                                        bgcolor: 'rgba(0,0,0,0.02)',
+                                                        borderInlineStart: '3px solid #0865a8',
+                                                        '&:hover': { bgcolor: 'rgba(245,124,0,0.08)' },
+                                                    }}>
+                                                    <ListItemText
+                                                        primary={node.title}
+                                                        primaryTypographyProps={{
+                                                            fontFamily: FONT,
+                                                            fontSize: '0.86rem',
+                                                            fontWeight: 'bold',
+                                                            color: '#0865a8',
+                                                            textAlign: 'start',
+                                                            lineHeight: 1.7,
+                                                        }} />
                                                 </ListItemButton>
                                             );
                                         })

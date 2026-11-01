@@ -145,9 +145,20 @@ body {
     line-height: 2.1
 }
 
-.section_2, .section_3, .section_4, .section_5 {
+.section_about, .section_services, .section_2, .section_3, .section_4, .section_5 {
     position: relative;
     padding: 100px 0
+}
+
+/* white → gray → white → blue → gray → black */
+.section_about {
+    padding-bottom: 150px;
+    background: #fff
+}
+
+.section_services {
+    padding-bottom: 150px;
+    background: var(--gray-50)
 }
 
 .section_2 {
@@ -155,7 +166,7 @@ body {
     background: #fff
 }
 
-    .section_2:after, .section_3:after, .section_4:after {
+    .section_about:after, .section_services:after, .section_2:after, .section_3:after, .section_4:after {
         content: '';
         position: absolute;
         bottom: -2px;
@@ -165,9 +176,17 @@ body {
         clip-path: polygon(0 100%,100% 0,100% 100%)
     }
 
-    .section_2:after {
-        background: var(--blue)
-    }
+.section_about:after {
+    background: var(--gray-50)
+}
+
+.section_services:after {
+    background: #fff
+}
+
+.section_2:after {
+    background: var(--blue)
+}
 
 .section_3 {
     background: var(--blue);
@@ -230,13 +249,284 @@ body {
         background: var(--orange)
     }
 
+    .heading-bar.small {
+        margin: 12px 0 36px
+    }
+
 .section_3 .heading-bar:after {
     background: var(--orange-light)
 }
 
-.section_2_cards {
+/* ===== About: كلمة المعهد + من نحن ===== */
+.about-grid {
     display: grid;
-    grid-template-columns: repeat(4,1fr);
+    grid-template-columns: 1fr 1fr;
+    gap: 26px;
+    align-items: stretch
+}
+
+.card-label {
+    display: inline-block;
+    background: var(--orange);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 16px;
+    margin-bottom: 16px
+}
+
+.word-card {
+    position: relative;
+    padding: 42px 34px;
+    background: linear-gradient(145deg,var(--blue-dark),var(--blue));
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    border-right: 6px solid var(--orange)
+}
+
+.word-quote {
+    display: block;
+    font-size: 30px;
+    color: var(--orange-light);
+    margin-bottom: 14px
+}
+
+.word-card h3 {
+    font-size: 21px;
+    line-height: 1.7;
+    margin: 0 0 16px
+}
+
+.word-card p {
+    font-size: 14px;
+    line-height: 2.1;
+    color: rgba(255,255,255,.82);
+    margin: 0 0 14px
+}
+
+.about-card {
+    padding: 42px 34px;
+    background: #fff;
+    border: 1px solid var(--gray-100);
+    border-bottom: 4px solid var(--orange);
+    box-shadow: var(--shadow-sm)
+}
+
+    .about-card h3 {
+        color: var(--blue-dark);
+        font-size: 21px;
+        line-height: 1.7;
+        margin: 0 0 16px
+    }
+
+    .about-card p {
+        color: var(--gray-700);
+        font-size: 14px;
+        line-height: 2.1;
+        margin: 0 0 14px
+    }
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px
+}
+
+.chip {
+    background: rgba(8,101,168,.08);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px
+}
+
+/* ===== Services: خدماتنا ===== */
+.service-groups {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 22px;
+    align-items: stretch
+}
+
+.service-group {
+    padding: 32px 26px;
+    background: #fff;
+    border: 1px solid var(--gray-100);
+    border-top: 4px solid var(--orange);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition)
+}
+
+    .service-group:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-md)
+    }
+
+.service-group-icon {
+    font-size: 36px;
+    color: var(--orange);
+    margin-bottom: 12px
+}
+
+.service-group h3 {
+    margin: 0 0 16px;
+    color: var(--blue-dark);
+    font-size: 19px;
+    font-weight: 800
+}
+
+.service-list {
+    margin: 0;
+    padding-inline-start: 20px
+}
+
+    .service-list li {
+        color: var(--gray-700);
+        font-size: 13px;
+        line-height: 2
+    }
+
+    .service-list ul {
+        margin: 2px 0 8px;
+        padding-inline-start: 20px;
+        list-style: circle
+    }
+
+.sub-heading {
+    margin: 75px 0 0;
+    text-align: center;
+    color: var(--blue-dark);
+    font-size: clamp(19px,2.5vw,27px);
+    font-weight: 900
+}
+
+.program-types {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px
+}
+
+.program-card {
+    flex: 0 1 calc((100% - 44px) / 3);
+    padding: 30px 24px;
+    text-align: center;
+    background: #fff;
+    border: 1px solid var(--gray-100);
+    border-bottom: 4px solid var(--blue);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition)
+}
+
+    .program-card:hover {
+        transform: translateY(-6px);
+        border-bottom-color: var(--orange);
+        box-shadow: var(--shadow-md)
+    }
+
+    .program-card h4 {
+        margin: 0 0 10px;
+        color: var(--blue-dark);
+        font-size: 17px;
+        font-weight: 800
+    }
+
+    .program-card p {
+        margin: 0;
+        color: var(--gray-500);
+        font-size: 13px;
+        line-height: 2
+    }
+
+.program-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--orange);
+    color: #fff;
+    font-size: 24px
+}
+
+.schools-panel {
+    padding: 34px 30px;
+    background: #fff;
+    border: 1px solid var(--gray-100);
+    box-shadow: var(--shadow-sm)
+}
+
+.schools-lead {
+    margin: 0 0 24px;
+    text-align: center;
+    color: var(--gray-700);
+    font-size: 14px;
+    line-height: 2
+}
+
+.schools-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 18px
+}
+
+.school-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 18px;
+    background: var(--gray-50);
+    border-right: 4px solid var(--orange)
+}
+
+    .school-card h4 {
+        margin: 0 0 8px;
+        color: var(--blue-dark);
+        font-size: 14px;
+        line-height: 1.8;
+        font-weight: 800
+    }
+
+.school-icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 20px
+}
+
+.school-tag {
+    display: inline-block;
+    background: rgba(245,124,0,.12);
+    color: var(--orange-dark);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px
+}
+
+.schools-note {
+    margin: 22px 0 0;
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 13px;
+    line-height: 2
+}
+
+/* ===== Service cards: centered flex layout (3 cards per row) ===== */
+.section_2_cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 22px
 }
 
@@ -244,6 +534,10 @@ body {
     display: block;
     color: inherit;
     text-decoration: none
+}
+
+.section_2_cards .service-card-link {
+    flex: 0 1 calc((100% - 44px) / 3)
 }
 
 .section_2_card {
@@ -325,11 +619,6 @@ body {
     font-size: 12px;
     font-weight: 700;
     transition: var(--transition)
-}
-
-.service-card-link--featured .section_2_card {
-    border-color: var(--orange);
-    box-shadow: 0 10px 30px rgba(245,124,0,.18)
 }
 
 .cards_sec_3 {
@@ -518,8 +807,20 @@ body {
 }
 
 @media(max-width:1050px) {
-    .section_2_cards {
-        grid-template-columns: repeat(2,1fr)
+    .about-grid {
+        grid-template-columns: 1fr
+    }
+
+    .service-groups {
+        grid-template-columns: 1fr
+    }
+
+    .program-card {
+        flex-basis: calc((100% - 22px) / 2)
+    }
+
+    .section_2_cards .service-card-link {
+        flex-basis: calc((100% - 22px) / 2)
     }
 
     .first-course-layout {
@@ -550,12 +851,20 @@ body {
         min-height: 520px
     }
 
-    .section_2, .section_3, .section_4, .section_5 {
+    .section_about, .section_services, .section_2, .section_3, .section_4, .section_5 {
         padding-top: 75px
     }
 
-    .section_2_cards, .cards_sec_3, .cards_sec_5, .course-stats-grid {
+    .cards_sec_3, .cards_sec_5, .course-stats-grid, .schools-grid {
         grid-template-columns: 1fr
+    }
+
+    .program-card, .section_2_cards .service-card-link {
+        flex-basis: 100%
+    }
+
+    .word-card, .about-card {
+        padding: 30px 22px
     }
 
     .course-stat-card:last-child {
@@ -566,15 +875,11 @@ body {
         min-height: 125px
     }
 
-    .section_2:after, .section_3:after, .section_4:after {
+    .section_about:after, .section_services:after, .section_2:after, .section_3:after, .section_4:after {
         height: 45px
     }
 
-    .section_2 {
-        padding-bottom: 105px
-    }
-
-    .section_4 {
+    .section_about, .section_services, .section_2, .section_4 {
         padding-bottom: 105px
     }
 
@@ -591,7 +896,8 @@ body {
 .section_5 .section-heading .why-title-prefix {
     color: #fff !important;
 }
-/* ===== قسم أحدث طرق التدريب (أضفه في آخر overview.css) ===== */
+
+/* ===== قسم أحدث طرق التدريب ===== */
 .section_methods {
     padding-bottom: 40px;
     scroll-margin-top: 130px; /* 70px navbar + 48px breadcrumb bar + spacing */

@@ -6,23 +6,126 @@ import {
     FaUsers,
     FaGraduationCap,
     FaArrowLeft,
-    FaChalkboardTeacher,
     FaBuilding,
     FaUserTie,
     FaBookOpen,
     FaMapMarkerAlt,
     FaChair,
+    FaChalkboardTeacher,
+    FaCogs,
+    FaQuoteRight,
+    FaTools,
+    FaCertificate,
+    FaLaptop,
+    FaBullseye,
+    FaUserGraduate,
+    FaSchool,
 } from 'react-icons/fa';
 import './overview.css';
 
-const serviceCards = [
+/* ───────── كلمة المعهد ───────── */
+const wordParagraphs = [
+    'في خطوة تعكس عمق الرؤية وفلسفة البناء، يسر المعهد التكنولوجي لهندسة التشييد والإدارة — المقاولون العرب — تقديم خطته التدريبية الجديدة، كشهادة التزام بتطوير رأس المال البشري هندسيًا، وإداريًا، وفنيًا، رافدًا بذلك مسيرة التميز والاستدامة في الأداء المؤسسي.',
+    'ومن هذا المنطلق، طوّر المعهد منظومة تدريبية شاملة تتبنى أدوات التحول الرقمي وتنافسية الأعمال، مع التركيز على صياغة جيل جديد من الكوادر الحرفية عبر مدرسة المقاولون العرب، ليكونوا سواعد ماهرة تخدم المشروعات القومية الكبرى.',
+    'إن فلسفتنا تقوم على أن بناء الإنسان هو المبتدأ والمنتهى في رحلة الريادة، وأن صياغة المهارات بأعلى معايير الدقة ترسخ قيم الجودة والسلامة، وتمنح الشركة تفوقًا مستحقًا على الصعيدين المحلي والإقليمي.',
+];
+
+/* ───────── من نحن ───────── */
+const aboutParagraphs = [
+    'يتجلى المعهد التكنولوجي لهندسة التشييد والإدارة — باعتباره الذراع التدريبي المعرفي لشركة «المقاولون العرب» — كمنارة متخصصة، تأخذ على عاتقها صياغة العقول وتطوير القدرات الهندسية والإدارية والفنية، وفق أحدث الرؤى العلمية والتطبيقات العملية.',
+    'ويمتد نطاق عمل المعهد ليشمل صياغة وتنفيذ مسارات تدريبية رائدة في نمذجة معلومات البناء (BIM) وإدارة المشروعات الرقمية، مرسخًا ثقافة الجودة والسلامة كركيزتين لا حيدة عنهما، بالتكامل مع مدرسة المقاولون العرب التي ترفد الساحة بعمالة ماهرة صُقلت سواعدها لمواكبة الغد.',
+    'إنه التزام راسخ ببناء مستقبل مستدام، يرتقي بالأداء المؤسسي، ويتمدد عبر جسور من الشراكات الاستراتيجية مع أعرق الجامعات والمراكز المتخصصة.',
+    'يلتزم المعهد بتقديم محتوى تدريبي متوافق مع متطلبات الاستدامة ومعايير الأداء المؤسسي، وبناء شراكات فاعلة مع الجامعات والمراكز المتخصصة.',
+];
+
+const aboutChips = ['نمذجة معلومات البناء (BIM)', 'إدارة المشروعات الرقمية', 'الجودة والسلامة', 'مدرسة المقاولون العرب'];
+
+/* ───────── خدماتنا ───────── */
+const serviceGroups = [
     {
-        title: 'التدريب التنفيذي والإشرافي والخدمي',
-        description: 'برامج مدينة نصر للتدريب التنفيذي والإشرافي والخدمي.',
-        path: '/services/executive-supervisory-service-training',
+        title: 'التدريب',
         icon: <FaChalkboardTeacher aria-hidden="true" />,
-        featured: true,
+        items: [
+            'برامج فنية وحرفية.',
+            'برامج معتمدة.',
+            'برامج التدريب عن بعد.',
+            'التدريب الموجه.',
+            'التدريب الطلابي.',
+        ],
     },
+    {
+        title: 'خدمات استشارية',
+        icon: <FaCogs aria-hidden="true" />,
+        items: [
+            'التقييم والاختبارات.',
+            {
+                text: 'إنشاء مراكز حرفية جديدة:',
+                sub: [
+                    'تصميم هندسي للمركز.',
+                    'تحديد الاحتياجات التدريبية من الأدوات والعدد والخامات.',
+                    'تأهيل المدربين.',
+                    'توفير المواد العلمية للمركز والخطط التدريبية.',
+                    'تأهيل أو إعداد وتدريب الهيكل الإداري للمركز.',
+                ],
+            },
+            {
+                text: 'تطوير التعليم الفني:',
+                sub: [
+                    'مدرسة المقاولون العرب الثانوية الفنية للتعليم والتدريب المزدوج.',
+                    'رعاية عدد 4 مدارس ثانوية صناعية.',
+                ],
+            },
+        ],
+    },
+    {
+        title: 'المكتبة الرئيسية',
+        icon: <FaBookOpen aria-hidden="true" />,
+        items: [
+            'كتب متميزة في المجالات الهندسية المختلفة والإدارة والاقتصاد والمحاسبة.',
+            'مواد علمية — للاطلاع فقط.',
+            'اشتراكات ودوريات علمية متخصصة.',
+            'الأكواد والمواصفات الهندسية.',
+            'توقيع بروتوكول تعاون مع مكتبة الإسكندرية لتكون مكتبة الشركة فرعًا لمكتبة الإسكندرية، لخدمة الباحثين ونشر الثقافة والمعرفة ودعم البحث العلمي.',
+        ],
+    },
+];
+
+const programTypes = [
+    {
+        title: 'برامج فنية وحرفية',
+        description: 'وهي التي يتم إدراجها ضمن المحور الثاني في الخطة السنوية، ويتم توزيع مواعيد وأماكن انعقادها للعملاء من داخل الشركة وخارجها.',
+        icon: <FaTools aria-hidden="true" />,
+    },
+    {
+        title: 'برامج معتمدة',
+        description: 'برامج معتمدة من جهات دولية، مثل: برامج معهد الإدارة الأمريكية (PMP - ACP - SP-RMP).',
+        icon: <FaCertificate aria-hidden="true" />,
+    },
+    {
+        title: 'برامج التدريب عن بعد',
+        description: 'البرامج المقدمة من المعهد ONLINE باستخدام برنامج Microsoft Teams.',
+        icon: <FaLaptop aria-hidden="true" />,
+    },
+    {
+        title: 'التدريب الموجه',
+        description: 'نقدم التدريب للعملاء من داخل وخارج الشركة طبقًا لاحتياجاتهم التدريبية، بتصميمات خاصة لكل برنامج.',
+        icon: <FaBullseye aria-hidden="true" />,
+    },
+    {
+        title: 'التدريب الطلابي',
+        description: 'يتم استقبال طلبة الجامعات المصرية لتقديم التدريبات العملية طبقًا لتخصصاتهم المختلفة خلال العام الدراسي، وكذلك خلال فترة الإجازة الصيفية.',
+        icon: <FaUserGraduate aria-hidden="true" />,
+    },
+];
+
+const sponsoredSchools = [
+    { name: 'مدرسة أبو رواش الصناعية العسكرية', field: 'تخصص المعدات الثقيلة' },
+    { name: 'مدرسة الشهيد نقيب شرطة / أحمد حسين فهمي محمد العسكري', field: 'تخصص التشطيبات المعمارية' },
+    { name: 'مدرسة المعدات الثقيلة الصناعية العسكرية بالإسماعيلية', field: 'تخصص المعدات الثقيلة' },
+    { name: 'مدرسة الشاطبي الميكانيكية الثانوية العسكرية', field: 'تخصص اللحام وتشكيل المعادن' },
+];
+
+const serviceCards = [
     {
         title: 'برامج للتدريب التحويلي',
         description: 'برامج تساعد على تطوير المهارات والانتقال إلى أدوار مهنية جديدة.',
@@ -133,6 +236,99 @@ function Overview() {
                 </div>
             </section>
 
+            {/* كلمة المعهد + من نحن */}
+            <section className="section_about" id="about" aria-labelledby="about-title">
+                <div className="section-inner">
+                    <h2 id="about-title" className="section-heading">
+                        تعرّف على <span>المعهد</span>
+                    </h2>
+                    <div className="heading-bar" />
+
+                    <div className="about-grid">
+                        <article className="word-card">
+                            <FaQuoteRight className="word-quote" aria-hidden="true" />
+                            <span className="card-label">كلمة المعهد</span>
+                            <h3>المعهد التكنولوجي لهندسة التشييد والإدارة</h3>
+                            {wordParagraphs.map((p) => <p key={p.slice(0, 24)}>{p}</p>)}
+                        </article>
+
+                        <article className="about-card">
+                            <span className="card-label">من نحن؟</span>
+                            <h3>الذراع التدريبي المعرفي لشركة «المقاولون العرب»</h3>
+                            {aboutParagraphs.map((p) => <p key={p.slice(0, 24)}>{p}</p>)}
+                            <div className="chips">
+                                {aboutChips.map((c) => <span className="chip" key={c}>{c}</span>)}
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            {/* خدماتنا */}
+            <section className="section_services" id="our-services" aria-labelledby="our-services-title">
+                <div className="section-inner">
+                    <h2 id="our-services-title" className="section-heading">
+                        <span>خدماتنا</span>
+                    </h2>
+                    <div className="heading-bar" />
+
+                    <div className="service-groups">
+                        {serviceGroups.map((group, i) => (
+                            <article className="service-group" key={group.title}>
+                                <div className="service-group-icon">{group.icon}</div>
+                                <h3>{i + 1}- {group.title}</h3>
+                                <ul className="service-list">
+                                    {group.items.map((item) => (
+                                        typeof item === 'string'
+                                            ? <li key={item}>{item}</li>
+                                            : (
+                                                <li key={item.text}>
+                                                    {item.text}
+                                                    <ul>
+                                                        {item.sub.map((s) => <li key={s}>{s}</li>)}
+                                                    </ul>
+                                                </li>
+                                            )
+                                    ))}
+                                </ul>
+                            </article>
+                        ))}
+                    </div>
+
+                    <h3 className="sub-heading">نشاط التدريب</h3>
+                    <div className="heading-bar small" />
+                    <div className="program-types">
+                        {programTypes.map((p) => (
+                            <article className="program-card" key={p.title}>
+                                <div className="program-icon">{p.icon}</div>
+                                <h4>{p.title}</h4>
+                                <p>{p.description}</p>
+                            </article>
+                        ))}
+                    </div>
+
+                    <h3 className="sub-heading">تطوير التعليم الفني</h3>
+                    <div className="heading-bar small" />
+                    <div className="schools-panel">
+                        <p className="schools-lead">
+                            مدرسة المقاولون العرب الثانوية الفنية للتعليم والتدريب المزدوج، إضافةً إلى رعاية عدد 4 مدارس ثانوية صناعية:
+                        </p>
+                        <div className="schools-grid">
+                            {sponsoredSchools.map((s) => (
+                                <article className="school-card" key={s.name}>
+                                    <div className="school-icon"><FaSchool aria-hidden="true" /></div>
+                                    <div>
+                                        <h4>{s.name}</h4>
+                                        <span className="school-tag">{s.field}</span>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                        <p className="schools-note">وتشمل: تدريب الطلبة، وتأهيل المدرسين فنيًا، وتطوير الورش الفنية بهذه المدارس.</p>
+                    </div>
+                </div>
+            </section>
+
             <section className="section_2" aria-labelledby="services-title">
                 <div className="section-inner">
                     <h2 id="services-title" className="section-heading">
@@ -145,7 +341,7 @@ function Overview() {
                             <Link
                                 key={service.path}
                                 to={service.path}
-                                className={`service-card-link ${service.featured ? 'service-card-link--featured' : ''}`}
+                                className="service-card-link"
                             >
                                 <article className="section_2_card">
                                     <div className="service-card-icon">{service.icon}</div>
