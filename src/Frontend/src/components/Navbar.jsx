@@ -29,6 +29,9 @@ const MAX_RECENT_SEARCHES = 5;
 const API_BASE = 'https://icemt.arabcont.com/api';
 const FONT = '"Noto Kufi Arabic",serif';
 
+// Width (px) from which the desktop menu is used. Below it the hamburger drawer is shown.
+const DESKTOP_MIN_WIDTH = 1000;
+
 // ── Menu data ──────────────────────────────────────────────
 // 1) عن المعهد
 const aboutLinks = [
@@ -64,17 +67,17 @@ const mediaLinks = [
 const label = (item) => item.ar;
 const isPdfPath = (p) => p.endsWith('.pdf');
 
-// RESPONSIVE: compact on lg (1200–1535px), roomy on xl (1536px+)
+// Nav buttons shrink smoothly with the viewport (nothing is hidden)
 const navBtnSx = {
-    px: { lg: 0.6, xl: 1.2 },
-    minWidth: 'auto',
-    whiteSpace: 'nowrap', fontFamily: FONT,
+    px: 'clamp(3px, 0.55vw, 10px)',
+    minWidth: 0,
+    whiteSpace: 'nowrap',
+    fontFamily: FONT,
     color: '#000',
-    fontSize: { lg: '0.78rem', xl: '0.85rem' },
-    '& .MuiButton-endIcon': {
-        display: { lg: 'none', xl: 'inherit' },
-        marginInlineStart: 0,
-    },
+    fontSize: 'clamp(0.66rem, 0.3rem + 0.52vw, 0.85rem)',
+    gap: '2px',
+    '& .MuiButton-endIcon': { m: 0 },
+    '& .MuiButton-endIcon svg': { fontSize: 'clamp(14px, 1.3vw, 20px)' },
     '&:hover': { bgcolor: 'rgba(8,101,168,0.08)', color: '#0865a8' },
 };
 
@@ -513,7 +516,8 @@ const Navbar = () => {
     const location = useLocation();
     const theme = useTheme();
     // noSsr: read the real screen size on the very first render (no desktop-menu flash on phones)
-    const isMobile = useMediaQuery(theme.breakpoints.down('lg'), { noSsr: true });
+    // Desktop menu starts at 1000px; below that the hamburger drawer is used.
+    const isMobile = useMediaQuery(`(max-width:${DESKTOP_MIN_WIDTH - 0.05}px)`, { noSsr: true });
     const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
 
     // Close the programs menu on every page change and drop keyboard focus from inside it
@@ -916,7 +920,7 @@ const Navbar = () => {
                 .admin-nav-btn {
                     display: inline-flex !important; align-items: center !important;
                     justify-content: center !important; gap: 3px !important;
-                    width: 72px !important; height: 26px !important; padding: 0 !important;
+                    width: clamp(56px, 5vw, 72px) !important; height: 26px !important; padding: 0 !important;
                     background: #f57c00 !important; color: #fff !important;
                     border-radius: 6px !important; font-size: 0.7rem !important;
                     font-weight: 400 !important; text-decoration: none !important;
@@ -927,12 +931,6 @@ const Navbar = () => {
                 .admin-nav-btn:hover {
                     background: #fff !important; color: #f57c00 !important;
                     box-shadow: 0 3px 10px rgba(245,124,0,0.28) !important;
-                }
-
-                /* RESPONSIVE: between 1200px and 1535px the admin button becomes icon-only to save space */
-                @media (min-width: 1200px) and (max-width: 1535.95px) {
-                    .admin-nav-btn { width: 30px !important; }
-                    .admin-nav-btn .admin-nav-label { display: none; }
                 }
             `}</style>
 
@@ -954,12 +952,10 @@ const Navbar = () => {
                     dir="rtl"
                     sx={{ bgcolor: 'white', color: '#000', py: 0.5, top: 0, zIndex: 1100, height: 70 }}
                 >
-                    {/* RESPONSIVE: content is centered and capped at 1800px so it doesn't stretch on huge screens */}
                     <Toolbar sx={{
                         justifyContent: 'space-between', display: 'flex',
-                        px: { xs: 1, md: 2, xl: 4 },
-                        gap: { lg: 1, xl: 2 },
-                        width: '100%', maxWidth: 1800, mx: 'auto',
+                        px: { xs: 1, md: 'clamp(8px, 1.5vw, 32px)' },
+                        gap: { md: 'clamp(4px, 0.8vw, 16px)' },
                     }}>
 
                         {/* ── LOGO ── */}
@@ -972,12 +968,17 @@ const Navbar = () => {
                             <Stack direction="row" alignItems="center" component={Link} to="/"
                                 sx={{ textDecoration: 'none', color: 'inherit', flexShrink: 0 }}>
                                 <Box component="img" src={logo} alt="ICEMT Logo" className="nav-logo"
-                                    sx={{ height: 62, width: 'auto', minWidth: 62, flexShrink: 0 }} />
+                                    sx={{
+                                        height: isMobile ? 62 : 'clamp(46px, 4vw, 62px)',
+                                        width: 'auto',
+                                        minWidth: isMobile ? 62 : 0,
+                                        flexShrink: 0,
+                                    }} />
                                 {!isSmallMobile && (
-                                    // RESPONSIVE: logo text is hidden between 1200 and 1535px to free up space
-                                    <Box sx={{ mx: 1, display: { xs: 'block', lg: 'none', xl: 'block' } }}>
+                                    <Box sx={{ mx: { xs: 1, md: 'clamp(3px, 0.5vw, 8px)' } }}>
                                         <Typography variant="body2" sx={{
-                                            fontWeight: 'bold', color: '#0865a8', fontSize: '0.8rem',
+                                            fontWeight: 'bold', color: '#0865a8',
+                                            fontSize: isMobile ? '0.8rem' : 'clamp(0.62rem, 0.3rem + 0.45vw, 0.8rem)',
                                             whiteSpace: 'nowrap', fontFamily: FONT,
                                         }}>
                                             المقاولون العرب
@@ -985,6 +986,8 @@ const Navbar = () => {
                                         <Typography variant="caption" sx={{
                                             color: '#000', display: { xs: 'none', md: 'block' },
                                             fontFamily: FONT,
+                                            fontSize: { md: 'clamp(0.56rem, 0.25rem + 0.4vw, 0.75rem)' },
+                                            lineHeight: 1.3, whiteSpace: 'nowrap',
                                         }}>
                                             المعهد التكنولوجى لهندسة التشييد والإدارة
                                         </Typography>
@@ -995,9 +998,7 @@ const Navbar = () => {
 
                         {/* ── DESKTOP: Main menu (ordered) ── */}
                         {!isMobile && (
-                            // RESPONSIVE: the menu can shrink and sits in the middle of the free space
-                            <Stack direction="row" spacing={{ lg: 0, xl: 0.5 }} alignItems="center"
-                                sx={{ flexShrink: 1, flexGrow: 1, minWidth: 0, justifyContent: 'center' }}>
+                            <Stack direction="row" spacing={0} alignItems="center" sx={{ flexShrink: 0 }}>
 
                                 {/* 1. عن المعهد */}
                                 <div className="about-dropdown-wrapper">
@@ -1164,27 +1165,29 @@ const Navbar = () => {
                             </Stack>
                         )}
 
-                        {/* ── SEARCH BAR ── */}
+                        {/* ── SEARCH BAR (the only flexible element: it takes the leftover space and shrinks first) ── */}
                         <ClickAwayListener onClickAway={() => { setSearchFocused(false); setActiveSuggestionIndex(-1); }}>
                             <Box ref={searchBoxRef} sx={{
-                                display: 'flex', alignItems: 'center', flexGrow: 0, flexShrink: 1, justifyContent: 'center',
-                                // RESPONSIVE: narrower on lg (1200–1535px), comfortable on xl
-                                width: { xs: 'auto', sm: '350px', md: '300px', lg: '200px', xl: '300px' },
-                                maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '300px', lg: '200px', xl: '300px' },
-                                mx: { xs: 0.5, sm: 1, md: 2 }, position: 'relative',
-                                minWidth: { xs: '120px', sm: '250px', lg: '170px' },
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flex: '1 1 0',
+                                minWidth: { xs: '120px', sm: '250px', md: '90px' },
+                                maxWidth: { xs: 'calc(100% - 200px)', sm: '350px', md: '380px' },
+                                mx: { xs: 0.5, sm: 1, md: 'clamp(2px, 0.6vw, 12px)' },
+                                position: 'relative',
                             }}>
                                 <Box component="form" onSubmit={handleSearchSubmit} role="search" sx={{
                                     bgcolor: searchFocused ? '#ffffff' : '#f1f3f4',
                                     borderRadius: searchFocused && dropdownVisible ? '24px 24px 0 0' : 9,
-                                    display: 'flex', alignItems: 'center', px: 2, py: 0.8, width: '100%',
+                                    display: 'flex', alignItems: 'center',
+                                    px: { xs: 2, md: 'clamp(8px, 1vw, 16px)' }, py: 0.8,
+                                    width: '100%', minWidth: 0,
                                     transition: 'all 0.2s',
                                     border: searchFocused ? '1px solid #0865a8' : '1px solid transparent',
                                     boxShadow: searchFocused ? '0 0 0 2px rgba(8,101,168,0.1)' : 'none',
                                     borderBottom: searchFocused && dropdownVisible ? '1px solid #e0e0e0' : undefined,
                                 }}>
                                     <IconButton type="submit" disabled={!searchValue.trim()}
-                                        sx={{ p: 0.5, '&:hover': { bgcolor: 'transparent' }, '&.Mui-disabled': { opacity: 0.4 }, order: 3 }}
+                                        sx={{ p: 0.5, '&:hover': { bgcolor: 'transparent' }, '&.Mui-disabled': { opacity: 0.4 }, order: 3, flexShrink: 0 }}
                                         aria-label={t('courses.search')}>
                                         <SearchIcon sx={{ color: '#0865a8', fontSize: { xs: 18, md: 22 } }} />
                                     </IconButton>
@@ -1199,17 +1202,17 @@ const Navbar = () => {
                                         autoComplete="off"
                                         inputProps={{ 'aria-label': t('courses.search'), 'aria-autocomplete': 'both', 'aria-haspopup': 'true', 'aria-expanded': dropdownVisible, role: 'combobox' }}
                                         sx={{
-                                            color: '#000', flexGrow: 1,
+                                            color: '#000', flexGrow: 1, minWidth: 0,
                                             fontFamily: FONT,
-                                            fontSize: { xs: '0.8rem', md: '0.95rem' },
-                                            px: 1,
-                                            '& input': { textAlign: 'start' },
+                                            fontSize: { xs: '0.8rem', md: 'clamp(0.72rem, 0.4rem + 0.35vw, 0.95rem)' },
+                                            px: { xs: 1, md: 0.5 },
+                                            '& input': { textAlign: 'start', minWidth: 0, textOverflow: 'ellipsis' },
                                         }}
                                     />
                                     {searchValue && (
                                         <IconButton size="small"
                                             onClick={() => { setSearchValue(''); setSuggestions([]); setActiveSuggestionIndex(-1); searchInputRef.current?.focus(); }}
-                                            sx={{ p: 0.5 }} aria-label={t('common.cancel')}>
+                                            sx={{ p: 0.5, flexShrink: 0 }} aria-label={t('common.cancel')}>
                                             <CloseIcon sx={{ fontSize: 16, color: '#888' }} />
                                         </IconButton>
                                     )}
@@ -1217,7 +1220,11 @@ const Navbar = () => {
 
                                 {dropdownVisible && (
                                     <Paper elevation={6} sx={{
-                                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1300,
+                                        // Stays readable even when the search bar itself is narrow:
+                                        // anchored to the left edge and grows toward the menu.
+                                        position: 'absolute', top: '100%', left: 0, right: 'auto',
+                                        width: '100%', minWidth: { md: 340 },
+                                        zIndex: 1300,
                                         borderRadius: '0 0 12px 12px', border: '1px solid #0865a8', borderTop: 'none',
                                         boxShadow: '0 8px 32px rgba(0,0,0,0.14)', overflow: 'hidden', bgcolor: 'white',
                                         maxHeight: '420px', overflowY: 'auto',
@@ -1318,11 +1325,11 @@ const Navbar = () => {
                         </ClickAwayListener>
 
                         {/* ── RIGHT-SIDE CONTROLS ── */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 }, flexShrink: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 'clamp(2px, 0.6vw, 12px)' }, flexShrink: 0 }}>
                             {!isMobile && authLoaded && !adminLoading && isAdmin && (
-                                <Link to="/admin" className="admin-nav-btn" title={t('nav.admin')}>
+                                <Link to="/admin" className="admin-nav-btn">
                                     <AdminPanelSettingsIcon sx={{ fontSize: 12 }} />
-                                    <span className="admin-nav-label">{t('nav.admin')}</span>
+                                    {t('nav.admin')}
                                 </Link>
                             )}
 
@@ -1344,7 +1351,7 @@ const Navbar = () => {
                                 {authLoaded && <SignedOut>
                                     <SignInButton mode="modal">
                                         <Button variant="contained" size="small"
-                                            sx={{ fontFamily: FONT, fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
+                                            sx={{ fontFamily: FONT, fontSize: '0.8rem', bgcolor: '#0865a8', color: '#ffffff', px: 1, py: 0.5, borderRadius: 5, textTransform: 'none', fontWeight: 600, boxShadow: '0 4px 12px rgba(8,101,168,0.25)', minWidth: 'auto', whiteSpace: 'nowrap', '&:hover': { bgcolor: '#f57c00', boxShadow: '0 6px 18px rgba(245,124,0,0.35)' } }}>
                                             {t('nav.login')}
                                         </Button>
                                     </SignInButton>
