@@ -14,39 +14,77 @@ const C = { o: '#f57c00', b: '#0865a8', bd: '#044474', w: '#fff', k: '#0a0a0a', 
 
 const wa = (msg) => `https://wa.me/201201737593?text=${encodeURIComponent(msg)}`;
 const P = (file) => encodeURI(`/images/pmi/${file}`);
+
+/* ------------------------------------------------------------------
+   Optional data: any empty field is simply not rendered on the page.
+   Fill these in once the information is confirmed by PMI / ICEMT.
+------------------------------------------------------------------ */
+const INFO = {
+    accreditationName: 'شريك تدريب معتمد من PMI (Authorized Training Partner)',
+    validUntil: '',        // تاريخ سريان الاعتماد
+    verifyUrl: '',         // رابط التحقق من الاعتماد
+    certImg: '',           // صورة شهادة الاعتماد، مثال: P('atp-certificate.jpg')
+    protocol: '',          // نبذة عن البروتوكول ونطاق التعاون والخدمات المشمولة
+    email: '',             // البريد الإلكتروني للاستفسارات والحجز
+    contactPerson: '',     // اسم أو صفة مسؤول التواصل
+    replyHours: '',        // مواعيد الرد
+    certConditions: '',    // شروط إصدار شهادة إتمام التدريب
+    certUsage: '',         // كيفية استخدام الشهادة لإثبات الساعات لدى PMI
+    discountExams: '',     // الامتحانات المشمولة بالخصم
+    discountValue: '',     // قيمة أو نسبة الخصم
+    discountWho: '',       // الفئات المستفيدة وشروط الخصم
+    discountValidity: '',  // مدة سريان الخصم
+};
+
+// تفاصيل خدمة حجز الامتحانات، مثال: { t: 'الامتحانات المتاحة', d: 'PMP, CAPM, RMP' }
+const examService = [
+    // { t: 'الامتحانات المتاحة', d: '' },
+    // { t: 'حدود الخدمة', d: 'مراجعة الطلب / المساعدة في التسجيل / السداد والحجز' },
+    // { t: 'تعديل الموعد أو الإلغاء', d: '' },
+];
+
+// الأسئلة الشائعة، مثال: { q: 'هل أحتاج عضوية PMI؟', a: '...' }
+const faqs = [];
+
+/* Programs: optional extra fields per item: audience, prereq, schedule, price, includes */
 const programs = [
     {
-        code: 'PMP', en: 'Project Management Professional', ar: 'إدارة المشروعات الاحترافية', hours: 45,
-        desc: 'المعيار العالمي الأكثر اعتمادًا في إدارة المشروعات، يقدمه PMI لإثبات كفاءة مدير المشروع في قيادة الأفراد والعمليات بمختلف المنهجيات.'
+        code: 'PMI-PMP', en: 'Project Management Professional', ar: 'إدارة المشروعات الاحترافية', hours: 45,
+        desc: 'المعيار العالمي الأكثر اعتمادًا في إدارة المشروعات، يقدمه PMI لإثبات كفاءة مدير المشروع في قيادة الأفراد والعمليات بمختلف المنهجيات.',
+        audience: '', prereq: '', schedule: '', price: '', includes: ''
     },
     {
         code: 'PMI-CP', en: 'Construction Professional', ar: 'محترف الإنشاءات', hours: 35,
-        desc: 'شهادة متخصصة من PMI لإدارة مشروعات البناء والتشييد والتحكم في عقودها ومخاطرها.'
+        desc: 'شهادة متخصصة من PMI لإدارة مشروعات البناء والتشييد والتحكم في عقودها ومخاطرها.',
+        audience: '', prereq: '', schedule: '', price: '', includes: ''
     },
     {
         code: 'PMI-RMP', en: 'Risk Management Professional', ar: 'إدارة مخاطر المشروع', hours: 30,
-        desc: 'شهادة تخصصية متقدمة تثبت القدرة على تحديد مخاطر المشروعات وتقييمها والتعامل معها (تهديدات أو فرصًا) لحماية نجاحها.'
+        desc: 'شهادة تخصصية متقدمة تثبت القدرة على تحديد مخاطر المشروعات وتقييمها والتعامل معها (تهديدات أو فرصًا) لحماية نجاحها.',
+        audience: '', prereq: '', schedule: '', price: '', includes: ''
     },
     {
-        code: 'CAPM', en: 'Certified Associate in Project Management', ar: 'مشارك معتمد في إدارة المشروعات', hours: 23,
-        desc: 'شهادة أساسية للمبتدئين وحديثي الخبرة، تثبت الإلمام بمفاهيم ومصطلحات وأساسيات إدارة المشروعات.'
+        code: 'PMI-CAPM', en: 'Certified Associate in Project Management', ar: 'مشارك معتمد في إدارة المشروعات', hours: 23,
+        desc: 'شهادة أساسية للمبتدئين وحديثي الخبرة، تثبت الإلمام بمفاهيم ومصطلحات وأساسيات إدارة المشروعات.',
+        audience: '', prereq: '', schedule: '', price: '', includes: ''
     },
     {
-        code: 'PMO', en: 'Project Management Office (PMOCP)', ar: 'إدارة مكتب المشروع', hours: 15,
-        desc: 'الوحدة التنظيمية المسؤولة عن توحيد معايير إدارة المشروعات ومتابعة أدائها وضمان توافقها مع أهداف المؤسسة.'
+        code: 'PMI-PMOCP', en: 'Project Management Office (PMOCP)', ar: 'إدارة مكتب المشروع', hours: 15,
+        desc: 'الوحدة التنظيمية المسؤولة عن توحيد معايير إدارة المشروعات ومتابعة أدائها وضمان توافقها مع أهداف المؤسسة.',
+        audience: '', prereq: '', schedule: '', price: '', includes: ''
     },
 ];
 
 const lecturers = [
-    { name: 'د. شعبان عثمان', certs: ['PMP', 'RMP', 'CAPM', 'PMOCP'], note: 'خبرة في إدارة المخاطر ومكاتب المشروعات', photo: P('lecturers/shabaan2.jpeg') },
-    { name: 'هبة عادل عباس', certs: ['PMP', 'PMOCP'], note: 'خبرة في إدارة المشروعات والتطوير المؤسسي', photo: P('lecturers/heba.jpg') },
-    { name: 'م. محمد غانم', certs: ['PMP'], note: '', photo: P('lecturers/ghanem.jpeg') },
-    { name: 'د. محمد حاتم محمد', certs: ['PMP'], note: '', photo: P('lecturers/hatem.jpeg') },
+    { name: 'د. شعبان عثمان', certs: ['PMI-PMP', 'PMI-RMP', 'PMI-CAPM', 'PMI-PMOCP'], note: 'خبرة في إدارة المخاطر ومكاتب المشروعات', photo: P('lecturers/shabaan2.jpeg') },
+    { name: 'د. هبة عادل عباس', certs: ['PMI-PMP', 'PMI-PMOCP'], note: 'خبرة في إدارة المشروعات والتطوير المؤسسي', photo: P('lecturers/heba.jpg') },
+    { name: 'م. محمد غانم', certs: ['PMI-PMP'], note: '', photo: P('lecturers/ghanem.jpeg') },
+    { name: 'د. محمد حاتم محمد', certs: ['PMI-PMP'], note: '', photo: P('lecturers/hatem.jpeg') },
 ];
 
 const certSamples = [
-    { title: 'شهادة PMP', sub: 'إعداد لامتحان PMI-PMP · 45 ساعة اتصال', img: P('4.png') },
-    { title: 'شهادة PMO', sub: 'إعداد لامتحان PMI-PMOCP · 15 ساعة اتصال', img: P('3.png') },
+    { title: 'شهادة PMI-PMP', sub: 'إعداد لامتحان PMI-PMP · 45 ساعة اتصال', img: P('4.png') },
+    { title: 'شهادة PMI-PMOCP', sub: 'إعداد لامتحان PMI-PMOCP · 15 ساعة اتصال', img: P('3.png') },
 ];
 
 const features = [
@@ -97,7 +135,18 @@ function Btn({ href, to, orange, outline, children }) {
         : <Link to={to} style={s} onMouseEnter={over} onMouseLeave={out}>{children}</Link>;
 }
 
+const metaLine = { fontFamily: F, fontSize: '.74rem', color: C.g7, lineHeight: 1.8 };
+
 export default function PmiPage() {
+    const discountLines = [
+        INFO.discountExams && `الامتحانات المشمولة: ${INFO.discountExams}`,
+        INFO.discountValue && `قيمة الخصم: ${INFO.discountValue}`,
+        INFO.discountWho && `المستفيدون وشروط الخصم: ${INFO.discountWho}`,
+        INFO.discountValidity && `مدة السريان: ${INFO.discountValidity}`,
+    ].filter(Boolean);
+
+    const hasAccreditation = INFO.protocol || INFO.validUntil || INFO.verifyUrl || INFO.certImg;
+
     return (
         <div dir="rtl" style={{ fontFamily: F, background: C.w, overflowX: 'hidden' }}>
             <style>{`
@@ -113,6 +162,8 @@ export default function PmiPage() {
                 .pp-card:hover{border-color:${C.o};transform:translateY(-4px);box-shadow:0 12px 30px rgba(245,124,0,.12);}
                 .pp-cert{display:block;border:1px solid ${C.g3};border-radius:12px;overflow:hidden;background:${C.w};text-decoration:none;transition:transform .25s,box-shadow .25s;}
                 .pp-cert:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(0,0,0,.12);}
+                details.pp-card summary{list-style:none;}
+                details.pp-card summary::-webkit-details-marker{display:none;}
             `}</style>
 
             {/* HERO */}
@@ -173,8 +224,32 @@ export default function PmiPage() {
                 </div>
             </section>
 
+            {/* ACCREDITATION (shown only when at least one detail is filled in INFO) */}
+            {hasAccreditation && (
+                <section className="pp-S" style={{ background: C.g1 }}>
+                    <div className="pp-W pp-g2" style={{ alignItems: 'center' }}>
+                        <div>
+                            <H eyebrow="الاعتماد" title="المعهد شريك تدريب معتمد من PMI" />
+                            <ul style={{ margin: 0, paddingInlineStart: 20, fontFamily: F, fontSize: '.86rem', color: C.g7, lineHeight: 2.2 }}>
+                                <li>{INFO.accreditationName} — رقم ATP: 4066</li>
+                                {INFO.validUntil && <li>ساري حتى: {INFO.validUntil}</li>}
+                                {INFO.protocol && <li>{INFO.protocol}</li>}
+                                {INFO.verifyUrl && (
+                                    <li>
+                                        <a href={INFO.verifyUrl} target="_blank" rel="noopener noreferrer" style={{ color: C.b, fontWeight: 700 }}>التحقق من الاعتماد</a>
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
+                        {INFO.certImg && (
+                            <img src={INFO.certImg} alt="شهادة اعتماد ATP" loading="lazy" style={{ width: '100%', borderRadius: 12, border: `1px solid ${C.g3}` }} />
+                        )}
+                    </div>
+                </section>
+            )}
+
             {/* PROGRAMS */}
-            <section id="programs" className="pp-S" style={{ background: C.g1 }}>
+            <section id="programs" className="pp-S" style={{ background: hasAccreditation ? C.w : C.g1 }}>
                 <div className="pp-W">
                     <H eyebrow="البرامج التدريبية" title="برامج متخصصة في إدارة المشروعات والتشييد" />
                     <div className="pp-g3">
@@ -184,6 +259,10 @@ export default function PmiPage() {
                                 <div style={{ fontFamily: F, fontSize: '.95rem', fontWeight: 800, color: C.k }}>{p.ar}</div>
                                 <div style={{ fontFamily: 'sans-serif', direction: 'ltr', textAlign: 'right', fontSize: '.72rem', color: C.g5 }}>{p.en}</div>
                                 <p style={{ fontFamily: F, fontSize: '.8rem', color: C.g7, lineHeight: 1.9, flex: 1, margin: '6px 0' }}>{p.desc}</p>
+                                {p.audience && <div style={metaLine}><b>الفئة المستهدفة:</b> {p.audience}</div>}
+                                {p.prereq && <div style={metaLine}><b>شروط الالتحاق:</b> {p.prereq}</div>}
+                                {p.schedule && <div style={metaLine}><b>المواعيد:</b> {p.schedule}</div>}
+                                {p.price && <div style={metaLine}><b>الرسوم:</b> {p.price}{p.includes ? ` (تشمل ${p.includes})` : ''}</div>}
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px solid ${C.g3}`, paddingTop: 12 }}>
                                     <span style={{ fontFamily: F, fontSize: '.74rem', fontWeight: 700, color: C.g7, display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <AccessTimeIcon sx={{ fontSize: 15, color: C.o }} /> {p.hours} ساعة تدريبية
@@ -197,7 +276,8 @@ export default function PmiPage() {
                         ))}
                     </div>
                     <p style={{ fontFamily: F, fontSize: '.8rem', color: C.g5, marginTop: 20, lineHeight: 1.9 }}>
-                        طريقة التدريب: حضوري أو أونلاين. الدفع من داخل مصر بالجنيه المصري ومن خارجها بالدولار الأمريكي.
+                        طريقة التدريب: حضوري أو أونلاين. رسوم التدريب: من داخل مصر بالجنيه المصري ومن خارجها بالدولار الأمريكي.
+                        أما رسوم الامتحانات الدولية فتُسدد بالدولار الأمريكي (USD) فقط.
                     </p>
                 </div>
             </section>
@@ -235,6 +315,12 @@ export default function PmiPage() {
                     <p style={{ fontFamily: F, fontSize: '.88rem', color: 'rgba(255,255,255,.6)', lineHeight: 2, margin: '-14px 0 28px', maxWidth: 640 }}>
                         يحصل المتدرب بعد إتمام البرنامج على شهادة إتمام من المعهد بصفته شريك تدريب معتمد من PMI، موضحًا بها عدد ساعات الاتصال (Contact Hours) المطلوبة للتقدم للامتحان.
                     </p>
+                    {(INFO.certConditions || INFO.certUsage) && (
+                        <ul style={{ margin: '0 0 28px', paddingInlineStart: 20, fontFamily: F, fontSize: '.84rem', color: 'rgba(255,255,255,.75)', lineHeight: 2.1, maxWidth: 640 }}>
+                            {INFO.certConditions && <li>{INFO.certConditions}</li>}
+                            {INFO.certUsage && <li>{INFO.certUsage}</li>}
+                        </ul>
+                    )}
                     <div className="pp-g2">
                         {certSamples.map(c => (
                             <a key={c.title} className="pp-cert" href={c.img} target="_blank" rel="noopener noreferrer">
@@ -255,7 +341,7 @@ export default function PmiPage() {
             {/* DISCOUNT */}
             <section style={{ background: 'rgba(245,124,0,.08)', padding: 'clamp(24px,4vw,40px) 0' }}>
                 <div className="pp-W" style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, flex: '1 1 420px' }}>
                         <div style={{ width: 60, height: 60, borderRadius: '50%', background: C.o, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <EmojiEventsIcon sx={{ color: C.w, fontSize: 32 }} />
                         </div>
@@ -263,6 +349,12 @@ export default function PmiPage() {
                             <div style={{ fontFamily: F, fontWeight: 900, fontSize: 'clamp(1rem,2vw,1.4rem)', color: C.k }}>خصومات خاصة على الامتحانات الدولية</div>
                             <div style={{ fontFamily: F, fontSize: '.82rem', color: C.g7, lineHeight: 1.9 }}>
                                 الخصم غير مرتبط بالاشتراك في دورات المعهد. استفسر عن الخصم المتاح وخدمة الحجز.
+                            </div>
+                            {discountLines.map(t => (
+                                <div key={t} style={{ fontFamily: F, fontSize: '.8rem', color: C.g7, lineHeight: 1.9 }}>• {t}</div>
+                            ))}
+                            <div style={{ marginTop: 10, display: 'inline-block', background: C.o, color: C.w, fontFamily: F, fontWeight: 800, fontSize: '.84rem', padding: '8px 16px', borderRadius: 8, lineHeight: 1.8 }}>
+                                هام: سداد رسوم الامتحانات الدولية يتم بالدولار الأمريكي (USD) فقط.
                             </div>
                         </div>
                     </div>
@@ -295,8 +387,13 @@ export default function PmiPage() {
                         <ol style={{ margin: 0, paddingInlineStart: 22, fontFamily: F, fontSize: '.86rem', color: C.g7, lineHeight: 2.2 }}>
                             {waData.map(d => <li key={d}>{d}</li>)}
                         </ol>
+                        {examService.map(x => (
+                            <p key={x.t} style={{ fontFamily: F, fontSize: '.82rem', color: C.g7, lineHeight: 1.9, margin: '10px 0 0' }}>
+                                <b>{x.t}:</b> {x.d}
+                            </p>
+                        ))}
                         <p style={{ fontFamily: F, fontSize: '.78rem', color: C.g5, marginTop: 14, lineHeight: 1.9 }}>
-                            الرسوم حسب نوع الامتحان المطلوب. تفاصيل السداد يرسلها لك فريق المعهد مباشرة بعد التواصل.
+                            الرسوم حسب نوع الامتحان المطلوب، وتُسدد بالدولار الأمريكي (USD) فقط. تفاصيل السداد يرسلها لك فريق المعهد مباشرة بعد التواصل.
                         </p>
                     </div>
                     <div style={{ background: `linear-gradient(135deg,${C.bd},${C.b})`, borderRadius: 14, padding: 'clamp(22px,3vw,36px)', color: C.w, textAlign: 'center' }}>
@@ -306,9 +403,31 @@ export default function PmiPage() {
                             تواصل معنا للاستفسار عن البرامج التدريبية وخدمات حجز الامتحانات.
                         </p>
                         <Btn href={wa('مرحبًا، أرغب في الاستفسار عن برامج PMI')} orange><WhatsAppIcon sx={{ fontSize: 18 }} /> 01201737593</Btn>
+                        {INFO.email && (
+                            <div style={{ fontFamily: F, fontSize: '.8rem', marginTop: 14, color: 'rgba(255,255,255,.85)' }}>
+                                <a href={`mailto:${INFO.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{INFO.email}</a>
+                            </div>
+                        )}
+                        {INFO.contactPerson && <div style={{ fontFamily: F, fontSize: '.76rem', marginTop: 6, color: 'rgba(255,255,255,.7)' }}>مسؤول التواصل: {INFO.contactPerson}</div>}
+                        {INFO.replyHours && <div style={{ fontFamily: F, fontSize: '.76rem', marginTop: 4, color: 'rgba(255,255,255,.7)' }}>مواعيد الرد: {INFO.replyHours}</div>}
                     </div>
                 </div>
             </section>
+
+            {/* FAQ (shown only when faqs is not empty) */}
+            {faqs.length > 0 && (
+                <section className="pp-S">
+                    <div className="pp-W">
+                        <H eyebrow="أسئلة شائعة" title="إجابات عن أكثر الأسئلة تكرارًا" />
+                        {faqs.map(f => (
+                            <details key={f.q} className="pp-card" style={{ marginBottom: 10 }}>
+                                <summary style={{ fontFamily: F, fontWeight: 800, fontSize: '.9rem', color: C.k, cursor: 'pointer' }}>{f.q}</summary>
+                                <p style={{ fontFamily: F, fontSize: '.82rem', color: C.g7, lineHeight: 1.9, margin: '10px 0 0' }}>{f.a}</p>
+                            </details>
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 }
