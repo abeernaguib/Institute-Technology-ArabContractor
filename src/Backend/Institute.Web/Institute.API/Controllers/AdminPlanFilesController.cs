@@ -1,6 +1,5 @@
 ﻿using Institute.Application.DTOs.AdminDtos;
 using Institute.Application.Interfaces.IService;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Institute.API.Controllers
@@ -16,34 +15,38 @@ namespace Institute.API.Controllers
             _service = service;
         }
 
-        [HttpGet("{planId}")]
+        [HttpGet("{planId:int}")]
         public async Task<IActionResult> GetFiles(int planId)
         {
             var result = await _service.GetFilesAsync(planId);
-
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(
-            [FromForm] CreatePlanFileDto dto)
+        public async Task<IActionResult> Add([FromForm] CreatePlanFileDto dto)
         {
             await _service.AddAsync(dto);
-
-            return Ok(new
-            {
-                message = "File uploaded successfully"
-            });
+            return Ok(new { message = "File uploaded successfully" });
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(
-            int planId,
-            int fileId)
+        [HttpPut("{fileId:int}")]
+        public async Task<IActionResult> Update(int fileId, [FromForm] UpdatePlanFileDto dto)
         {
-            await _service.DeleteAsync(planId, fileId);
+            var updated = await _service.UpdateAsync(fileId, dto);
+            if (!updated)
+                return NotFound(new { message = $"File {fileId} not found" });
 
-            return Ok();
+            return Ok(new { message = "File updated successfully" });
+        }
+
+        [HttpDelete("{fileId:int}")]
+        public async Task<IActionResult> Delete(int fileId)
+        {
+            var deleted = await _service.DeleteAsync(fileId);
+            if (!deleted)
+                return NotFound(new { message = $"File {fileId} not found" });
+
+            return NoContent();
         }
     }
 }
