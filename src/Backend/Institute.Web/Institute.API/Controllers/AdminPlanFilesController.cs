@@ -46,9 +46,7 @@ namespace Institute.API.Controllers
             if (!updated)
                 return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
-            return ok
-                ? Ok(new { message = "File updated successfully" })
-                : NotFound();
+            return Ok(new { message = "File updated successfully" });
         }
 
         // DELETE api/admin/AdminPlanFiles/{planId}/{fileId}
@@ -59,7 +57,7 @@ namespace Institute.API.Controllers
             if (!deleted)
                 return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
-            return ok ? Ok() : NotFound();
+            return Ok(new { message = "File deleted successfully" });
         }
     }
 }
