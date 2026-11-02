@@ -85,17 +85,37 @@ const navBtnSx = {
 const generateSlug = (title = '') =>
     title.trim().replace(/\s+/g, '-').replace(/[^\w\u0600-\u06FF\u0660-\u0669-]/g, '').toLowerCase();
 
+// ── Hidden categories (main_flag = false, checkbox "عرض قسم رئيسي" in admin) ──
+// ⚠️ /Categories/tree MUST return the flag (mainFlag / main_flag) for this to work.
+const isHiddenNode = (n) =>
+    n.mainFlag === false || n.main_flag === false || n.isMain === false ||
+    n.mainFlag === 0 || n.main_flag === 0;
+
+// Removes hidden nodes AND everything under them.
+// Every ancestor of a removed node gets _trimmed = true, so we know its own
+// "courses" endpoint may still return courses that belong to the hidden child.
+const pruneHidden = (nodes = []) =>
+    nodes
+        .filter(n => !isHiddenNode(n))
+        .map(n => {
+            if (!n.children) return n;
+            const kids = pruneHidden(n.children);
+            const trimmed = kids.length !== n.children.length || kids.some(k => k._trimmed);
+            return { ...n, children: kids, _trimmed: trimmed };
+        });
+
 let treePromise = null;
 const fetchTreeOnce = () => {
     if (!treePromise) {
         treePromise = fetch(`${API_BASE}/Categories/tree`)
             .then(r => { if (!r.ok) throw new Error('Failed to load categories'); return r.json(); })
+            .then(tree => pruneHidden(Array.isArray(tree) ? tree : []))
             .catch(e => { treePromise = null; throw e; });
     }
     return treePromise;
 };
 
-const COURSES_CACHE_KEY = 'allCoursesCache_v1';
+const COURSES_CACHE_KEY = 'allCoursesCache_v2'; // bumped: old cache could contain hidden courses
 const COURSES_TTL = 30 * 60 * 1000; // 30 minutes
 let coursesPromise = null;
 
@@ -126,7 +146,12 @@ const getAllCoursesOnce = () => {
     coursesPromise = (async () => {
         const tree = await fetchTreeOnce();
         const slugs = new Set();
-        const collect = (cats) => cats.forEach(c => { if (c.slug) slugs.add(c.slug); if (c.children) collect(c.children); });
+        // A category that had a hidden child is skipped (its endpoint would also return the
+        // hidden child's courses); only its visible children are fetched.
+        const collect = (cats) => cats.forEach(c => {
+            if (!c._trimmed && c.slug) slugs.add(c.slug);
+            if (c.children) collect(c.children);
+        });
         if (tree[0]?.children) collect(tree[0].children);
 
         const queue = Array.from(slugs);
