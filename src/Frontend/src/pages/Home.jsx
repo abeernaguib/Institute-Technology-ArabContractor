@@ -51,8 +51,8 @@ const SponsoredCategorySection = React.lazy(() =>
 const slides = [
     { title: 'خدمات تدريبية مميزة', subtitle: 'التشييد والإدارة', tag: 'برامج تدريبية', link: '/overview#training-methods', image: '/images/banner6.jpg' },
     { title: 'التدريب الفني على المهن\nالميكانيكية والكهربائية', subtitle: 'تأهيل الكوادر الفنية', tag: 'تدريب تقني', link: '/shobra', image: '/images/banner3.jpg' },
-    { title: 'التدريب الحرفي على\nمهن التشييد والبناء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/gesr-el-suez', image: '/images/finalherfy.jpg' },
-    { title: 'التدريب في موقع العمل', subtitle: 'تدريب ميداني احترافي', tag: 'ميداني', link: '/onsite-training', image: '/images/banner4.jpg' },
+    { title: 'التدريب الحرفي على\nمهن التشييد والبناء', subtitle: 'تأهيل الكوادر الهندسية', tag: 'تدريب تقني', link: '/gesr-el-suez', image: '/images/hero1.jpg' },
+    { title: 'التدريب في موقع العمل', subtitle: 'تدريب ميداني احترافي', tag: 'ميداني', link: '/onsite-training', image: '/images/hero2.jpg' },
     { title: 'مدرسة المقاولون العرب الفنية  \n للتعليم والتدريب المزدوج ', subtitle: 'جيل مهني متميز', tag: 'تعليم فني', link: '/Technical_Schools', image: '/images/banner7.jpg' },
 ];
 
