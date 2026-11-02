@@ -7,11 +7,7 @@ namespace Institute.Application.Interfaces.IService
         Task<IEnumerable<PlanFileDto>> GetFilesAsync(int planId);
 
         Task AddAsync(CreatePlanFileDto dto);
-
-        // false = file not found
-        Task<bool> UpdateAsync(int fileId, UpdatePlanFileDto dto);
-
-        // false = file not found
+        Task<bool> UpdateAsync(int planId, int fileId, UpdatePlanFileDto dto);
         Task<bool> DeleteAsync(int planId, int fileId);
     }
 }

@@ -3,8 +3,8 @@
  * GET  /api/admin/AdminPlanFiles/{planId}
  *      → [{ planId, fileId, fileTitle, fileName (full blob URL), filePeriorty, planworkName }]
  * POST /api/admin/AdminPlanFiles          (FormData: planId, file, fileTitle, filePeriorty)
- * PUT  /api/admin/AdminPlanFiles/{fileId} (FormData: file?, fileTitle, filePeriorty)
- * DELETE /api/admin/AdminPlanFiles/{fileId}
+ * PUT  /api/admin/AdminPlanFiles/{planId}/{fileId} (FormData: file?, fileTitle, filePeriorty)
+ * DELETE /api/admin/AdminPlanFiles/{planId}/{fileId}
  *
  * Sponsored category: planwork records can be flagged as a "sponsored" section
  * (sponsorFlag + sponsorDesc) shown on the Home page.
@@ -305,9 +305,10 @@ function TreeNode({ node, selectedId, onSelect, depth = 0, forceOpen = false }) 
 //   → [{ planId, fileId, fileTitle, fileName (full blob URL), filePeriorty, planworkName }]
 // POST /api/admin/AdminPlanFiles
 //   FormData: planId (int), File (binary), FileTitle, FilePeriorty
-// PUT  /api/admin/AdminPlanFiles/{fileId}
+// PUT  /api/admin/AdminPlanFiles/{planId}/{fileId}
 //   FormData: File? (binary), FileTitle, FilePeriorty
-// DELETE /api/admin/AdminPlanFiles/{fileId}
+// DELETE /api/admin/AdminPlanFiles/{planId}/{fileId}
+// (fileId is only unique within a plan, so planId is part of the route)
 // ══════════════════════════════════════════════════════════════════════════════
 function FilesSection({ planworkId, planworkName }) {
     const [files, setFiles] = useState([]);
@@ -396,7 +397,7 @@ function FilesSection({ planworkId, planworkName }) {
                     headers: await authHeaders(true),
                     body: fd,
                 });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (!res.ok) throw new Error(await errMsg(res));
                 // Re-fetch to get the real fileId + blob URL
                 await loadFiles();
                 setFileForm({ ...FILE_BLANK, planId: planworkId });
@@ -404,17 +405,15 @@ function FilesSection({ planworkId, planworkName }) {
                 setIsNewFile(true);
                 fileToast('تم رفع الملف بنجاح');
             } else {
-                // PUT — update existing file
-                // (fileId alone isn't unique across plans, so the backend also needs planId)
-                fd.append('planId', String(planworkId));
+                // PUT — update existing file (route: planId + fileId)
                 if (fileForm.file) fd.append('File', fileForm.file);
 
-                const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${fileForm.id}`, {
+                const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${planworkId}/${fileForm.id}`, {
                     method: 'PUT',
                     headers: await authHeaders(true),
                     body: fd,
                 });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (!res.ok) throw new Error(await errMsg(res));
                 await loadFiles();
                 fileToast('تم تحديث الملف بنجاح');
             }
@@ -429,11 +428,11 @@ function FilesSection({ planworkId, planworkName }) {
         if (!fileDelConfirm) { setFileDelConfirm(true); return; }
         setDeletingFile(true);
         try {
-            const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${selectedFile.id}?planId=${planworkId}`, {
+            const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${planworkId}/${selectedFile.id}`, {
                 method: 'DELETE',
                 headers: await authHeaders(),
             });
-            if (res.status !== 200 && res.status !== 204) throw new Error(`HTTP ${res.status}`);
+            if (res.status !== 200 && res.status !== 204) throw new Error(await errMsg(res));
             setFiles(prev => prev.filter(f => f.id !== selectedFile.id));
             setFileDelConfirm(false);
             setFileForm({ ...FILE_BLANK, planId: planworkId });

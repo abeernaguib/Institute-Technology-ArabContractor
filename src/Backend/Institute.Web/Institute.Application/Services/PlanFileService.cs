@@ -80,45 +80,30 @@ namespace Institute.Application.Services
         }
 
         // ── UPDATE ──────────────────────────────────
-        // Updates title / priority, and replaces the file only when a new one is sent.
-        public async Task<bool> UpdateAsync(int fileId, UpdatePlanFileDto dto)
+        public async Task<bool> UpdateAsync(int planId, int fileId, UpdatePlanFileDto dto)
         {
-            var spec = new PlanFileByIdSpec(dto.PlanId, fileId);
-
+            var spec = new PlanFileByIdSpec(planId, fileId);
             var file = await _planFileRepo.GetByIdWithSpecAsync(spec);
 
             if (file == null)
                 return false;
 
-            if (dto.FileTitle != null)
-                file.FileTitle = dto.FileTitle;
+            if (!string.IsNullOrWhiteSpace(dto.FileTitle))
+                file.FileTitle = dto.FileTitle.Trim();
 
             if (dto.FilePeriorty.HasValue)
-                file.FilePeriorty = dto.FilePeriorty;
+                file.FilePeriorty = dto.FilePeriorty.Value;
 
-            string? oldName = null;
-
+            // replace the stored file only if a new one was sent
             if (dto.File != null && dto.File.Length > 0)
             {
-                oldName = file.FileName;
-
                 file.FileName = await _blobStorage.UploadFileAsync(
                     dto.File,
                     Container,
                     Folder);
             }
 
-            _planFileRepo.Update(file);
-
             await _planFileRepo.SaveChangesAsync();
-
-            // the replaced file is no longer needed (unless it has the same name = it was overwritten in place)
-            if (oldName != null &&
-                !string.Equals(oldName, file.FileName, StringComparison.OrdinalIgnoreCase))
-            {
-                await DeleteBlobIfUnusedAsync(oldName);
-            }
-
             return true;
         }
 
@@ -126,34 +111,14 @@ namespace Institute.Application.Services
         public async Task<bool> DeleteAsync(int planId, int fileId)
         {
             var spec = new PlanFileByIdSpec(planId, fileId);
-
-            var file =
-                await _planFileRepo.GetByIdWithSpecAsync(spec);
+            var file = await _planFileRepo.GetByIdWithSpecAsync(spec);
 
             if (file == null)
                 return false;
 
-            var oldName = file.FileName;
-
             _planFileRepo.Delete(file);
-
             await _planFileRepo.SaveChangesAsync();
-
-            await DeleteBlobIfUnusedAsync(oldName);
-
             return true;
-        }
-
-        // ── Helpers ─────────────────────────────────
-        // Removes the blob only if no other PlanFile row still points to the same file name
-        private async Task DeleteBlobIfUnusedAsync(string? fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName)) return;
-
-            var stillUsed = await _planFileRepo.AnyAsync(f => f.FileName == fileName);
-
-            if (!stillUsed)
-                await _blobStorage.DeleteFileAsync(fileName, Container, Folder);
         }
 
         // ── BUILD FILE URL ──────────────────────────

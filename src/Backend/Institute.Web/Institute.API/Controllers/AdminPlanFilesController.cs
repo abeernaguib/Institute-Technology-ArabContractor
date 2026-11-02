@@ -16,7 +16,8 @@ namespace Institute.API.Controllers
             _service = service;
         }
 
-        [HttpGet("{planId}")]
+        // GET api/admin/AdminPlanFiles/{planId}
+        [HttpGet("{planId:int}")]
         public async Task<IActionResult> GetFiles(int planId)
         {
             var result = await _service.GetFilesAsync(planId);
@@ -24,6 +25,7 @@ namespace Institute.API.Controllers
             return Ok(result);
         }
 
+        // POST api/admin/AdminPlanFiles
         [HttpPost]
         public async Task<IActionResult> Add(
             [FromForm] CreatePlanFileDto dto)
@@ -36,32 +38,26 @@ namespace Institute.API.Controllers
             });
         }
 
-        // PUT api/admin/AdminPlanFiles/{fileId}   (multipart/form-data: planId, FileTitle, FilePeriorty, File?)
-        [HttpPut("{fileId}")]
-        public async Task<IActionResult> Update(
-            int fileId,
-            [FromForm] UpdatePlanFileDto dto)
+        // PUT api/admin/AdminPlanFiles/{planId}/{fileId}
+        [HttpPut("{planId:int}/{fileId:int}")]
+        public async Task<IActionResult> Update(int planId, int fileId, [FromForm] UpdatePlanFileDto dto)
         {
-            if (dto.PlanId <= 0)
-                return BadRequest(new { message = "planId is required" });
-
-            var ok = await _service.UpdateAsync(fileId, dto);
+            var updated = await _service.UpdateAsync(planId, fileId, dto);
+            if (!updated)
+                return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
             return ok
                 ? Ok(new { message = "File updated successfully" })
                 : NotFound();
         }
 
-        // DELETE api/admin/AdminPlanFiles/{fileId}?planId=5
-        [HttpDelete("{fileId}")]
-        public async Task<IActionResult> Delete(
-            int fileId,
-            [FromQuery] int planId)
+        // DELETE api/admin/AdminPlanFiles/{planId}/{fileId}
+        [HttpDelete("{planId:int}/{fileId:int}")]
+        public async Task<IActionResult> Delete(int planId, int fileId)
         {
-            if (planId <= 0)
-                return BadRequest(new { message = "planId is required" });
-
-            var ok = await _service.DeleteAsync(planId, fileId);
+            var deleted = await _service.DeleteAsync(planId, fileId);
+            if (!deleted)
+                return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
             return ok ? Ok() : NotFound();
         }
