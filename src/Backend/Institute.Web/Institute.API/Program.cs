@@ -131,7 +131,7 @@ builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>();
-
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
 
 // Rounds

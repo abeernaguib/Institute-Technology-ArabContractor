@@ -1,85 +1,8 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
+const API_BASE_URL = 'https://icemt.arabcont.com/api';
 
-// Same font as the Overview page (--font in overview.css).
-// Set explicitly here because overview.css only styles <body> once that page's CSS is loaded.
-const FONT = "'Noto Kufi Arabic', serif";
-
-const customers = [
-    { id: 1, name: 'جامعة حلوان', image: 'customer01.jpg' },
-    { id: 2, name: 'جامعة القاهرة', image: 'customer02.jpg' },
-    { id: 3, name: 'نقابه المهندسين المصرية العامة', image: 'customer03.jpg' },
-    { id: 4, name: 'المعهد العالى للتكنولوجيا السادس من اكتوبر', image: 'customer04.jpg' },
-    { id: 5, name: 'مصر الجديدة للإسكان والتعمير', image: 'customer05.jpg' },
-    { id: 6, name: 'المعهد العالى للتكنولوجيا العاشر من رمضان', image: 'customer06.jpg' },
-    { id: 7, name: 'جامعة المنوفية', image: 'customer07.jpg' },
-    { id: 8, name: 'جامعة عين شمس', image: 'customer08.jpg' },
-    { id: 9, name: 'جامعة 6 اكتوبر', image: 'customer09.jpg' },
-    { id: 10, name: '(مختار ابراهيم سابقا)المقاولات المصرية', image: 'customer10.jpg' },
-    { id: 11, name: 'جامعة قناة السويس', image: 'customer11.jpg' },
-    { id: 12, name: 'الجامعة الامريكية', image: 'customer12.jpg' },
-    { id: 13, name: 'العربية العامة للمقاولات', image: 'customer13.jpg' },
-    { id: 14, name: 'شركة بتروجيت', image: 'customer14.jpg' },
-    { id: 15, name: 'مجموعة شركات طلعت مصطفى', image: 'customer15.jpg' },
-    { id: 16, name: 'جامعة جازان (المملكة العربية السعودية)', image: 'customer16.jpg' },
-    { id: 17, name: 'مودرن اكاديمي', image: 'customer17.jpg' },
-    { id: 18, name: 'جامعة الاهرام الكندية', image: 'customer18.jpg' },
-    { id: 19, name: 'هيئة المحطات النووية لتوليد الكهرباء', image: 'customer19.jpg' },
-    { id: 20, name: 'الجامعة الروسية', image: 'customer20.jpg' },
-    { id: 21, name: 'شركة فنسي الفرنسية', image: 'customer21.jpg' },
-    { id: 22, name: 'مؤسسة الثقافة العمالية', image: 'customer22.jpg' },
-    { id: 23, name: 'جامعة دمشق', image: 'customer23.jpg' },
-    { id: 24, name: 'مجلس التدريب الصناعى', image: 'customer24.jpg' },
-    { id: 25, name: 'جامعة السودان', image: 'customer25.jpg' },
-    { id: 26, name: 'جمعية المحاسبين والمراجعين المصرية', image: 'customer26.jpg' },
-    { id: 27, name: 'جامعة اليمن', image: 'customer27.jpg' },
-    { id: 28, name: 'نقابه المهندسين المصرية الفرعية بالقاهرة', image: 'customer28.jpg' },
-    { id: 29, name: 'وزارة الاسكان والمرافق والمجتمعات العمرانية', image: 'customer29.jpg' },
-    { id: 30, name: 'جمعية الهندسة الادارية', image: 'customer30.jpg' },
-    { id: 31, name: 'نقابه المهندسين المصرية الفرعية بدمياط', image: 'customer31.jpg' },
-    { id: 32, name: 'شركة خليج السويس ( جابكو )', image: 'customer32.jpg' },
-    { id: 33, name: 'شركة بترول بلاعيم', image: 'customer33.jpg' },
-    { id: 34, name: 'شركة غاز مصر', image: 'customer34.jpg' },
-    { id: 35, name: 'القابضة للتشييد والتعمير', image: 'customer35.jpg' },
-    { id: 36, name: 'طابا للمقاولات', image: 'customer36.jpg' },
-    { id: 37, name: 'الاتحاد المصرى لمقاولى التشييد و البناء', image: 'customer37.jpg' },
-    { id: 38, name: 'الصعيد العامة للمقاولات', image: 'customer38.jpg' },
-    { id: 39, name: 'النصر للمرافق والتركيبات', image: 'customer39.jpg' },
-    { id: 40, name: 'العامة للإنشاءات (رولان)', image: 'customer40.jpg' },
-    { id: 41, name: 'هيئة قناة السويس', image: 'customer41.jpg' },
-    { id: 42, name: 'الهيئة العامة للابنية التعليمية', image: 'customer42.jpg' },
-    { id: 43, name: 'دول الكومنولث', image: 'customer43.jpg' },
-    { id: 44, name: 'وزارة الاسكان اليمنية', image: 'customer44.jpg' },
-    { id: 45, name: 'وزارة الدفاع المصرية', image: 'customer45.jpg' },
-    { id: 46, name: 'البحر الاحمر العامة للمقاولات', image: 'customer46.jpg' },
-    { id: 47, name: 'رئاسة جمهورية مصر العربية', image: 'customer47.jpg' },
-    { id: 48, name: 'الجيزة العامة للمقاولات', image: 'customer48.jpg' },
-    { id: 49, name: 'النيل للخرسانة الجاهزة', image: 'customer49.jpg' },
-    { id: 50, name: 'النصر العامة للمقاولات (حسن علام)', image: 'customer50.jpg' },
-    { id: 51, name: 'مدينة نصر للإسكان والتعمير', image: 'customer51.jpg' },
-    { id: 52, name: 'العامة للمقاولات والاعمال الصحية والتكميلية', image: 'customer52.jpg' },
-    { id: 53, name: 'دريم لاند (احمد بهجت)', image: 'customer53.jpg' },
-    { id: 54, name: 'الهيئة العامة للطرق و الكبارى و النقل البرى', image: 'customer54.jpg' },
-    { id: 55, name: 'اطلس العامة للمقاولات', image: 'customer55.jpg' },
-    { id: 56, name: 'اتحاد عمال البناء', image: 'customer56.jpg' },
-    { id: 57, name: 'الهيئة القومية للانفاق', image: 'customer57.jpg' },
-    { id: 58, name: 'القاهرة العامة للمقاولات', image: 'customer58.jpg' },
-    { id: 59, name: 'النصر العامة للأعمال المدنية', image: 'customer59.jpg' },
-    { id: 60, name: 'الدلتا العامة للمقاولات المصرية للإنشاءات', image: 'customer60.jpg' },
-    { id: 61, name: 'وزارة الاسكان البحرانية', image: 'customer61.jpg' },
-    { id: 62, name: 'هندسة المنشآت العسكرية الكويتية', image: 'customer62.jpg' },
-    { id: 63, name: 'وزارة الاسكان السودانية', image: 'customer63.jpg' },
-    { id: 64, name: 'وزارة البترول الليبية', image: 'customer64.jpg' },
-    { id: 65, name: 'الشمس للإسكان والتعمير', image: 'customer65.jpg' },
-    { id: 66, name: 'مصر لأعمال الاسمنت المسلح', image: 'customer66.jpg' },
-    { id: 67, name: 'المكتب العربي للتصميمات', image: 'customer67.jpg' },
-    { id: 68, name: 'المحمودية العامة للمقاولات', image: 'customer68.jpg' },
-    { id: 69, name: 'النصر للمباني والانشاءات', image: 'customer69.jpg' },
-    { id: 70, name: 'شركة مصر الدولية للمقاولات', image: 'customer70.jpg' },
-    { id: 71, name: 'شركة AHD', image: 'customer71.jpg' },
-    { id: 72, name: 'شركة ايفل', image: 'customer72.jpg' },
-    { id: 73, name: 'شركة ريدكون للتعمير', image: 'customer73.jpg' },
-    { id: 74, name: 'شركة الحازق', image: 'customer74.jpg' },
-];
+// الـ logo من الـ API بييجي full URL من الـ Blob Storage، بنستخدمه مباشرة
+const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23f3f4f6' width='100' height='100'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='44' fill='%23899aaa'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E";
 
 // Each card fades + slides up the first time it enters the viewport.
 // Hover effects are limited to md+ screens; on touch screens the card reacts to press (active).
@@ -123,17 +46,15 @@ const CustomerCard = ({ item, index }) => {
         >
             <div className="flex aspect-square w-full items-center justify-center rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 active:-translate-y-2 active:scale-95 active:border-[#0865a8]/30 active:shadow-lg md:group-hover:-translate-y-2 md:group-hover:shadow-lg">
                 <img
-                    src={`/images/${item.image}`}
+                    src={item.logo || FALLBACK}
                     alt={item.name}
                     loading="lazy"
                     className="max-h-full max-w-full object-contain transition-transform duration-300 md:group-hover:scale-105"
+                    onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK; }}
                 />
             </div>
 
-            <p
-                className="mt-4 line-clamp-2 px-2 text-center text-xs font-semibold leading-relaxed text-gray-500 transition-colors duration-300 group-active:text-[#0865a8] md:text-sm md:group-hover:text-[#0865a8]"
-                style={{ fontFamily: FONT }}
-            >
+            <p className="mt-4 line-clamp-2 px-2 text-center text-xs font-semibold text-gray-500 transition-colors duration-300 group-active:text-[#0865a8] md:text-sm md:group-hover:text-[#0865a8]">
                 {item.name}
             </p>
         </div>
@@ -141,15 +62,36 @@ const CustomerCard = ({ item, index }) => {
 };
 
 const CustomersPage = () => {
+    const [customers, setCustomers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${API_BASE_URL}/Customer`);
+                if (!response.ok) throw new Error('فشل في تحميل بيانات العملاء');
+                const data = await response.json();
+                setCustomers(data);
+                setError(null);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCustomers();
+    }, []);
+
     return (
         <div
             dir="rtl"
-            className="min-h-screen bg-white"
-            style={{ fontFamily: FONT }}
+            className="min-h-screen bg-white font-['Droid_Arabic_Kufi']"
         >
             {/* Fixed Overview Bar — SAME STYLE & COLORS */}
             <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
-                <div style={{ textAlign: 'center', fontFamily: FONT, fontSize: '1rem' }}>
+                <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
                     <a
                         href="/"
                         style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none', marginLeft: '8px' }}
@@ -167,24 +109,46 @@ const CustomersPage = () => {
             <div className="container mx-auto px-9 pt-[110px] pb-24 sm:px-9 lg:px-16">
                 {/* Header */}
                 <div className="mb-16 text-center">
-                    <h1
-                        className="mb-2 text-3xl font-black text-[#0865a8] md:text-4xl"
-                        style={{ fontFamily: FONT }}
-                    >
+                    <h1 className="mb-2 text-3xl font-bold text-[#0865a8] md:text-4xl">
                         عملاؤنا
                     </h1>
                     <div className="mx-auto mb-3 h-1 w-20 rounded-full bg-[#f57c00]" />
-                    <p className="text-gray-600" style={{ fontFamily: FONT }}>
+                    <p className="text-gray-600">
                         نسعى دائمًا لإرضاء العميل بتقديم أفضل الخدمات
                     </p>
                 </div>
 
-                {/* Grid */}
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                    {customers.map((item, index) => (
-                        <CustomerCard key={item.id} item={item} index={index} />
-                    ))}
-                </div>
+                {loading && (
+                    <div className="flex items-center justify-center py-20">
+                        <div className="text-center">
+                            <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-b-4 border-[#0865a8]"></div>
+                            <p className="text-lg text-gray-700">جاري تحميل العملاء...</p>
+                        </div>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="mx-auto max-w-2xl">
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+                            <p className="mb-2 font-bold text-red-700">حدث خطأ</p>
+                            <p className="text-red-600">{error}</p>
+                        </div>
+                    </div>
+                )}
+
+                {!loading && !error && (
+                    customers.length === 0 ? (
+                        <div className="py-12 text-center">
+                            <p className="text-lg text-gray-600">لا يوجد عملاء لعرضهم حاليًا</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                            {customers.map((item, index) => (
+                                <CustomerCard key={item.id} item={item} index={index} />
+                            ))}
+                        </div>
+                    )
+                )}
             </div>
         </div>
     );

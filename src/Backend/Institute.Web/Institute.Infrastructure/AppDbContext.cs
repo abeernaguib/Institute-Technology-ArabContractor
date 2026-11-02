@@ -35,6 +35,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Lecturer> Lecturers { get; set; }
     public virtual DbSet<TeamMember> TeamMembers { get; set; }
+    public virtual DbSet<Customer> Customers { get; set; }
     public virtual DbSet<NewsPic> NewsPics { get; set; }
 
     public virtual DbSet<PlanFile> PlanFiles { get; set; }
@@ -653,6 +654,14 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(t => new { t.Level, t.DisplayOrder });
         });
 
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.ToTable("Customers");
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Name).IsRequired().HasMaxLength(300);
+            entity.Property(c => c.Logo).HasMaxLength(255);
+            entity.HasIndex(c => c.DisplayOrder);
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 

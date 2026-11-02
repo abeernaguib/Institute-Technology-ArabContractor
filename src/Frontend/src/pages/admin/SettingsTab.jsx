@@ -29,6 +29,7 @@ const ADMIN_TABS = [
     { id: 'refunds', label: '💳 المستردات', permissionName: 'Refunds' },
     { id: 'finance', label: '💰 المالية', permissionName: 'Finance' },
     { id: 'lecturers', label: '🎓 المحاضرون', permissionName: 'Lecturers' },
+   { id: 'customers', label: '🏢 العملاء', permissionName: 'Customers' },
     { id: 'team', label: '👥 فريق العمل', permissionName: 'Team' },
     { id: 'news', label: '📰 الأخبار', permissionName: 'News' },
     { id: 'books', label: '📖 الكتب', permissionName: 'Books' },

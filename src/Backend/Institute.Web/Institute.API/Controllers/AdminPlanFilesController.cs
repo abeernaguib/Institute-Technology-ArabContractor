@@ -1,5 +1,6 @@
 ﻿using Institute.Application.DTOs.AdminDtos;
 using Institute.Application.Interfaces.IService;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Institute.API.Controllers
@@ -15,38 +16,54 @@ namespace Institute.API.Controllers
             _service = service;
         }
 
-        [HttpGet("{planId:int}")]
+        [HttpGet("{planId}")]
         public async Task<IActionResult> GetFiles(int planId)
         {
             var result = await _service.GetFilesAsync(planId);
+
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromForm] CreatePlanFileDto dto)
+        public async Task<IActionResult> Add(
+            [FromForm] CreatePlanFileDto dto)
         {
             await _service.AddAsync(dto);
-            return Ok(new { message = "File uploaded successfully" });
+
+            return Ok(new
+            {
+                message = "File uploaded successfully"
+            });
         }
 
-        [HttpPut("{fileId:int}")]
-        public async Task<IActionResult> Update(int fileId, [FromForm] UpdatePlanFileDto dto)
+        // PUT api/admin/AdminPlanFiles/{fileId}   (multipart/form-data: planId, FileTitle, FilePeriorty, File?)
+        [HttpPut("{fileId}")]
+        public async Task<IActionResult> Update(
+            int fileId,
+            [FromForm] UpdatePlanFileDto dto)
         {
-            var updated = await _service.UpdateAsync(fileId, dto);
-            if (!updated)
-                return NotFound(new { message = $"File {fileId} not found" });
+            if (dto.PlanId <= 0)
+                return BadRequest(new { message = "planId is required" });
 
-            return Ok(new { message = "File updated successfully" });
+            var ok = await _service.UpdateAsync(fileId, dto);
+
+            return ok
+                ? Ok(new { message = "File updated successfully" })
+                : NotFound();
         }
 
-        [HttpDelete("{fileId:int}")]
-        public async Task<IActionResult> Delete(int fileId)
+        // DELETE api/admin/AdminPlanFiles/{fileId}?planId=5
+        [HttpDelete("{fileId}")]
+        public async Task<IActionResult> Delete(
+            int fileId,
+            [FromQuery] int planId)
         {
-            var deleted = await _service.DeleteAsync(fileId);
-            if (!deleted)
-                return NotFound(new { message = $"File {fileId} not found" });
+            if (planId <= 0)
+                return BadRequest(new { message = "planId is required" });
 
-            return NoContent();
+            var ok = await _service.DeleteAsync(planId, fileId);
+
+            return ok ? Ok() : NotFound();
         }
     }
 }

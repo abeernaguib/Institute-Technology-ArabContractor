@@ -405,6 +405,8 @@ function FilesSection({ planworkId, planworkName }) {
                 fileToast('تم رفع الملف بنجاح');
             } else {
                 // PUT — update existing file
+                // (fileId alone isn't unique across plans, so the backend also needs planId)
+                fd.append('planId', String(planworkId));
                 if (fileForm.file) fd.append('File', fileForm.file);
 
                 const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${fileForm.id}`, {
@@ -427,7 +429,7 @@ function FilesSection({ planworkId, planworkName }) {
         if (!fileDelConfirm) { setFileDelConfirm(true); return; }
         setDeletingFile(true);
         try {
-            const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${selectedFile.id}`, {
+            const res = await fetch(`${BASE_URL}/api/admin/AdminPlanFiles/${selectedFile.id}?planId=${planworkId}`, {
                 method: 'DELETE',
                 headers: await authHeaders(),
             });
