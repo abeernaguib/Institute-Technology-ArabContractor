@@ -79,20 +79,46 @@ namespace Institute.Application.Services
             await _planFileRepo.SaveChangesAsync();
         }
 
-        // ── DELETE ──────────────────────────────────
-        public async Task DeleteAsync(int planId, int fileId)
+        // ── UPDATE ──────────────────────────────────
+        public async Task<bool> UpdateAsync(int planId, int fileId, UpdatePlanFileDto dto)
         {
             var spec = new PlanFileByIdSpec(planId, fileId);
-
-            var file =
-                await _planFileRepo.GetByIdWithSpecAsync(spec);
+            var file = await _planFileRepo.GetByIdWithSpecAsync(spec);
 
             if (file == null)
-                throw new Exception("File not found");
+                return false;
 
-            _planFileRepo.Delete(file);
+            if (!string.IsNullOrWhiteSpace(dto.FileTitle))
+                file.FileTitle = dto.FileTitle.Trim();
+
+            if (dto.FilePeriorty.HasValue)
+                file.FilePeriorty = dto.FilePeriorty.Value;
+
+            // replace the stored file only if a new one was sent
+            if (dto.File != null && dto.File.Length > 0)
+            {
+                file.FileName = await _blobStorage.UploadFileAsync(
+                    dto.File,
+                    Container,
+                    Folder);
+            }
 
             await _planFileRepo.SaveChangesAsync();
+            return true;
+        }
+
+        // ── DELETE ──────────────────────────────────
+        public async Task<bool> DeleteAsync(int planId, int fileId)
+        {
+            var spec = new PlanFileByIdSpec(planId, fileId);
+            var file = await _planFileRepo.GetByIdWithSpecAsync(spec);
+
+            if (file == null)
+                return false;
+
+            _planFileRepo.Delete(file);
+            await _planFileRepo.SaveChangesAsync();
+            return true;
         }
 
         // ── BUILD FILE URL ──────────────────────────

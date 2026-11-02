@@ -6,7 +6,7 @@ namespace Institute.Application.Interfaces.IService
     {
         Task<IEnumerable<PlanFileDto>> GetFilesAsync(int planId);
         Task AddAsync(CreatePlanFileDto dto);
-        Task<bool> UpdateAsync(int fileId, UpdatePlanFileDto dto);
-        Task<bool> DeleteAsync(int fileId);
+        Task<bool> UpdateAsync(int planId, int fileId, UpdatePlanFileDto dto);
+        Task<bool> DeleteAsync(int planId, int fileId);
     }
 }

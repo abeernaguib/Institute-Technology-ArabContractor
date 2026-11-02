@@ -15,6 +15,7 @@ namespace Institute.API.Controllers
             _service = service;
         }
 
+        // GET api/admin/AdminPlanFiles/{planId}
         [HttpGet("{planId:int}")]
         public async Task<IActionResult> GetFiles(int planId)
         {
@@ -22,6 +23,7 @@ namespace Institute.API.Controllers
             return Ok(result);
         }
 
+        // POST api/admin/AdminPlanFiles
         [HttpPost]
         public async Task<IActionResult> Add([FromForm] CreatePlanFileDto dto)
         {
@@ -29,22 +31,24 @@ namespace Institute.API.Controllers
             return Ok(new { message = "File uploaded successfully" });
         }
 
-        [HttpPut("{fileId:int}")]
-        public async Task<IActionResult> Update(int fileId, [FromForm] UpdatePlanFileDto dto)
+        // PUT api/admin/AdminPlanFiles/{planId}/{fileId}
+        [HttpPut("{planId:int}/{fileId:int}")]
+        public async Task<IActionResult> Update(int planId, int fileId, [FromForm] UpdatePlanFileDto dto)
         {
-            var updated = await _service.UpdateAsync(fileId, dto);
+            var updated = await _service.UpdateAsync(planId, fileId, dto);
             if (!updated)
-                return NotFound(new { message = $"File {fileId} not found" });
+                return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
             return Ok(new { message = "File updated successfully" });
         }
 
-        [HttpDelete("{fileId:int}")]
-        public async Task<IActionResult> Delete(int fileId)
+        // DELETE api/admin/AdminPlanFiles/{planId}/{fileId}
+        [HttpDelete("{planId:int}/{fileId:int}")]
+        public async Task<IActionResult> Delete(int planId, int fileId)
         {
-            var deleted = await _service.DeleteAsync(fileId);
+            var deleted = await _service.DeleteAsync(planId, fileId);
             if (!deleted)
-                return NotFound(new { message = $"File {fileId} not found" });
+                return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
             return NoContent();
         }
