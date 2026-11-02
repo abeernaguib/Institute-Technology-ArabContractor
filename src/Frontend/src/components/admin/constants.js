@@ -64,6 +64,8 @@ export const TABS = [
     { id: 'financial', label: 'المالية', icon: '💰' },
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓' },
     { id: 'team', label: 'فريق العمل', icon: '👥' },
+    { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
+    { id: 'siteCerts', label: 'لشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'news', label: 'الأخبار', icon: '📰' },
     { id: 'books', label: 'الكتب', icon: '📖' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋' },
@@ -86,6 +88,8 @@ export const TAB_TITLES = {
     books: { tag: 'إدارة المحتوى', title: ['إدارة', 'الكتب'] },
     planwork: { tag: 'التخطيط', title: ['خطة', 'العمل'] },
     settings: { tag: 'إعدادات النظام', title: ['إدارة', 'المديرين'] },
+    customers: { tag: 'إدارة العملاء', title: ['العملاء', 'والمستخدمون'] },
+    siteCerts: { tag: 'إدارة الشهادات', title: ['الشهادات', 'وخطابات الشكر'] },
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -114,6 +118,14 @@ export const EXPORT_HEADERS = {
     refunds: {
         ar: ['#', 'رقم الطلب', 'المستخدم', 'البريد الإلكتروني', 'الدورة', 'المبلغ', 'العملة', 'الحالة', 'السبب', 'تاريخ الطلب'],
         en: ['#', 'Ref No.', 'User', 'Email', 'Course', 'Amount', 'Currency', 'Status', 'Reason', 'Request Date'],
+    },
+    customers: {
+        ar: ['#', 'اسم العميل', 'البريد الإلكتروني', 'رقم الهاتف', 'تاريخ التسجيل'],
+        en: ['#', 'Customer Name', 'Email', 'Phone Number', 'Registration Date'],
+    },
+    siteCerts: {
+        ar: ['#', 'اسم المستخدم', 'البريد الإلكتروني', 'الدورة', 'الحضور', 'الشهادة'],
+        en: ['#', 'User Name', 'Email', 'Course', 'Attendance', 'Certificate'],
     },
 };
 

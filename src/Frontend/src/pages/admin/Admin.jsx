@@ -29,6 +29,7 @@ import BooksTab from './BooksTab';
 import PlanworkTab from './PlanworkTab';
 import SettingsTab from './SettingsTab';
 import TeamTab from './TeamTab';
+import CertificationsTab from './CertificationsTab';
 
 // permissionName MUST match Permission.Name in the DB (case-insensitive).
 const TABS = [
@@ -41,6 +42,7 @@ const TABS = [
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓', permissionName: 'Lecturers' },
     { id: 'team', label: 'فريق العمل', icon: '👥', permissionName: 'Team' },
     { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
+    { id: 'siteCerts', label: 'لشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan' },
@@ -783,6 +785,7 @@ const AdminDashboard = () => {
                         {activeTab === 'news' && <NewsTab />}
                         {activeTab === 'team' && <TeamTab />}
                         {activeTab === 'customers' && (<><CustomersImport /><CustomersTab /></>)}
+                        {activeTab === 'siteCerts' && <CertificationsTab />}
 
                         {activeTab === 'books' && (
                             <BooksTab
