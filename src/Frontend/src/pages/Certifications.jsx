@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
@@ -8,6 +8,31 @@ import { Link } from 'react-router-dom';
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+
+// All images are local: src/Frontend/public/images/...
+// Files in "public" are served from the site root, so don't write "public" in the path.
+const IMAGES = {
+    etqaanInstitutional: "/images/etqaan-institutional.jpeg",
+    etqaanProgrammatic: "/images/etqaan-programmatic.jpeg",
+    nqi: "/images/NQI-lg.jpg",
+    iso: "/images/iso9001.jpg",
+    pmi: "/images/pmi.jpg",
+    atp: "/images/Partner.jpg",
+    autodesk: "/images/autodeskCert.jpg",
+    thanks: [
+        "/images/cert01.jpg",
+        "/images/cert02.jpg",
+        "/images/cert03.jpg",
+        "/images/cert04.jpg",
+        "/images/cert05.jpg",
+        "/images/cert06.jpg",
+        "/images/cert07.jpg",
+        "/images/cert08.jpg",
+        "/images/cert09.jpeg", // Misr Development Company
+    ],
+};
+
+const ETQAAN_LINK = "https://etqaan.eg/%d9%82%d8%b7%d8%a7%d8%b9-%d8%a7%d9%84%d8%aa%d8%af%d8%b1%d9%8a%d8%a8-%d8%a7%d9%84%d9%85%d9%87%d9%86%d9%89";
 
 const Certifications = () => {
     const { t, i18n } = useTranslation();
@@ -21,34 +46,51 @@ const Certifications = () => {
     // Only the Arabic description text is translated
     const certificates = [
         {
+            title: "شهادة الاعتماد المؤسسي",
+            titleEn: "Institutional Accreditation (ETQAAN)",
+            textKey: 'certs.etqaanInst',
+            image: IMAGES.etqaanInstitutional,
+            link: ETQAAN_LINK,
+            linkKey: 'certs.etqaanLink',
+        },
+        {
+            title: "شهادة الاعتماد البرامجي",
+            titleEn: "Programmatic Accreditation (ETQAAN)",
+            textKey: 'certs.etqaanProg',
+            image: IMAGES.etqaanProgrammatic,
+            link: ETQAAN_LINK,
+            linkKey: 'certs.etqaanLink',
+        },
+        {
             title: "الإعتماد القومي للجودة",          // institution name, keep Arabic
             titleEn: "National Quality Institute",
             textKey: 'certs.nqi',
-            image: "https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/NQI-lg.jpg",
+            image: IMAGES.nqi,
         },
         {
             title: "ISO 9001:2015",                    // standard name, always English
             textKey: 'certs.iso',
-            image: "https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/iso9001.jpg",
+            image: IMAGES.iso,
         },
         {
             title: "PMI",                              // brand name, always English
             textKey: 'certs.pmi',
-            image: "https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/pmi.jpg",
+            image: IMAGES.pmi,
         },
         {
             title: "Authorized Training Partner",      // brand designation, always English
             textKey: 'certs.atp',
-            image: "https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/Partner.jpg",
+            image: IMAGES.atp,
         },
         {
             title: "Autodesk Training Center",         // brand name, always English
             textKey: 'certs.autodesk',
-            image: "https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/autodeskCert.jpg",
+            image: IMAGES.autodesk,
         },
     ];
 
     // Thank-letter names are proper nouns — kept as-is
+    // Order matters: item N uses IMAGES.thanks[N]
     const thankNames = [
         "شكر دولة موريتانيا",
         "شكر الغرفة الالمانية",
@@ -58,6 +100,7 @@ const Certifications = () => {
         "الاكاديمية الحديثة للهندسة والتكنولوجيا",
         "البرنامج السودانى",
         "البرنامج الاثيوبى",
+        "شكر شركة مصر للتعمير",
     ];
 
     const thankNamesEn = [
@@ -69,18 +112,18 @@ const Certifications = () => {
         "Modern Academy",
         "Sudan Program",
         "Ethiopia Program",
+        "Misr Development Company",
     ];
 
     const thankImages = thankNames.map((name, i) => ({
         name: isRTL ? name : thankNamesEn[i],
-        url: `https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/certificates/cert0${i + 1}.jpg`,
+        url: IMAGES.thanks[i],
     }));
 
     const [visibleImages, setVisibleImages] = useState({});
     const [selectedImage, setSelectedImage] = useState(null);
     const toggleImage = (index) => setVisibleImages(prev => ({ ...prev, [index]: !prev[index] }));
 
-    
     return (
         <div style={{ direction: isRTL ? 'rtl' : 'ltr', fontFamily: globalFont }}>
 
@@ -116,30 +159,50 @@ const Certifications = () => {
                     </header>
 
                     {/* Certificates */}
-                    {certificates.map((cert, index) => (
-                        <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                            style={{ backgroundColor: "#fff", borderRadius: "18px", padding: "24px", marginBottom: "24px", boxShadow: "0 8px 20px rgba(0,0,0,0.08)", display: "flex", flexWrap: "wrap", gap: "24px" }}>
-                            <div style={{ flex: "1 1 450px" }}>
-                                {/* Title: English brand names stay English; Arabic institution names switch */}
-                                <h2 style={{ color: primaryColor, fontSize: "1.4rem", marginBottom: "12px" }}>
-                                    {cert.titleEn && !isRTL ? cert.titleEn : cert.title}
-                                </h2>
-                                <p style={{ lineHeight: "1.8", color: "#333" }}>{t(cert.textKey)}</p>
-                                <button
-                                    onClick={() => toggleImage(index)}
-                                    style={{ marginTop: "16px", backgroundColor: visibleImages[index] ? "#eee" : accentColor, color: "#000", border: "none", padding: "10px 26px", borderRadius: "30px", fontWeight: "600", cursor: "pointer" }}>
-                                    {visibleImages[index] ? t('certs.hideCert') : t('certs.showCert')}
-                                </button>
-                            </div>
-                            <AnimatePresence>
-                                {visibleImages[index] && (
-                                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} style={{ flex: "1 1 280px", textAlign: "center" }}>
-                                        <img src={cert.image} alt={cert.title} onClick={() => setSelectedImage(cert.image)} style={{ maxWidth: "100%", borderRadius: "14px", cursor: "zoom-in" }} />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </motion.div>
-                    ))}
+                    {certificates.map((cert, index) => {
+                        const displayTitle = (!isRTL && cert.titleEn) ? cert.titleEn : cert.title;
+                        return (
+                            <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                                style={{ backgroundColor: "#fff", borderRadius: "18px", padding: "24px", marginBottom: "24px", boxShadow: "0 8px 20px rgba(0,0,0,0.08)", display: "flex", flexWrap: "wrap", gap: "24px" }}>
+                                <div style={{ flex: "1 1 450px" }}>
+                                    {/* Title: English brand names stay English; Arabic institution names switch */}
+                                    <h2 style={{ color: primaryColor, fontSize: "1.4rem", marginBottom: "12px" }}>
+                                        {displayTitle}
+                                    </h2>
+                                    <p style={{ lineHeight: "1.8", color: "#333" }}>{t(cert.textKey)}</p>
+
+                                    {/* Optional link under the description */}
+                                    {cert.link && (
+                                        <a
+                                            href={cert.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ display: "inline-block", marginTop: "10px", color: primaryColor, fontWeight: 700, textDecoration: "underline" }}
+                                            onMouseEnter={e => e.currentTarget.style.color = accentColor}
+                                            onMouseLeave={e => e.currentTarget.style.color = primaryColor}
+                                        >
+                                            {t(cert.linkKey)}
+                                        </a>
+                                    )}
+
+                                    <div>
+                                        <button
+                                            onClick={() => toggleImage(index)}
+                                            style={{ marginTop: "16px", backgroundColor: visibleImages[index] ? "#eee" : accentColor, color: "#000", border: "none", padding: "10px 26px", borderRadius: "30px", fontWeight: "600", cursor: "pointer" }}>
+                                            {visibleImages[index] ? t('certs.hideCert') : t('certs.showCert')}
+                                        </button>
+                                    </div>
+                                </div>
+                                <AnimatePresence>
+                                    {visibleImages[index] && (
+                                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} style={{ flex: "1 1 280px", textAlign: "center" }}>
+                                            <img src={cert.image} alt={displayTitle} onClick={() => setSelectedImage(cert.image)} style={{ maxWidth: "100%", borderRadius: "14px", cursor: "zoom-in" }} />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        );
+                    })}
 
                     {/* Thank Letters */}
                     <section style={{ marginTop: "60px", textAlign: "center" }}>
