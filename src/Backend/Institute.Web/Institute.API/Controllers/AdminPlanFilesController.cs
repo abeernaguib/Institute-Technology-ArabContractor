@@ -1,5 +1,6 @@
 ﻿using Institute.Application.DTOs.AdminDtos;
 using Institute.Application.Interfaces.IService;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Institute.API.Controllers
@@ -20,15 +21,21 @@ namespace Institute.API.Controllers
         public async Task<IActionResult> GetFiles(int planId)
         {
             var result = await _service.GetFilesAsync(planId);
+
             return Ok(result);
         }
 
         // POST api/admin/AdminPlanFiles
         [HttpPost]
-        public async Task<IActionResult> Add([FromForm] CreatePlanFileDto dto)
+        public async Task<IActionResult> Add(
+            [FromForm] CreatePlanFileDto dto)
         {
             await _service.AddAsync(dto);
-            return Ok(new { message = "File uploaded successfully" });
+
+            return Ok(new
+            {
+                message = "File uploaded successfully"
+            });
         }
 
         // PUT api/admin/AdminPlanFiles/{planId}/{fileId}
@@ -50,7 +57,7 @@ namespace Institute.API.Controllers
             if (!deleted)
                 return NotFound(new { message = $"File {fileId} not found in plan {planId}" });
 
-            return NoContent();
+            return Ok(new { message = "File deleted successfully" });
         }
     }
 }
