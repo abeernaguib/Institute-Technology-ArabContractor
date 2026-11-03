@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import CustomersTab from './CustomersTab';
-import CustomersImport from './CustomersImport'; // مؤقت
 
 import { API_BASE, API_HOST, T } from '../../components/admin/constants';
 import { injectAdminStyles } from '../../components/admin/styles';
@@ -784,7 +783,7 @@ const AdminDashboard = () => {
                         {activeTab === 'lecturers' && <LecturersTab />}
                         {activeTab === 'news' && <NewsTab />}
                         {activeTab === 'team' && <TeamTab />}
-                        {activeTab === 'customers' && (<><CustomersImport /><CustomersTab /></>)}
+                        {activeTab === 'customers' && <CustomersTab />}
                         {activeTab === 'siteCerts' && <CertificationsTab />}
 
                         {activeTab === 'books' && (
