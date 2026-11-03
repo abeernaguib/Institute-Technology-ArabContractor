@@ -139,17 +139,26 @@ const makawlenSchool = {
     link: '/Technical_Schools',
 };
 
-const protocols = [
-    { name: 'معهد إيكون', country: 'ألمانيا', type: 'دولي' },
-    { name: 'معهد اينفايروتك للتدريب الأهلي', country: 'الكويت', type: 'دولي' },
-    { name: 'معهد الأكاديمية السعودية للتدريب', country: 'السعودية', type: 'دولي' },
-    { name: 'مركز الثقافة الخضراء', country: 'فرنسا', type: 'دولي' },
-    { name: 'المعهد القومي للحوكمة', country: 'مصر', type: 'محلي' },
-    { name: 'المعهد القومي للنقل', country: 'مصر', type: 'محلي' },
-    { name: 'جامعة بنها', country: 'مصر', type: 'جامعي' },
-    { name: 'الجامعة المصرية الروسية', country: 'مصر', type: 'جامعي' },
-    { name: 'الهيئة العامة للتأمين الصحي الشامل', country: 'مصر', type: 'أمر إسناد' },
-];
+// ─── PROTOCOLS (dynamic, from /api/Protocol) ──────────────────────────────────
+const PROTOCOLS_API = 'https://icemt.arabcont.com/api/Protocol';
+const HOME_PROTOCOLS_LIMIT = 9;
+
+// Takes one item from each section in turn, so the home page shows a mix instead of only the first section
+const pickHomeProtocols = (groups, limit) => {
+    const out = [];
+    for (let i = 0; out.length < limit; i++) {
+        let added = false;
+        for (const g of groups) {
+            const it = g.items?.[i];
+            if (it && out.length < limit) {
+                out.push({ id: it.id, name: it.name, groupTitle: g.title, groupIcon: g.icon });
+                added = true;
+            }
+        }
+        if (!added) break;
+    }
+    return out;
+};
 
 const craftItems = [
     { Icon: EngineeringIcon, title: 'التدريب الحرفي', text: 'مركز التدريب الحرفى على مهن التشييد و البناء ومركز التدريب على المهن الميكانيكية و الكهربائية لبناء المهارات الحرفية وتأهيل الكوادر المتخصصة.', link: '/vocational-training' },
@@ -439,6 +448,10 @@ export default function Home() {
     const [certList, setCertList] = useState([]);
     const [certLoading, setCertLoading] = useState(true);
 
+    // ── Protocols (dynamic, from /api/Protocol) ──
+    const [protoList, setProtoList] = useState([]);
+    const [protoLoading, setProtoLoading] = useState(true);
+
     useEffect(() => {
         fetch('https://icemt.arabcont.com/api/Admin/stats')
             .then(r => r.ok ? r.json() : Promise.reject())
@@ -463,6 +476,20 @@ export default function Home() {
                 setCertList(fallbackCertificates);
                 setCertLoading(false);
             });
+        return () => { cancelled = true; };
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch(PROTOCOLS_API)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => {
+                if (cancelled) return;
+                const groups = Array.isArray(d) ? d : (d?.data || []);
+                setProtoList(pickHomeProtocols(groups, HOME_PROTOCOLS_LIMIT));
+            })
+            .catch(() => { if (!cancelled) setProtoList([]); })
+            .finally(() => { if (!cancelled) setProtoLoading(false); });
         return () => { cancelled = true; };
     }, []);
 
@@ -515,10 +542,10 @@ export default function Home() {
 
     // Dynamic content changes page height → recalc ScrollTrigger positions
     useEffect(() => {
-        if (certLoading || newsLoading) return;
+        if (certLoading || newsLoading || protoLoading) return;
         const t = setTimeout(() => ScrollTrigger.refresh(), 300);
         return () => clearTimeout(t);
-    }, [certLoading, newsLoading, certList.length, newsItems.length]);
+    }, [certLoading, newsLoading, protoLoading, certList.length, newsItems.length, protoList.length]);
 
     useEffect(() => {
         if (statsCounted.current) return;
@@ -651,7 +678,7 @@ export default function Home() {
                 if (protoBg2) gsap.to(protoBg2, { x: -40, y: 50, rotate: -20, ease: 'none', scrollTrigger: { trigger: protoRef.current, start: 'top bottom', end: 'bottom top', scrub: true } });
                 const protoHeader = protoRef.current.querySelector('.proto-header');
                 if (protoHeader) gsap.fromTo(protoHeader, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: protoRef.current, start: 'top 82%', once: true } });
-                if (protoCards.current.length) gsap.fromTo(protoCards.current, { opacity: 0, y: 60, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.85, ease: 'back.out(1.4)', stagger: 0.1, scrollTrigger: { trigger: protoRef.current, start: 'top 78%', once: true } });
+                // proto cards are animated in their own effect below: they only exist after the API answers
             }
 
             if (newsRef.current) {
@@ -698,6 +725,20 @@ export default function Home() {
         // Kills every animation and ScrollTrigger created above when leaving the page
         return () => ctx.revert();
     }, []);
+
+    // Protocol cards exist only after the API answers, so they are animated here instead of in the main effect
+    useEffect(() => {
+        if (!protoRef.current || protoList.length === 0) return;
+        const ctx = gsap.context(() => {
+            const cards = protoCards.current.filter(Boolean);
+            if (!cards.length) return;
+            gsap.fromTo(cards,
+                { opacity: 0, y: 60, scale: 0.9 },
+                { opacity: 1, y: 0, scale: 1, duration: 0.85, ease: 'back.out(1.4)', stagger: 0.1, scrollTrigger: { trigger: protoRef.current, start: 'top 78%', once: true } }
+            );
+        }, protoRef);
+        return () => ctx.revert();
+    }, [protoList]);
 
     return (
         <div dir="rtl" style={{ fontFamily: F, overflowX: 'hidden', background: C.w, paddingTop: -20, marginTop: -23 }}>
@@ -866,6 +907,7 @@ export default function Home() {
         .proto-card:hover{border-color:${C.b};transform:translateY(-4px);box-shadow:0 8px 28px rgba(8,101,168,.12);}
         .proto-card::after{content:'';position:absolute;top:0;right:0;width:3px;height:100%;background:linear-gradient(180deg,${C.o},${C.b});transform:scaleY(0);transform-origin:top;transition:transform .3s cubic-bezier(.22,1,.36,1);}
         .proto-card:hover::after{transform:scaleY(1);}
+        .proto-skeleton{height:118px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.1),rgba(255,255,255,.04));background-size:200% 100%;animation:certShimmer 1.4s linear infinite;}
 
         /* ── Schools: featured banner on top + 3 equal, aligned cards ── */
         .schools-layout{display:flex;flex-direction:column;gap:20px;}
@@ -1270,7 +1312,7 @@ export default function Home() {
                                 {v.text && (
                                     <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.1vw,.88rem)', color: C.g5, lineHeight: 2, marginBottom: 18 }}>{v.text}</p>
                                 )}
-                              
+
                                 <Link to={v.link} className="vis-more">
                                     اقرأ التفاصيل <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
                                 </Link>
@@ -1594,41 +1636,45 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ── 10 PROTOCOLS ─────────────────────────────────────────────────── */}
-            <section className="S" style={{ background: C.k2, position: 'relative', overflow: 'hidden' }} ref={protoRef}>
-                <div className="proto-bg-circle-1 float-slow" style={{ position: 'absolute', bottom: -80, left: -80, width: 340, height: 340, borderRadius: '50%', border: '1px solid rgba(8,101,168,.15)', pointerEvents: 'none' }} />
-                <div className="proto-bg-circle-2 float-slow" style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, borderRadius: '50%', border: '1px solid rgba(245,124,0,.1)', pointerEvents: 'none' }} />
-                <div className="W" style={{ position: 'relative', zIndex: 1 }}>
-                    <div className="proto-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 12 }}>
-                        <div>
-                            <Eyebrow light>شراكاتنا</Eyebrow>
-                            <SplitTitle light size="sm">البروتوكولات والتعاقدات</SplitTitle>
-                            <div style={{ width: 44, height: 3, background: C.o, marginTop: 16 }} />
-                        </div>
-                        <SolidBtn to="/protocols" orange>عرض الكل <ArrowForwardIosIcon sx={{ fontSize: 10 }} /></SolidBtn>
-                    </div>
-                    <p style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.95rem)', color: 'rgba(255,255,255,.5)', lineHeight: 1.9, marginBottom: 36, maxWidth: 560 }}>
-                        بروتوكولات وعقود تعاون مع معاهد ومراكز دولية وجهات محلية وجامعات، إلى جانب أوامر إسناد من جهات حكومية، لإثراء العملية التدريبية وتبادل الخبرات.
-                    </p>
-                    <div className="proto-grid">
-                        {protocols.map((p, i) => (
-                            <div key={i} className="proto-card" ref={el => protoCards.current[i] = el}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(8,101,168,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <HandshakeIcon sx={{ color: C.b, fontSize: 22 }} />
-                                    </div>
-                                    <span style={{ fontFamily: F, fontSize: '.62rem', fontWeight: 700, letterSpacing: 1.2, padding: '3px 10px', borderRadius: 20, background: 'rgba(245,124,0,.1)', border: '1px solid rgba(245,124,0,.2)', color: C.o }}>{p.type}</span>
-                                </div>
-                                <h3 style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.94rem)', fontWeight: 800, color: C.k, lineHeight: 1.5, margin: 0 }}>{p.name}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <LocationOnIcon sx={{ fontSize: 13, color: C.g5 }} />
-                                    <span style={{ fontFamily: F, fontSize: '.7rem', color: C.g5, fontWeight: 600 }}>{p.country}</span>
-                                </div>
+            {/* ── 10 PROTOCOLS (dynamic — /api/Protocol) ───────────────────────── */}
+            {(protoLoading || protoList.length > 0) && (
+                <section className="S" style={{ background: C.k2, position: 'relative', overflow: 'hidden' }} ref={protoRef}>
+                    <div className="proto-bg-circle-1 float-slow" style={{ position: 'absolute', bottom: -80, left: -80, width: 340, height: 340, borderRadius: '50%', border: '1px solid rgba(8,101,168,.15)', pointerEvents: 'none' }} />
+                    <div className="proto-bg-circle-2 float-slow" style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, borderRadius: '50%', border: '1px solid rgba(245,124,0,.1)', pointerEvents: 'none' }} />
+                    <div className="W" style={{ position: 'relative', zIndex: 1 }}>
+                        <div className="proto-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 12 }}>
+                            <div>
+                                <Eyebrow light>شراكاتنا</Eyebrow>
+                                <SplitTitle light size="sm">البروتوكولات والتعاقدات</SplitTitle>
+                                <div style={{ width: 44, height: 3, background: C.o, marginTop: 16 }} />
                             </div>
-                        ))}
+                            <SolidBtn to="/protocols" orange>عرض الكل <ArrowForwardIosIcon sx={{ fontSize: 10 }} /></SolidBtn>
+                        </div>
+                        <p style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.95rem)', color: 'rgba(255,255,255,.5)', lineHeight: 1.9, marginBottom: 36, maxWidth: 560 }}>
+                            بروتوكولات وعقود تعاون مع معاهد ومراكز دولية وجهات محلية وجامعات، إلى جانب أوامر إسناد من جهات حكومية، لإثراء العملية التدريبية وتبادل الخبرات.
+                        </p>
+                        <div className="proto-grid">
+                            {protoLoading
+                                ? Array.from({ length: 6 }).map((_, i) => <div key={i} className="proto-skeleton" aria-hidden="true" />)
+                                : protoList.map((p, i) => (
+                                    <div key={p.id} className="proto-card" ref={el => protoCards.current[i] = el}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                            <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(8,101,168,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                {p.groupIcon
+                                                    ? <span style={{ fontSize: 22, lineHeight: 1 }}>{p.groupIcon}</span>
+                                                    : <HandshakeIcon sx={{ color: C.b, fontSize: 22 }} />}
+                                            </div>
+                                            {p.groupTitle && (
+                                                <span style={{ fontFamily: F, fontSize: '.62rem', fontWeight: 700, letterSpacing: 1.2, padding: '3px 10px', borderRadius: 20, background: 'rgba(245,124,0,.1)', border: '1px solid rgba(245,124,0,.2)', color: C.o }}>{p.groupTitle}</span>
+                                            )}
+                                        </div>
+                                        <h3 style={{ fontFamily: F, fontSize: 'clamp(.82rem,1.2vw,.94rem)', fontWeight: 800, color: C.k, lineHeight: 1.5, margin: 0 }}>{p.name}</h3>
+                                    </div>
+                                ))}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* ── 11 NEWS ──────────────────────────────────────────────────────── */}
             <section className="S" style={{ background: C.g1 }} ref={newsRef}>
