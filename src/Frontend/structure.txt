@@ -1,5 +1,5 @@
 Folder PATH listing for volume New Volume
-Volume serial number is 0000016C 1ABF:61F3
+Volume serial number is 000001BA 1ABF:61F3
 D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SRC\FRONTEND\PUBLIC
 |   apple-touch-icon.png
 |   favicon-96x96.png
@@ -93,6 +93,16 @@ D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SR
 |   |   Cea6.jpg
 |   |   Cea7.jpg
 |   |   Cea8.jpg
+|   |   cert01.jpg
+|   |   cert02.jpg
+|   |   cert03.jpg
+|   |   cert04.jpg
+|   |   cert05.jpg
+|   |   cert06.jpg
+|   |   cert07.jpg
+|   |   cert08.jpg
+|   |   cert09.jpeg
+|   |   cert09.jpg
 |   |   check1.png
 |   |   check2.png
 |   |   check3.png
@@ -181,6 +191,8 @@ D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SR
 |   |   down.png
 |   |   eagle.jpg
 |   |   Egypt-Gas.png
+|   |   etqaan-institutional.jpeg
+|   |   etqaan-programmatic.jpeg
 |   |   finalherfy.jpg
 |   |   gazan0.jpg
 |   |   gazan1.jpg
@@ -218,6 +230,8 @@ D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SR
 |   |   GsrSuez7.jpg
 |   |   GsrSuez8.jpg
 |   |   GsrSuez9.jpg
+|   |   hero1.jpg
+|   |   hero2.jpg
 |   |   icmet-logo.jpg
 |   |   img-sprite.png
 |   |   iso9001.jpg
@@ -879,12 +893,23 @@ D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SR
 |   |           ? ????? ?????.jpeg
 |   |           ? ???? ???? (2).jpeg
 |   |           
-|   \---t3lem
+|   +---t3lem
+|   |       1.jpg
+|   |       10.jpg
+|   |       11.jpg
+|   |       12.jpg
+|   |       13.jpg
+|   |       2.jpg
+|   |       3.jpg
+|   |       4.jpg
+|   |       5.jpg
+|   |       6.jpg
+|   |       7.jpg
+|   |       8.jpg
+|   |       9.jpg
+|   |       
+|   \---transformational
 |           1.jpg
-|           10.jpg
-|           11.jpg
-|           12.jpg
-|           13.jpg
 |           2.jpg
 |           3.jpg
 |           4.jpg
@@ -901,14 +926,14 @@ D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SR
         StrategicPlan_2024_2030.pdf
         
 Folder PATH listing for volume New Volume
-Volume serial number is 000001AE 1ABF:61F3
+Volume serial number is 00000158 1ABF:61F3
 D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SRC\FRONTEND\SCRIPTS
     check-seo.mjs
     
 No subfolders exist 
 
 Folder PATH listing for volume New Volume
-Volume serial number is 00000254 1ABF:61F3
+Volume serial number is 00000166 1ABF:61F3
 D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SRC\FRONTEND\SRC
 |   App.jsx
 |   eslint.config.js
@@ -1030,11 +1055,15 @@ D:\WORK\NAGEEB WORK\ICEMT\NEW CLONE ICEMT\INSTITUTE-TECHNOLOGY-ARABCONTRACTOR\SR
 |   |   TechnicalSchoolPage.jsx
 |   |   TestsSection.jsx
 |   |   TrainingMethods.jsx
+|   |   transformational.css
+|   |   TransformationalTraining.jsx
 |   |   VocationalTraining.jsx
 |   |   
 |   +---admin
 |   |       Admin.jsx
 |   |       BooksTab.jsx
+|   |       CertificationsTab.jsx
+|   |       CustomersTab.jsx
 |   |       Financialtab.jsx
 |   |       mohadren.jsx
 |   |       NewsTab.jsx

@@ -18,6 +18,11 @@
  *     The course date is owned by the rounds service (no date field in the form).
  *
  * v3: EnrolledEmailsSection added (after FilesSection) — institute trainees by email.
+ *
+ * v4: EnrolledEmailsSection now works one email at a time (add / inline edit / delete)
+ *     instead of bulk textarea.
+ *     POST   /api/admin/AdminPlanEmails/{planId}        { email }
+ *     PUT    /api/admin/AdminPlanEmails/{planId}/{id}   { email }
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -608,26 +613,29 @@ function FilesSection({ planworkId, planworkName }) {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // EnrolledEmailsSection — متدربو المعهد (حضور سابق) بالبريد الإلكتروني
+// One email at a time: add / inline edit / delete.
+//
 // GET    /api/admin/AdminPlanEmails/{planId}
 //        → [{ id, email, createdAt, isClaimed, claimedAt }]
-// POST   /api/admin/AdminPlanEmails/{planId}   { emails: string[] }
-//        → { added: n, skipped: [{ email, reason }] }
-// DELETE /api/admin/AdminPlanEmails/{planId}/{id}
+// POST   /api/admin/AdminPlanEmails/{planId}        { email }   → 201 { id, email, ... }
+// PUT    /api/admin/AdminPlanEmails/{planId}/{id}   { email }   → 200 { id, email, ... }
+// DELETE /api/admin/AdminPlanEmails/{planId}/{id}               → 204
+// Errors: 400 { message } invalid email, 409 { message } duplicate
 // ══════════════════════════════════════════════════════════════════════════════
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const parseEmails = text =>
-    [...new Set(
-        (text || '').split(/[\s,;،\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean)
-    )];
+const normEmail = s => (s || '').trim().toLowerCase();
 
 function EnrolledEmailsSection({ planworkId, planworkName }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [text, setText] = useState('');
+    const [newEmail, setNewEmail] = useState('');
     const [saving, setSaving] = useState(false);
     const [notif, setNotif] = useState(null);
     const [delId, setDelId] = useState(null);
     const [filter, setFilter] = useState('');
+    const [editId, setEditId] = useState(null);     // row being edited
+    const [editVal, setEditVal] = useState('');
+    const [busyId, setBusyId] = useState(null);     // row currently saving
 
     const toast = (msg, type = 'success') => { setNotif({ msg, type }); setTimeout(() => setNotif(null), 4000); };
 
@@ -643,41 +651,71 @@ function EnrolledEmailsSection({ planworkId, planworkName }) {
         finally { setLoading(false); }
     };
 
-    useEffect(() => { setText(''); setDelId(null); setFilter(''); load(); }, [planworkId]);
+    useEffect(() => {
+        setNewEmail(''); setDelId(null); setFilter(''); setEditId(null); load();
+    }, [planworkId]);
 
-    const parsed = parseEmails(text);
-    const invalid = parsed.filter(e => !EMAIL_RE.test(e));
-    const valid = parsed.filter(e => EMAIL_RE.test(e));
+    const emailExists = (email, exceptId = null) =>
+        items.some(i => i.id !== exceptId && normEmail(i.email) === email);
 
+    // ── Add one ──
     const handleAdd = async () => {
-        if (valid.length === 0) { toast('أدخل بريداً إلكترونياً صحيحاً واحداً على الأقل', 'error'); return; }
-        if (invalid.length) { toast(`يوجد ${invalid.length} بريد غير صحيح — صحّحه أو احذفه`, 'error'); return; }
+        const email = normEmail(newEmail);
+        if (!EMAIL_RE.test(email)) { toast('أدخل بريداً إلكترونياً صحيحاً', 'error'); return; }
+        if (emailExists(email)) { toast('هذا البريد مسجل بالفعل لهذه الدورة', 'error'); return; }
         setSaving(true);
         try {
             const res = await fetch(`${BASE_URL}/api/admin/AdminPlanEmails/${planworkId}`, {
-                method: 'POST', headers: await authHeaders(), body: JSON.stringify({ emails: valid }),
+                method: 'POST', headers: await authHeaders(), body: JSON.stringify({ email }),
             });
             if (!res.ok) throw new Error(await errMsg(res));
-            const r = await res.json().catch(() => ({}));
-            const skipped = r?.skipped?.length || 0;
-            toast(`تمت إضافة ${r?.added ?? valid.length} بريد` + (skipped ? ` — تم تخطي ${skipped} (مكرر)` : ''));
-            setText(''); await load();
+            setNewEmail('');
+            toast('تمت إضافة البريد');
+            await load();
         } catch (e) { toast('فشل الإضافة: ' + e.message, 'error'); }
         finally { setSaving(false); }
     };
 
+    // ── Edit one ──
+    const startEdit = it => { setEditId(it.id); setEditVal(it.email); setDelId(null); };
+    const cancelEdit = () => { setEditId(null); setEditVal(''); };
+
+    const saveEdit = async (it) => {
+        const email = normEmail(editVal);
+        if (!EMAIL_RE.test(email)) { toast('بريد إلكتروني غير صحيح', 'error'); return; }
+        if (email === normEmail(it.email)) { cancelEdit(); return; }
+        if (emailExists(email, it.id)) { toast('هذا البريد مسجل بالفعل لهذه الدورة', 'error'); return; }
+        setBusyId(it.id);
+        try {
+            const res = await fetch(`${BASE_URL}/api/admin/AdminPlanEmails/${planworkId}/${it.id}`, {
+                method: 'PUT', headers: await authHeaders(), body: JSON.stringify({ email }),
+            });
+            if (!res.ok) throw new Error(await errMsg(res));
+            const upd = await res.json().catch(() => null);
+            setItems(prev => prev.map(x => x.id === it.id ? { ...x, ...(upd || {}), email } : x));
+            cancelEdit();
+            toast('تم تعديل البريد');
+        } catch (e) { toast('فشل التعديل: ' + e.message, 'error'); }
+        finally { setBusyId(null); }
+    };
+
+    // ── Delete one ──
     const handleDelete = async (it) => {
         if (delId !== it.id) { setDelId(it.id); return; }
+        setBusyId(it.id);
         try {
             const res = await fetch(`${BASE_URL}/api/admin/AdminPlanEmails/${planworkId}/${it.id}`, { method: 'DELETE', headers: await authHeaders() });
             if (res.status !== 200 && res.status !== 204) throw new Error(await errMsg(res));
             setItems(prev => prev.filter(x => x.id !== it.id));
             setDelId(null); toast('تم الحذف', 'error');
         } catch (e) { setDelId(null); toast('فشل الحذف: ' + e.message, 'error'); }
+        finally { setBusyId(null); }
     };
 
     const shown = items.filter(i => !filter || i.email.toLowerCase().includes(filter.toLowerCase().trim()));
     const claimedCount = items.filter(i => i.isClaimed).length;
+    const preview = normEmail(newEmail);
+    const previewBad = preview && !EMAIL_RE.test(preview);
 
     return (
         <div className="pw-files-section" style={{ marginTop: 16 }}>
@@ -701,28 +739,26 @@ function EnrolledEmailsSection({ planworkId, planworkName }) {
             )}
 
             <div className="pw-files-body">
-                {/* ── Form ── */}
+                {/* ── Form: one email at a time ── */}
                 <div className="pw-files-form">
                     <div className="lec-field">
                         <label className="lec-label">البريد الإلكتروني <span style={{ color: '#dc2626' }}>*</span></label>
-                        <textarea className="lec-inp" rows={6} value={text} onChange={e => setText(e.target.value)}
-                            placeholder={'أدخل بريداً واحداً أو عدة بريد\n(سطر لكل بريد أو مفصولة بفاصلة)'}
-                            style={{ direction: 'ltr', textAlign: 'left', resize: 'vertical', fontFamily: "'Courier New',monospace", fontSize: '.76rem' }} />
-                        {parsed.length > 0 && (
-                            <p style={{ fontSize: '.7rem', margin: '5px 0 0', color: invalid.length ? '#dc2626' : '#059669' }}>
-                                {valid.length} صحيح{invalid.length > 0 && ` — ${invalid.length} غير صحيح: ${invalid.slice(0, 3).join('، ')}${invalid.length > 3 ? '…' : ''}`}
-                            </p>
-                        )}
+                        <input className="lec-inp" type="email" value={newEmail}
+                            onChange={e => setNewEmail(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
+                            placeholder="name@example.com"
+                            style={{ direction: 'ltr', textAlign: 'left', fontFamily: "'Courier New',monospace", fontSize: '.76rem' }} />
+                        {previewBad && <p style={{ fontSize: '.7rem', margin: '5px 0 0', color: '#dc2626' }}>بريد إلكتروني غير صحيح</p>}
                     </div>
                     <div className="pw-files-actions">
-                        <button className="lec-act-btn save" onClick={handleAdd} disabled={saving}
+                        <button className="lec-act-btn save" onClick={handleAdd} disabled={saving || !preview || previewBad}
                             style={{ padding: '7px 16px', fontSize: '.76rem' }}>
                             {saving ? '⏳ جاري الإضافة...' : '➕ إضافة'}
                         </button>
                     </div>
                     <p style={{ fontSize: '.7rem', color: '#6b7280', marginTop: 10, lineHeight: 1.7 }}>
-                        عند تسجيل المتدرب في الموقع بنفس البريد، تُفتح له هذه الدورة تلقائياً بكل ملفاتها
-                        دون الحاجة للشراء مرة أخرى. يعمل أيضاً مع من سجّل في الموقع مسبقاً.
+                        أضف بريداً واحداً في كل مرة (Enter للإضافة). يمكنك تعديل أو حذف أي بريد من الجدول.
+                        عند تسجيل المتدرب في الموقع بنفس البريد، تُفتح له هذه الدورة تلقائياً بكل ملفاتها.
                     </p>
                 </div>
 
@@ -743,20 +779,44 @@ function EnrolledEmailsSection({ planworkId, planworkName }) {
                         <table className="pw-files-tbl">
                             <thead><tr><th>#</th><th>البريد الإلكتروني</th><th>الحالة</th><th></th></tr></thead>
                             <tbody>
-                                {shown.map((it, i) => (
-                                    <tr key={it.id}>
-                                        <td style={{ color: T.gray500, fontSize: '.72rem' }}>{i + 1}</td>
-                                        <td style={{ direction: 'ltr', textAlign: 'left', fontFamily: "'Courier New',monospace", fontSize: '.74rem' }}>{it.email}</td>
-                                        <td style={{ fontWeight: 700, fontSize: '.72rem', color: it.isClaimed ? '#059669' : '#b45309' }}>
-                                            {it.isClaimed ? 'سجّل في الموقع' : 'بانتظار التسجيل'}
-                                        </td>
-                                        <td style={{ whiteSpace: 'nowrap' }}>
-                                            <button className="adm-fclear" style={{ color: '#dc2626' }} onClick={() => handleDelete(it)}>
-                                                {delId === it.id ? 'تأكيد الحذف' : '🗑'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {shown.map((it, i) => {
+                                    const editing = editId === it.id;
+                                    const busy = busyId === it.id;
+                                    return (
+                                        <tr key={it.id}>
+                                            <td style={{ color: T.gray500, fontSize: '.72rem' }}>{i + 1}</td>
+                                            <td style={{ direction: 'ltr', textAlign: 'left', fontFamily: "'Courier New',monospace", fontSize: '.74rem' }}>
+                                                {editing ? (
+                                                    <input className="lec-inp" autoFocus value={editVal}
+                                                        onChange={e => setEditVal(e.target.value)}
+                                                        onKeyDown={e => { if (e.key === 'Enter') saveEdit(it); if (e.key === 'Escape') cancelEdit(); }}
+                                                        style={{ fontSize: '.74rem', direction: 'ltr', textAlign: 'left', padding: '4px 8px' }} />
+                                                ) : it.email}
+                                            </td>
+                                            <td style={{ fontWeight: 700, fontSize: '.72rem', color: it.isClaimed ? '#059669' : '#b45309' }}>
+                                                {it.isClaimed ? 'سجّل في الموقع' : 'بانتظار التسجيل'}
+                                            </td>
+                                            <td style={{ whiteSpace: 'nowrap' }}>
+                                                {editing ? (
+                                                    <>
+                                                        <button className="adm-fclear" style={{ color: '#059669' }} disabled={busy} onClick={() => saveEdit(it)}>
+                                                            {busy ? '⏳' : '✓ حفظ'}
+                                                        </button>{' '}
+                                                        <button className="adm-fclear" onClick={cancelEdit}>إلغاء</button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button className="adm-fclear" title="تعديل" onClick={() => startEdit(it)}>✏️</button>{' '}
+                                                        <button className="adm-fclear" style={{ color: '#dc2626' }} disabled={busy} onClick={() => handleDelete(it)}>
+                                                            {delId === it.id ? 'تأكيد الحذف' : '🗑'}
+                                                        </button>
+                                                        {delId === it.id && <>{' '}<button className="adm-fclear" onClick={() => setDelId(null)}>إلغاء</button></>}
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     )}
