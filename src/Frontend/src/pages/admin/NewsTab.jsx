@@ -18,7 +18,8 @@
  *    (select). Choosing a priority already used by another image swaps the two.
  *    Saved images go as ExistingPics[i].{PicId,StartUpPic,Priority}; new files go
  *    as Images + NewPics[i].{StartUpPic,Priority} in the same order.
- * 10. Clerk token is fetched on demand (no window.__clerkToken).
+ * 10. Clerk token is fetched on demand (no window.__clerkToken). It uses the
+ *     DEFAULT session token (same as every other admin tab), not a custom template.
  * 11. Image delete (X) now asks for confirmation first (inline overlay on the
  *     image) instead of deleting immediately. The X / upload buttons are larger,
  *     carry a text label, and show a tooltip. They are always visible on touch
@@ -822,6 +823,7 @@ function injectStyles() {
 // ── API helpers ───────────────────────────────────────────────────────────────
 // Get a fresh Clerk token on demand. Clerk caches and refreshes it itself,
 // so nothing is stored on window and there is no refresh interval.
+// Uses the DEFAULT session token, same as every other admin tab.
 async function getToken() {
     // Wait for Clerk to finish loading (covers requests fired on first render)
     const start = Date.now();
@@ -829,7 +831,7 @@ async function getToken() {
         await new Promise(r => setTimeout(r, 50));
     }
     try {
-        return (await window.Clerk?.session?.getToken({ template: 'backend' })) || null;
+        return (await window.Clerk?.session?.getToken()) || null;
     } catch {
         return null;
     }

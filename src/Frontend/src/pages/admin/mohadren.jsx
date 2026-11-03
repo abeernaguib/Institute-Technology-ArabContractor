@@ -1,5 +1,6 @@
 // src/components/admin/tabs/LecturersTab.jsx
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { T } from "../../components/admin/constants";
 
 // ── API base ──────────────────────────────────────────────────────────────────
@@ -339,6 +340,20 @@ export function RichTextEditor({ icon, label, sub, name, value, onChange, placeh
 // ── LecturersTab ──────────────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
 const LecturersTab = () => {
+    // ── Auth: every request to the API carries the Clerk token ──
+    const { getToken } = useAuth();
+    const authFetch = async (url, options = {}) => {
+        let token = null;
+        try { token = await getToken(); } catch (_) { }
+        return fetch(url, {
+            ...options,
+            headers: {
+                ...(options.headers || {}),
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        });
+    };
+
     const [lecturers, setLecturers] = useState([]);
     const [selected, setSelected] = useState(null);
     const [form, setForm] = useState({ ...BLANK });
@@ -360,12 +375,12 @@ const LecturersTab = () => {
 
     useEffect(() => {
         fetchAll();
-    }, []);
+    }, []); // eslint-disable-line
 
     const fetchAll = async () => {
         setListLoading(true);
         try {
-            const res = await fetch(API_BASE);
+            const res = await authFetch(API_BASE);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             const mapped = data.map(apiToForm);
@@ -407,7 +422,8 @@ const LecturersTab = () => {
     const uploadPhoto = async (id, file) => {
         const fd = new FormData();
         fd.append('file', file);
-        const res = await fetch(`${API_BASE}/${id}/photo`, { method: 'POST', body: fd });
+        // No Content-Type here: the browser must set the multipart boundary itself.
+        const res = await authFetch(`${API_BASE}/${id}/photo`, { method: 'POST', body: fd });
         if (!res.ok) throw new Error(`فشل رفع الصورة: HTTP ${res.status}`);
         try { return await res.json(); } catch { return null; }
     };
@@ -419,7 +435,7 @@ const LecturersTab = () => {
             const body = formToApi(form);
 
             if (isNew) {
-                const res = await fetch(API_BASE, {
+                const res = await authFetch(API_BASE, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
@@ -431,7 +447,7 @@ const LecturersTab = () => {
                 if (pendingPhotoRef.current) {
                     await uploadPhoto(created.id, pendingPhotoRef.current);
                     pendingPhotoRef.current = null;
-                    const refreshed = await fetch(`${API_BASE}/${created.id}`);
+                    const refreshed = await authFetch(`${API_BASE}/${created.id}`);
                     if (refreshed.ok) {
                         const refreshedData = await refreshed.json();
                         Object.assign(newForm, apiToForm(refreshedData));
@@ -445,7 +461,7 @@ const LecturersTab = () => {
                 toast('تم إضافة المحاضر بنجاح');
 
             } else {
-                const res = await fetch(`${API_BASE}/${form.id}`, {
+                const res = await authFetch(`${API_BASE}/${form.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
@@ -457,7 +473,7 @@ const LecturersTab = () => {
                 if (pendingPhotoRef.current) {
                     await uploadPhoto(form.id, pendingPhotoRef.current);
                     pendingPhotoRef.current = null;
-                    const refreshed = await fetch(`${API_BASE}/${form.id}`);
+                    const refreshed = await authFetch(`${API_BASE}/${form.id}`);
                     if (refreshed.ok) {
                         const refreshedData = await refreshed.json();
                         updatedForm = apiToForm(refreshedData);
@@ -488,7 +504,7 @@ const LecturersTab = () => {
         if (!deleteConfirm) { setDeleteConfirm(true); return; }
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/${selected.id}`, { method: 'DELETE' });
+            const res = await authFetch(`${API_BASE}/${selected.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const rest = lecturers.filter(l => l.id !== selected.id);
             setLecturers(rest);

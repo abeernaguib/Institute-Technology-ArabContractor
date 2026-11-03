@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { T } from "../../components/admin/constants";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -16,10 +17,17 @@ const BLANK_TYPE = { typeId: 0, typeName: '' };
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-async function apiFetch(url, options = {}) {
+// getToken is passed in so every request carries the Clerk bearer token.
+async function apiFetch(url, options = {}, getToken) {
+    let token = null;
+    try { token = getToken ? await getToken() : null; } catch (_) { }
     const res = await fetch(url, {
-        headers: { 'Content-Type': 'application/json', ...options.headers },
         ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...options.headers,
+        },
     });
     if (!res.ok) {
         const text = await res.text().catch(() => '');
@@ -85,6 +93,12 @@ function CoverZone({ cover, onCoverChange, onCoverRemove }) {
 // BooksTab — main component
 // ─────────────────────────────────────────────────────────────────────────────
 const BooksTab = () => {
+    // ── Auth: stable `api` helper that always attaches the Clerk token ───────
+    const { getToken } = useAuth();
+    const getTokenRef = useRef(getToken);
+    getTokenRef.current = getToken;
+    const api = useCallback((url, options) => apiFetch(url, options, getTokenRef.current), []);
+
     // ── Books state ──────────────────────────────────────────────────────────
     const [books, setBooks] = useState([]);
     const [booksLoading, setBooksLoading] = useState(false);
@@ -138,7 +152,7 @@ const BooksTab = () => {
         try {
             const params = new URLSearchParams({ pageIndex: 1, pageSize: PAGE_SIZE });
             if (searchTerm.trim()) params.append('search', searchTerm.trim());
-            const data = await apiFetch(`${BOOKS_API}?${params}`);
+            const data = await api(`${BOOKS_API}?${params}`);
             setBooks(data.data ?? []);
             setTotalItems(data.totalItems ?? 0);
         } catch (err) {
@@ -146,14 +160,14 @@ const BooksTab = () => {
         } finally {
             setBooksLoading(false);
         }
-    }, []);
+    }, [api]);
 
     // ── Fetch types ───────────────────────────────────────────────────────────
     const fetchTypes = useCallback(async () => {
         setTypesLoading(true);
         setTypesError(null);
         try {
-            const data = await apiFetch(TYPES_API);
+            const data = await api(TYPES_API);
             const list = Array.isArray(data) ? data : (data.data ?? []);
             setBookTypes(list);
             if (list.length && !selectedType) pickType(list[0]);
@@ -162,10 +176,10 @@ const BooksTab = () => {
         } finally {
             setTypesLoading(false);
         }
-    }, []); // eslint-disable-line
+    }, [api]); // eslint-disable-line
 
     async function fetchBookById(id) {
-        try { return await apiFetch(`${BOOKS_API}/${id}`); }
+        try { return await api(`${BOOKS_API}/${id}`); }
         catch (err) { toast(`خطأ في تحميل بيانات الكتاب: ${err.message}`, 'error'); return null; }
     }
 
@@ -215,7 +229,7 @@ const BooksTab = () => {
         };
         try {
             if (isNewBook) {
-                const created = await apiFetch(BOOKS_API, { method: 'POST', body: JSON.stringify(payload) });
+                const created = await api(BOOKS_API, { method: 'POST', body: JSON.stringify(payload) });
                 toast('تم إضافة الكتاب بنجاح');
                 await fetchBooks(debouncedSearch);
                 if (created?.bookId) {
@@ -223,7 +237,7 @@ const BooksTab = () => {
                     if (detail) { setSelectedBook({ ...detail }); setFormBook({ ...detail, cover: null }); setIsNewBook(false); }
                 } else { handleBookNew(); }
             } else {
-                await apiFetch(`${BOOKS_API}/${formBook.bookId}`, { method: 'PUT', body: JSON.stringify(payload) });
+                await api(`${BOOKS_API}/${formBook.bookId}`, { method: 'PUT', body: JSON.stringify(payload) });
                 const detail = await fetchBookById(formBook.bookId);
                 const updated = detail ?? { ...formBook };
                 setSelectedBook({ ...updated });
@@ -247,7 +261,7 @@ const BooksTab = () => {
     async function handleBookDelete() {
         if (!delConfBook) { setDelConfBook(true); return; }
         try {
-            await apiFetch(`${BOOKS_API}/${selectedBook.bookId}`, { method: 'DELETE' });
+            await api(`${BOOKS_API}/${selectedBook.bookId}`, { method: 'DELETE' });
             setDelConfBook(false);
             setSelectedBook(null);
             setFormBook({ ...BLANK_BOOK, cover: null });
@@ -278,12 +292,12 @@ const BooksTab = () => {
         setTypeSaving(true);
         try {
             if (isNewType) {
-                const created = await apiFetch(TYPES_API, { method: 'POST', body: JSON.stringify({ typeName: name }) });
+                const created = await api(TYPES_API, { method: 'POST', body: JSON.stringify({ typeName: name }) });
                 toast('تم إضافة النوع بنجاح');
                 await fetchTypes();
                 if (created?.typeId) pickType(created);
             } else {
-                await apiFetch(`${TYPES_API}/${formType.typeId}`, { method: 'PUT', body: JSON.stringify({ typeName: name }) });
+                await api(`${TYPES_API}/${formType.typeId}`, { method: 'PUT', body: JSON.stringify({ typeName: name }) });
                 toast('تم حفظ التغييرات بنجاح');
                 await fetchTypes();
                 setSelectedType({ ...formType, typeName: name });
@@ -304,7 +318,7 @@ const BooksTab = () => {
     async function handleTypeDelete() {
         if (!delConfType) { setDelConfType(true); return; }
         try {
-            await apiFetch(`${TYPES_API}/${selectedType.typeId}`, { method: 'DELETE' });
+            await api(`${TYPES_API}/${selectedType.typeId}`, { method: 'DELETE' });
             setDelConfType(false);
             setSelectedType(null);
             setFormType({ ...BLANK_TYPE });
