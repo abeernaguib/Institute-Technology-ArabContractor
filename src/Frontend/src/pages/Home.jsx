@@ -70,42 +70,10 @@ const downloadItems = [
 // ─── VISION (synced with the Vision & Goals page: /mission) ───────────────────
 // أي تعديل على صفحة الرؤية والأهداف (Vision_goals.jsx) يجب تكراره هنا.
 const visionItems = [
-    {
-        title: 'الرؤية',
-        text: 'ترسيخ منظومة تدريبية متقدمة وشاملة لتنمية القدرات الهندسية والإدارية والمهنية والفنية للعاملين، ودعم التدريب المهني عبر مدرسة المقاولون العرب ومواكبة التحوّل الرقمي، بما يحافظ على الريادة محليًا وإقليميًا.',
-        link: '/mission#vision',
-    },
-    {
-        title: 'الرسالة',
-        text: 'تطوير منظومة تدريبية متكاملة تُعدّ وتُؤهّل الكوادر الهندسية والمهنية والفنية والإدارية وفق أحدث المعايير، مع ترسيخ ثقافة الجودة والسلامة وإيلاء اهتمام محوري للتدريب المهني والفني لتلبية احتياجات المشروعات القومية.',
-        link: '/mission#vision',
-    },
-    {
-        title: 'استراتيجيات الإدارة العليا',
-        list: [
-            'تعزيز الاستدامة في تنمية الموارد البشرية',
-            'دعم التحوّل الرقمي وتطوير الأعمال',
-            'تطوير وتأهيل العمالة الفنية والمهنية',
-            'رفع كفاءة الخطط التدريبية',
-            'تعزيز الشراكات المؤسسية',
-            'تمكين القيادات الوسطى وإعداد صف ثانٍ',
-        ],
-        link: '/mission#strategy',
-    },
-    {
-        title: 'أهداف التدريب المستقبلية',
-        list: [
-            'توسيع البرامج الرقمية والفنية',
-            'تعزيز قدرات مدرسة المقاولون العرب',
-            'مسارات تدريب مهني متخصصة',
-            'منظومة تدريب إلكترونية متكاملة (E-Learning)',
-            'برامج السلامة والصحة المهنية المتقدمة',
-            'تطوير الأعمال وتحسين الكفاءة',
-            'شراكات محلية ودولية',
-            'تقييم أثر التدريب',
-        ],
-        link: '/mission#goals',
-    },
+    { title: 'الرؤية', text: 'منظومة تدريبية متقدمة تحافظ على ريادتنا محليًا وإقليميًا.', link: '/mission#vision' },
+    { title: 'الرسالة', text: 'تأهيل الكوادر الهندسية والفنية والإدارية وفق أحدث المعايير.', link: '/mission#vision' },
+    { title: 'استراتيجيات الإدارة العليا', text: 'ست استراتيجيات تركّز على الاستدامة والتحوّل الرقمي والشراكات.', link: '/mission#strategy' },
+    { title: 'أهداف التدريب المستقبلية', text: 'ثمانية أهداف تشمل البرامج الرقمية والتعلّم الإلكتروني والسلامة.', link: '/mission#goals' },
 ];
 
 const coreValues = [
@@ -868,10 +836,13 @@ export default function Home() {
         .vis-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:${C.o};flex-shrink:0;margin-top:.75em;}
         .vis-more{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-family:${F};font-size:.76rem;font-weight:700;color:${C.b};text-decoration:none;border-bottom:1px solid ${C.b};padding-bottom:2px;transition:gap .2s,color .2s,border-color .2s;}
         .vis-more:hover{gap:10px;color:${C.o};border-color:${C.o};}
-        .vis-values{margin-top:clamp(20px,3vw,32px);padding:clamp(18px,2.5vw,26px);border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.05);text-align:center;opacity:0;}
-        .vis-values-title{font-family:${F};font-size:clamp(.9rem,1.3vw,1.05rem);font-weight:800;color:${C.w};margin-bottom:14px;}
-        .vis-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
-        .vis-chip{font-family:${F};font-size:.74rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:5px 14px;border-radius:20px;}
+        .vis-values{
+  margin-top:clamp(16px,2.5vw,24px);
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
+  opacity:0;
+}
+.vis-values-title{font-family:${F};font-size:.85rem;font-weight:800;color:${C.o};}
+.vis-chip{font-family:${F};font-size:.72rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:4px 12px;border-radius:20px;}is-chip{font-family:${F};font-size:.74rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:5px 14px;border-radius:20px;}
 
         .dl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2vw,16px);max-width:720px;margin:0 auto;}
         @media(max-width:600px){.dl-grid{grid-template-columns:1fr;}}
@@ -1299,11 +1270,7 @@ export default function Home() {
                                 {v.text && (
                                     <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.1vw,.88rem)', color: C.g5, lineHeight: 2, marginBottom: 18 }}>{v.text}</p>
                                 )}
-                                {v.list && (
-                                    <ul className="vis-list">
-                                        {v.list.map(li => <li key={li}>{li}</li>)}
-                                    </ul>
-                                )}
+                              
                                 <Link to={v.link} className="vis-more">
                                     اقرأ التفاصيل <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
                                 </Link>
