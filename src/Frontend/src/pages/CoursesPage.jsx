@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import Seo from '../components/Seo';
 import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
@@ -267,6 +267,24 @@ const ModeToggle = ({ mode, onChange }) => {
     );
 };
 
+// ── Details link (real <a>, so right-click / Ctrl+Click / new tab works) ─────
+const DetailsLink = ({ to, hovered, onEnter, onLeave }) => (
+    <Link
+        to={to}
+        style={{
+            ...styles.detailsBtn,
+            ...(hovered ? styles.detailsBtnHover : {}),
+            display: 'block',
+            textAlign: 'center',
+            textDecoration: 'none',
+            boxSizing: 'border-box',
+        }}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}>
+        عرض التفاصيل
+    </Link>
+);
+
 // ── Certificate Preview Modal ─────────────────────────────────────────────────
 const CertPreviewModal = ({ cert, onClose }) => {
     useEffect(() => {
@@ -499,7 +517,17 @@ const CoursesPage = () => {
     const [trail, setTrail] = useState([]);
 
     const COURSES_PER_PAGE = 12;
-    const [currentPage, setCurrentPage] = useState(1);
+
+    // ── Page number lives in the URL (?page=3) so Back returns to the same page ──
+    const [searchParams, setSearchParams] = useSearchParams();
+    const currentPage = Math.max(1, parseInt(searchParams.get('page'), 10) || 1);
+    const setCurrentPage = useCallback((p) => {
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            if (p <= 1) next.delete('page'); else next.set('page', String(p));
+            return next;
+        });
+    }, [setSearchParams]);
 
     const [courseModes, setCourseModes] = useState({});
     const getCourseMode = (id) => courseModes[id] || 'onsite';
@@ -619,8 +647,6 @@ const CoursesPage = () => {
             finally { setLoading(false); }
         })();
     }, [slug]);
-
-    useEffect(() => { setCurrentPage(1); }, [slug]);
 
     useEffect(() => {
         let off = false;
@@ -973,13 +999,12 @@ const CoursesPage = () => {
                                                                     </div>
                                                                 </div>
                                                             )}
-                                                            <button
-                                                                style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
-                                                                onMouseEnter={() => setHoveredDetailsBtn(course.id)}
-                                                                onMouseLeave={() => setHoveredDetailsBtn(null)}
-                                                                onClick={() => navigate(`/course/${course.slug}`)}>
-                                                                عرض التفاصيل
-                                                            </button>
+                                                            <DetailsLink
+                                                                to={`/course/${course.slug}`}
+                                                                hovered={hoveredDetailsBtn === course.id}
+                                                                onEnter={() => setHoveredDetailsBtn(course.id)}
+                                                                onLeave={() => setHoveredDetailsBtn(null)}
+                                                            />
                                                             {!isFree && (
                                                                 <button
                                                                     style={{ ...styles.refundBtn, ...(hoveredRefundBtn === course.id ? styles.refundBtnHover : {}) }}
@@ -1016,13 +1041,12 @@ const CoursesPage = () => {
                                                                     : '🎁 اشترك الآن — مجاناً'
                                                                 }
                                                             </button>
-                                                            <button
-                                                                style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
-                                                                onMouseEnter={() => setHoveredDetailsBtn(course.id)}
-                                                                onMouseLeave={() => setHoveredDetailsBtn(null)}
-                                                                onClick={() => navigate(`/course/${course.slug}`)}>
-                                                                عرض التفاصيل
-                                                            </button>
+                                                            <DetailsLink
+                                                                to={`/course/${course.slug}`}
+                                                                hovered={hoveredDetailsBtn === course.id}
+                                                                onEnter={() => setHoveredDetailsBtn(course.id)}
+                                                                onLeave={() => setHoveredDetailsBtn(null)}
+                                                            />
                                                         </>
                                                     ) : (
                                                         <>
@@ -1040,13 +1064,12 @@ const CoursesPage = () => {
                                                                     : 'أضف إلى السلة'
                                                                 }
                                                             </button>
-                                                            <button
-                                                                style={{ ...styles.detailsBtn, ...(hoveredDetailsBtn === course.id ? styles.detailsBtnHover : {}) }}
-                                                                onMouseEnter={() => setHoveredDetailsBtn(course.id)}
-                                                                onMouseLeave={() => setHoveredDetailsBtn(null)}
-                                                                onClick={() => navigate(`/course/${course.slug}`)}>
-                                                                عرض التفاصيل
-                                                            </button>
+                                                            <DetailsLink
+                                                                to={`/course/${course.slug}`}
+                                                                hovered={hoveredDetailsBtn === course.id}
+                                                                onEnter={() => setHoveredDetailsBtn(course.id)}
+                                                                onLeave={() => setHoveredDetailsBtn(null)}
+                                                            />
                                                         </>
                                                     )}
                                                 </div>
