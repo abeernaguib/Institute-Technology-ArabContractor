@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import CustomersTab from './CustomersTab';
-import CustomersImport from './CustomersImport'; // مؤقت
 
 import { API_BASE, API_HOST, T } from '../../components/admin/constants';
 import { injectAdminStyles } from '../../components/admin/styles';
