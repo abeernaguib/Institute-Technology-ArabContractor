@@ -202,11 +202,13 @@ namespace Institute.API.Controllers
 
             // جيب العناوين التنظيمية (الأقسام)
             // وانزل فيها Recursive عشان تجيب الكورسات اللي جوّاها
+            // Skip hidden sections (MainFlag != true): their courses, at any depth, are not collected
             var childrenIds = planworks
-                .Where(x => x.ParentId == parentId && !IsCourse(x, parentIds))
+                .Where(x => x.ParentId == parentId
+                         && !IsCourse(x, parentIds)
+                         && x.MainFlag == true)
                 .Select(x => x.ChildId)
                 .ToList();
-
             foreach (var childId in childrenIds)
             {
                 result.AddRange(

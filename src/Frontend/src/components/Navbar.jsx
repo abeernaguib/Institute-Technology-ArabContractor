@@ -115,7 +115,7 @@ const fetchTreeOnce = () => {
     return treePromise;
 };
 
-const COURSES_CACHE_KEY = 'allCoursesCache_v2'; // bumped: old cache could contain hidden courses
+const COURSES_CACHE_KEY = 'allCoursesCache_v3';
 const COURSES_TTL = 30 * 60 * 1000; // 30 minutes
 let coursesPromise = null;
 
@@ -149,7 +149,7 @@ const getAllCoursesOnce = () => {
         // A category that had a hidden child is skipped (its endpoint would also return the
         // hidden child's courses); only its visible children are fetched.
         const collect = (cats) => cats.forEach(c => {
-            if (!c._trimmed && c.slug) slugs.add(c.slug);
+            if (c.slug) slugs.add(c.slug);
             if (c.children) collect(c.children);
         });
         if (tree[0]?.children) collect(tree[0].children);
