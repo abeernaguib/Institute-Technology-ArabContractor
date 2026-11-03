@@ -268,7 +268,10 @@ builder.Services.AddAuthorization(options =>
         "News",
         "Books",
         "Workplan",
-        "Settings"
+        "Settings",
+        "Team",                                      // ← new
+        "Certificates and Letters of Appreciation",  // ← new
+        "Customers"                                  // ← new
     };
 
     foreach (var permissionName in permissionNames)
