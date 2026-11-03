@@ -12,7 +12,7 @@ import Sidebar from '../../components/admin/Sidebar';
 import PageHero from '../../components/admin/PageHero';
 import StatCards from '../../components/admin/StatCards';
 import FinancialTab from './Financialtab';
-
+import ProtocolsTab from './ProtocolsTab';
 import UsersTab from '../../components/admin/tabs/UsersTab';
 import CoursesTab from '../../components/admin/tabs/CoursesTab';
 import AttendanceTab from '../../components/admin/tabs/AttendanceTab';
@@ -40,7 +40,8 @@ const TABS = [
     { id: 'financial', label: 'المالية', icon: '💰', permissionName: 'Finance' },
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓', permissionName: 'Lecturers' },
     { id: 'team', label: 'فريق العمل', icon: '👥', permissionName: 'Team' },
-    { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
+       { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
+    { id: 'protocols', label: 'البروتوكولات', icon: '🤝', permissionName: 'Protocols' },
     { id: 'siteCerts', label: 'لشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
@@ -779,11 +780,11 @@ const AdminDashboard = () => {
                                 API_HOST={API_HOST}
                             />
                         )}
-
                         {activeTab === 'lecturers' && <LecturersTab />}
                         {activeTab === 'news' && <NewsTab />}
                         {activeTab === 'team' && <TeamTab />}
                         {activeTab === 'customers' && <CustomersTab />}
+                        {activeTab === 'protocols' && <ProtocolsTab />}
                         {activeTab === 'siteCerts' && <CertificationsTab />}
 
                         {activeTab === 'books' && (

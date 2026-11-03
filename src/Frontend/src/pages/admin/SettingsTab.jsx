@@ -34,6 +34,7 @@ const ADMIN_TABS = [
     { id: 'team', label: '👥 فريق العمل', permissionName: 'Team' },
     { id: 'news', label: '📰 الأخبار', permissionName: 'News' },
     { id: 'books', label: '📖 الكتب', permissionName: 'Books' },
+    { id: 'protocols', label: '🤝 البروتوكولات', permissionName: 'Protocols' },
     { id: 'workplan', label: '📋 الدورات التدريبية', permissionName: 'Workplan' },
     { id: 'settings', label: '⚙️ الإعدادات', permissionName: 'Settings' },
 ];

@@ -1,56 +1,31 @@
-﻿import React from "react";
+﻿import React, { useState, useEffect } from "react";
+
+const API_BASE_URL = 'https://icemt.arabcont.com/api';
 
 export default function Protocols() {
     const isMobile = window.innerWidth < 700;
     const globalFont = '"Noto Kufi Arabic", serif';
 
-    const groups = [
-        {
-            title: "البروتوكولات الدولية",
-            icon: "🌍",
-            items: [
-                "هيئة الإغاثة الكاثوليكية",
-                "معهد إيكون - ألمانيا",
-                "معهد إينفايروتك للتدريب الأهلي - الكويت",
-                "معهد الأكاديمية السعودية للتدريب",
-                "مركز الثقافة الخضراء - فرنسا",
-                "Evolve Masters group",
-            ],
-        },
-        {
-            title: "البروتوكولات المحلية",
-            icon: "🏢",
-            items: [
-                "المعهد القومي للحوكمة",
-                "شركة العاصمة الإدارية",
-                "مركز الإدارة التعاقدية والتحكيم - د. شريف الهجان",
-                "المعهد القومي للنقل",
-                "مصلحة الضرائب",
-                "جمعية المهندسين المصرية",
-                "شركة ميدكس",
-            ],
-        },
-        {
-            title: "بروتوكولات الجامعات",
-            icon: "🎓",
-            items: [
-                "جامعة بنها",
-                "جامعة بنها الأهلية",
-                "الجامعة المصرية الروسية",
-                "معاهد كنج مريوط",
-                "جامعة المدينة",
-                "جامعة شرق بورسعيد التكنولوجية",
-                "جامعة القاهرة التكنولوجية",
-                "المعهد العالي للهندسة والتكنولوجيا بالزقازيق",
-                "معهد الدلتا العالي للهندسة والتكنولوجيا",
-            ],
-        },
-        {
-            title: "أوامر الإسناد",
-            icon: "📄",
-            items: ["الهيئة العامة للتأمين الصحي الشامل"],
-        },
-    ];
+    const [groups, setGroups] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchProtocols = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${API_BASE_URL}/Protocol`);
+                if (!response.ok) throw new Error('فشل في تحميل البروتوكولات');
+                setGroups(await response.json());
+                setError(null);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProtocols();
+    }, []);
 
     const getColumns = () => {
         const w = window.innerWidth;
@@ -132,9 +107,38 @@ export default function Protocols() {
                     في:
                 </p>
 
+                {loading && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div
+                                style={{
+                                    width: 56, height: 56, margin: '0 auto 16px',
+                                    border: '4px solid #e5e7eb', borderTopColor: '#0865a8',
+                                    borderRadius: '50%', animation: 'protoSpin .8s linear infinite',
+                                }}
+                            />
+                            <p style={{ color: '#374151', fontFamily: globalFont }}>جاري تحميل البروتوكولات...</p>
+                            <style>{`@keyframes protoSpin { to { transform: rotate(360deg); } }`}</style>
+                        </div>
+                    </div>
+                )}
+
+                {error && (
+                    <div style={{ maxWidth: 640, margin: '40px auto', padding: 24, textAlign: 'center', border: '1px solid #fecaca', background: '#fef2f2', borderRadius: 12 }}>
+                        <p style={{ color: '#b91c1c', fontWeight: 700, marginBottom: 6, fontFamily: globalFont }}>حدث خطأ</p>
+                        <p style={{ color: '#dc2626', fontFamily: globalFont }}>{error}</p>
+                    </div>
+                )}
+
+                {!loading && !error && groups.length === 0 && (
+                    <p style={{ textAlign: 'center', color: '#6b7280', padding: '48px 0', fontFamily: globalFont }}>
+                        لا توجد بروتوكولات لعرضها حاليًا
+                    </p>
+                )}
+
                 {/* GROUPS */}
-                {groups.map((group, gi) => (
-                    <div key={gi} style={{ marginTop: 40 }}>
+                {!loading && !error && groups.map((group) => (
+                    <div key={group.id} style={{ marginTop: 40 }}>
                         <h2
                             style={{
                                 fontSize: isMobile ? 18 : 24,
@@ -155,9 +159,9 @@ export default function Protocols() {
                                 marginTop: 20,
                             }}
                         >
-                            {group.items.map((p, i) => (
+                            {group.items.map((p) => (
                                 <div
-                                    key={i}
+                                    key={p.id}
                                     style={{
                                         background: "#fff",
                                         borderRadius: 16,
@@ -167,15 +171,17 @@ export default function Protocols() {
                                         boxShadow: "0 5px 12px rgba(0,0,0,0.08)",
                                     }}
                                 >
-                                    <span
-                                        style={{
-                                            fontSize: isMobile ? 20 : 22,
-                                            color: "#0865a8",
-                                            marginLeft: 10,
-                                        }}
-                                    >
-                                        {group.icon}
-                                    </span>
+                                    {group.icon && (
+                                        <span
+                                            style={{
+                                                fontSize: isMobile ? 20 : 22,
+                                                color: "#0865a8",
+                                                marginLeft: 10,
+                                            }}
+                                        >
+                                            {group.icon}
+                                        </span>
+                                    )}
                                     <span
                                         style={{
                                             fontSize: isMobile ? 12 : 13.5,
@@ -184,40 +190,13 @@ export default function Protocols() {
                                             fontFamily: globalFont,
                                         }}
                                     >
-                                        {p}
+                                        {p.name}
                                     </span>
                                 </div>
                             ))}
                         </div>
                     </div>
                 ))}
-
-                
-            </div>
-        </div>
-    );
-}
-
-function ImageCard({ url }) {
-    return (
-        <div
-            style={{
-                flex: 1,
-                borderRadius: 18,
-                overflow: "hidden",
-                marginBottom: 16,
-            }}
-        >
-            <div style={{ aspectRatio: "16 / 9" }}>
-                <img
-                    src={url}
-                    alt=""
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                    }}
-                />
             </div>
         </div>
     );

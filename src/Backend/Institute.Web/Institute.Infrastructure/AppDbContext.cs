@@ -74,6 +74,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<PlanworkRound> PlanworkRounds { get; set; }
 
     public virtual DbSet<PlanEnrolledEmail> PlanEnrolledEmails { get; set; }
+    public virtual DbSet<ProtocolGroup> ProtocolGroups { get; set; }
+    public virtual DbSet<ProtocolItem> ProtocolItems { get; set; }
 
     // NOTE: the connection string must NOT live in source code.
     // Keep it in appsettings / environment variables / Azure Key Vault and
@@ -664,6 +666,28 @@ public partial class AppDbContext : DbContext
             entity.Property(c => c.Name).IsRequired().HasMaxLength(300);
             entity.Property(c => c.Logo).HasMaxLength(255);
             entity.HasIndex(c => c.DisplayOrder);
+        });
+
+        modelBuilder.Entity<ProtocolGroup>(entity =>
+        {
+            entity.ToTable("ProtocolGroups");   // لازم يطابق اسم الجدول في 003_create_Protocols.sql
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.Icon).HasMaxLength(20);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<ProtocolItem>(entity =>
+        {
+            entity.ToTable("ProtocolItems");    // نفس الكلام: طابق السكريبت
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(500);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne<ProtocolGroup>()
+                  .WithMany()
+                  .HasForeignKey(e => e.GroupId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // CertificationItem

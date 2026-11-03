@@ -133,6 +133,7 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IUserPermissionService, UserPermissionService>();
 builder.Services.AddScoped<BankPaymentService>();
 builder.Services.AddScoped<IRefundService, RefundService>();
+builder.Services.AddScoped<IProtocolService, ProtocolService>();
 builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
@@ -272,6 +273,7 @@ builder.Services.AddAuthorization(options =>
         "Books",
         "Workplan",
         "Settings",
+        "Protocols",
         "Team",                                      // ← new
         "Certificates and Letters of Appreciation",  // ← new
         "Customers"                                  // ← new
