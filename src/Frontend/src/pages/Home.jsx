@@ -67,19 +67,67 @@ const downloadItems = [
     { title: 'الخطة الاستراتيجية', Icon: HomeWorkIcon, pdfUrl: '/pdf/StrategicPlan_2024_2030.pdf', desc: '2024 — 2030' },
 ];
 
+// ─── VISION (synced with the Vision & Goals page: /mission) ───────────────────
+// أي تعديل على صفحة الرؤية والأهداف (Vision_goals.jsx) يجب تكراره هنا.
 const visionItems = [
-    { title: 'الرؤية', text: 'تحقيق الريادة في التعليم والتدريب الهندسي والمهني محليًا وإقليميًا.' },
-    { title: 'الرسالة', text: 'إعداد وتأهيل أجيال من الكوادر المهنية المتميزة وفق معايير الجودة.' },
-    { title: 'إستراتيجية العمل', text: 'بيئة مبتكرة تجمع التميز التقني بالمهارات القيادية والعملية.' },
-    { title: 'الأهداف', text: 'شراكات مع جامعات وهيئات دولية وربط المسار المهني بخطط التدريب.' },
+    {
+        title: 'الرؤية',
+        text: 'ترسيخ منظومة تدريبية متقدمة وشاملة لتنمية القدرات الهندسية والإدارية والمهنية والفنية للعاملين، ودعم التدريب المهني عبر مدرسة المقاولون العرب ومواكبة التحوّل الرقمي، بما يحافظ على الريادة محليًا وإقليميًا.',
+        link: '/mission#vision',
+    },
+    {
+        title: 'الرسالة',
+        text: 'تطوير منظومة تدريبية متكاملة تُعدّ وتُؤهّل الكوادر الهندسية والمهنية والفنية والإدارية وفق أحدث المعايير، مع ترسيخ ثقافة الجودة والسلامة وإيلاء اهتمام محوري للتدريب المهني والفني لتلبية احتياجات المشروعات القومية.',
+        link: '/mission#vision',
+    },
+    {
+        title: 'استراتيجيات الإدارة العليا',
+        list: [
+            'تعزيز الاستدامة في تنمية الموارد البشرية',
+            'دعم التحوّل الرقمي وتطوير الأعمال',
+            'تطوير وتأهيل العمالة الفنية والمهنية',
+            'رفع كفاءة الخطط التدريبية',
+            'تعزيز الشراكات المؤسسية',
+            'تمكين القيادات الوسطى وإعداد صف ثانٍ',
+        ],
+        link: '/mission#strategy',
+    },
+    {
+        title: 'أهداف التدريب المستقبلية',
+        list: [
+            'توسيع البرامج الرقمية والفنية',
+            'تعزيز قدرات مدرسة المقاولون العرب',
+            'مسارات تدريب مهني متخصصة',
+            'منظومة تدريب إلكترونية متكاملة (E-Learning)',
+            'برامج السلامة والصحة المهنية المتقدمة',
+            'تطوير الأعمال وتحسين الكفاءة',
+            'شراكات محلية ودولية',
+            'تقييم أثر التدريب',
+        ],
+        link: '/mission#goals',
+    },
 ];
 
-const certificates = [
-    { title: 'الاعتماد القومي للجودة', text: 'اعتماد من المعهد القومي للجودة التابع لوزارة التجارة والصناعة.', image: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/NQI-lg.jpg' },
-    { title: 'ISO 9001:2015', text: 'شهادة الجودة منذ عام 2000 في مجال تصميم وتنفيذ الخدمات التدريبية.', image: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/iso9001.jpg' },
-    { title: 'PMI', text: 'اعتماد معهد إدارة الأعمال (PMI) للإعداد لاجتياز شهادة PMP.', image: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/pmi.jpg' },
-    { title: 'Autodesk Training Center', text: 'مركز تدريب معتمد من Autodesk لأحدث برامج الهندسة والتصميم.', image: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/autodeskCert.jpg' },
+const coreValues = [
+    'الالتزام بالجودة',
+    'الابتكار ومواكبة التحوّل الرقمي',
+    'تنمية العنصر البشري',
+    'المهنية والشفافية',
+    'الشراكات المؤسسية المستدامة',
+    'ثقافة السلامة',
+    'الاستدامة',
 ];
+
+// Static fallback — used only if the Certifications API fails
+const fallbackCertificates = [
+    { id: 'f1', title: 'الاعتماد القومي للجودة', description: 'اعتماد من المعهد القومي للجودة التابع لوزارة التجارة والصناعة.', pic: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/NQI-lg.jpg' },
+    { id: 'f2', title: 'ISO 9001:2015', description: 'شهادة الجودة منذ عام 2000 في مجال تصميم وتنفيذ الخدمات التدريبية.', pic: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/iso9001.jpg' },
+    { id: 'f3', title: 'PMI', description: 'اعتماد معهد إدارة الأعمال (PMI) للإعداد لاجتياز شهادة PMP.', pic: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/pmi.jpg' },
+    { id: 'f4', title: 'Autodesk Training Center', description: 'مركز تدريب معتمد من Autodesk لأحدث برامج الهندسة والتصميم.', pic: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/autodeskCert.jpg' },
+];
+const CERTS_API = 'https://icemt.arabcont.com/api/Certifications';
+const isHttpUrl = (u) => /^https?:\/\//i.test(u || '');
+
 const otherSchools = [
     {
         name: 'مدرسة أبو رواش الثانوية الصناعية المشتركة',
@@ -419,11 +467,35 @@ export default function Home() {
     const [newsLoading, setNewsLoading] = useState(true);
     const [apiStats, setApiStats] = useState(null);
 
+    // ── Certifications (dynamic, from the same API used by /certifications) ──
+    const [certList, setCertList] = useState([]);
+    const [certLoading, setCertLoading] = useState(true);
+
     useEffect(() => {
         fetch('https://icemt.arabcont.com/api/Admin/stats')
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(d => setApiStats(d))
             .catch(() => setApiStats(null));
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch(CERTS_API)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => {
+                if (cancelled) return;
+                const arr = Array.isArray(d) ? d : (d?.data || []);
+                // type 1 = certificates (type 2 = thank-you letters, shown on the /certifications page only)
+                const certs = arr.filter(i => i.type === 1);
+                setCertList(certs.length ? certs : fallbackCertificates);
+                setCertLoading(false);
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setCertList(fallbackCertificates);
+                setCertLoading(false);
+            });
+        return () => { cancelled = true; };
     }, []);
 
     // ── FIX 1: Preload the first hero image eagerly ───────────────────────────
@@ -472,6 +544,13 @@ export default function Home() {
             })
             .catch(() => setNewsLoading(false));
     }, []);
+
+    // Dynamic content changes page height → recalc ScrollTrigger positions
+    useEffect(() => {
+        if (certLoading || newsLoading) return;
+        const t = setTimeout(() => ScrollTrigger.refresh(), 300);
+        return () => clearTimeout(t);
+    }, [certLoading, newsLoading, certList.length, newsItems.length]);
 
     useEffect(() => {
         if (statsCounted.current) return;
@@ -567,6 +646,8 @@ export default function Home() {
                     gsap.to(hdr, { yPercent: -15, ease: 'none', scrollTrigger: { trigger: visionRef.current, start: 'top bottom', end: 'bottom top', scrub: true } });
                 }
                 gsap.fromTo(visionCards.current, { opacity: 0, y: 70, rotateX: -15, transformPerspective: 800 }, { opacity: 1, y: 0, rotateX: 0, duration: 0.95, ease: 'power3.out', stagger: 0.14, scrollTrigger: { trigger: visionRef.current, start: 'top 78%', once: true } });
+                const valuesBox = visionRef.current.querySelector('.vis-values');
+                if (valuesBox) gsap.fromTo(valuesBox, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.3, scrollTrigger: { trigger: visionRef.current, start: 'top 70%', once: true } });
             }
 
             if (dlRef.current) {
@@ -578,8 +659,6 @@ export default function Home() {
             if (certRef.current) {
                 const header = certRef.current.querySelector('.cert-header');
                 if (header) gsap.fromTo(header, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: certRef.current, start: 'top 82%', once: true } });
-                const certSwiper = certRef.current.querySelector('.swiper');
-                if (certSwiper) gsap.fromTo(certSwiper, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.15, scrollTrigger: { trigger: certRef.current, start: 'top 80%', once: true } });
                 const bar = certRef.current.querySelector('.cert-side-bar');
                 if (bar) gsap.to(bar, { scaleY: 1.3, transformOrigin: 'top center', ease: 'none', scrollTrigger: { trigger: certRef.current, start: 'top bottom', end: 'bottom top', scrub: true } });
             }
@@ -592,10 +671,8 @@ export default function Home() {
             if (schoolsRef.current) {
                 const featured = schoolsRef.current.querySelector('.school-featured');
                 const cards = schoolsRef.current.querySelectorAll('.school-card');
-                if (featured) {
-                    gsap.fromTo(featured, { opacity: 0, x: 60, scale: 0.96 }, { opacity: 1, x: 0, scale: 1, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: schoolsRef.current, start: 'top 80%', once: true } });
-                    gsap.to(featured, { yPercent: -6, ease: 'none', scrollTrigger: { trigger: schoolsRef.current, start: 'top bottom', end: 'bottom top', scrub: true } });
-                }
+                // No parallax on the schools block any more: it pushed the banner out of line with the cards.
+                if (featured) gsap.fromTo(featured, { opacity: 0, y: 50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'expo.out', scrollTrigger: { trigger: schoolsRef.current, start: 'top 82%', once: true } });
                 if (cards.length) gsap.fromTo(cards, { opacity: 0, y: 60, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.88, ease: 'power3.out', stagger: 0.13, delay: 0.18, scrollTrigger: { trigger: schoolsRef.current, start: 'top 78%', once: true } });
             }
 
@@ -706,10 +783,6 @@ export default function Home() {
           height: 100%;
         }
 
-        /* ── FIX: hero-bg-layer is now a true <img> tag wrapper.
-           The pseudo-parallax (top:-15%;height:130%) is removed so the
-           browser has no oversized element to composite, eliminating the
-           "dark flash" on first paint. */
         .hero-bg-layer{
           position:absolute;
           inset:0;
@@ -723,13 +796,9 @@ export default function Home() {
           object-fit:cover;
           object-position:center;
           display:block;
-          /* opacity starts at 1 — no transition on the image itself */
           opacity:1;
         }
 
-        /* ── FIX: overlay opacity is now static (0.55).
-           Removed the GSAP scrub that was animating it from 0→0.75,
-           which caused a dark flicker on first scroll. */
         .hero-overlay{
           position:absolute;
           inset:0;
@@ -789,17 +858,35 @@ export default function Home() {
         .feat-num{font-family:${F};font-size:clamp(2.4rem,4vw,3.8rem);font-weight:900;color:${C.g3};line-height:1;margin-bottom:20px;letter-spacing:-2px;transition:color .3s;}
         .feat-card:hover .feat-num{color:${C.o};}
 
-        .vision-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(12px,2vw,20px);}
-        @media(max-width:500px){.vision-grid{grid-template-columns:1fr;}}
-        .vis-item{padding:28px;border-radius:8px;border:1px solid ${C.g3};background:${C.w};transition:border-color .25s,box-shadow .25s;opacity:0;transform-origin:center bottom;}
+        /* ── Vision (synced with /mission) ── */
+        .vision-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,20px);align-items:stretch;}
+        @media(max-width:700px){.vision-grid{grid-template-columns:1fr;}}
+        .vis-item{display:flex;flex-direction:column;padding:28px;border-radius:8px;border:1px solid ${C.g3};background:${C.w};transition:border-color .25s,box-shadow .25s;opacity:0;transform-origin:center bottom;}
         .vis-item:hover{border-color:${C.o};box-shadow:0 4px 24px rgba(245,124,0,.10);}
+        .vis-list{list-style:none;display:grid;gap:7px;margin:0 0 18px;padding:0;}
+        .vis-list li{display:flex;align-items:flex-start;gap:9px;font-family:${F};font-size:clamp(.74rem,1vw,.84rem);color:${C.g7};line-height:1.8;}
+        .vis-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:${C.o};flex-shrink:0;margin-top:.75em;}
+        .vis-more{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-family:${F};font-size:.76rem;font-weight:700;color:${C.b};text-decoration:none;border-bottom:1px solid ${C.b};padding-bottom:2px;transition:gap .2s,color .2s,border-color .2s;}
+        .vis-more:hover{gap:10px;color:${C.o};border-color:${C.o};}
+        .vis-values{margin-top:clamp(20px,3vw,32px);padding:clamp(18px,2.5vw,26px);border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.05);text-align:center;opacity:0;}
+        .vis-values-title{font-family:${F};font-size:clamp(.9rem,1.3vw,1.05rem);font-weight:800;color:${C.w};margin-bottom:14px;}
+        .vis-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+        .vis-chip{font-family:${F};font-size:.74rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:5px 14px;border-radius:20px;}
 
         .dl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2vw,16px);max-width:720px;margin:0 auto;}
         @media(max-width:600px){.dl-grid{grid-template-columns:1fr;}}
         .dl-item{opacity:0;}
 
+        /* ── Certificates (dynamic) ── */
         .cert-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:24px;color:${C.w};transition:background .25s,border-color .25s;height:100%;display:flex;flex-direction:column;gap:14px;}
         .cert-card:hover{background:rgba(255,255,255,.1);border-color:rgba(245,124,0,.4);}
+        .cert-desc{font-family:${F};font-size:clamp(.76rem,1.1vw,.87rem);line-height:1.9;color:rgba(255,255,255,.65);flex:1;margin:0;white-space:pre-line;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
+        .cert-link{font-family:${F};font-size:.76rem;font-weight:700;color:${C.o};text-decoration:none;border-bottom:1px solid ${C.o};align-self:flex-start;padding-bottom:1px;transition:color .2s,border-color .2s;}
+        .cert-link:hover{color:#fff;border-color:#fff;}
+        .cert-img-box{height:110px;background:${C.w};border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .cert-img-box img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+        .cert-skeleton{height:260px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.1),rgba(255,255,255,.04));background-size:200% 100%;animation:certShimmer 1.4s linear infinite;}
+        @keyframes certShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 
         .proto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
         @media(max-width:900px){.proto-grid{grid-template-columns:repeat(2,1fr);}}
@@ -809,16 +896,44 @@ export default function Home() {
         .proto-card::after{content:'';position:absolute;top:0;right:0;width:3px;height:100%;background:linear-gradient(180deg,${C.o},${C.b});transform:scaleY(0);transform-origin:top;transition:transform .3s cubic-bezier(.22,1,.36,1);}
         .proto-card:hover::after{transform:scaleY(1);}
 
-        .schools-layout{display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:20px;align-items:stretch;}
-        @media(max-width:960px){.schools-layout{grid-template-columns:1fr;}}
-        .school-featured{border-radius:12px;border:2px solid ${C.b};background:linear-gradient(160deg,${C.b} 0%,${C.bd} 100%);display:flex;flex-direction:column;overflow:hidden;transition:transform .3s,box-shadow .3s;opacity:0;}
-        .school-featured:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(8,101,168,.25);}
-        .schools-other-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+        /* ── Schools: featured banner on top + 3 equal, aligned cards ── */
+        .schools-layout{display:flex;flex-direction:column;gap:20px;}
+        .school-featured{
+          display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);
+          border-radius:12px;border:2px solid ${C.b};
+          background:linear-gradient(160deg,${C.b} 0%,${C.bd} 100%);
+          overflow:hidden;transition:transform .3s,box-shadow .3s;opacity:0;
+        }
+        .school-featured:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(8,101,168,.25);}
+        .sf-head{padding:clamp(20px,3vw,32px);border-inline-end:1px solid rgba(255,255,255,.15);display:flex;flex-direction:column;justify-content:center;gap:16px;}
+        .sf-head-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+        .sf-body{padding:clamp(20px,3vw,32px);display:flex;flex-direction:column;gap:16px;justify-content:center;}
+        @media(max-width:760px){
+          .school-featured{grid-template-columns:1fr;}
+          .sf-head{border-inline-end:none;border-bottom:1px solid rgba(255,255,255,.15);}
+        }
+
+        .schools-other-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch;}
+        @media(max-width:960px){
+          .schools-other-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+          .schools-other-grid > .school-card:last-child:nth-child(odd){grid-column:1/-1;}
+        }
         @media(max-width:600px){.schools-other-grid{grid-template-columns:1fr;}}
-        .schools-other-grid > .school-card:last-child:nth-child(odd){grid-column:1/-1;}
-        .school-card{border-radius:10px;border:1px solid ${C.g3};background:${C.w};display:flex;flex-direction:column;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s;opacity:0;}
+
+        .school-card{height:100%;border-radius:10px;border:1px solid ${C.g3};background:${C.w};display:flex;flex-direction:column;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s;opacity:0;}
         .school-card:hover{border-color:${C.b};transform:translateY(-5px);box-shadow:0 12px 32px rgba(8,101,168,.12);}
-        .sc-meta{font-family:${F};font-size:.68rem;font-weight:700;color:${C.g5};display:flex;align-items:center;gap:5px;}
+        .sc-head{padding:18px 18px 14px;border-bottom:1px solid ${C.g3};background:${C.w};}
+        .sc-head-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+        .sc-icon{width:44px;height:44px;border-radius:8px;flex-shrink:0;background:rgba(8,101,168,.08);display:flex;align-items:center;justify-content:center;}
+        .sc-tag{font-family:${F};font-size:.62rem;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(8,101,168,.1);color:${C.b};border:1px solid rgba(8,101,168,.2);white-space:nowrap;}
+        .sc-title{font-family:${F};font-size:clamp(.82rem,1.1vw,.92rem);font-weight:800;line-height:1.6;color:${C.k};margin:0;min-height:3.2em;}
+        .sc-body{padding:14px 18px 18px;flex:1;display:flex;flex-direction:column;}
+        .sc-desc{font-family:${F};font-size:clamp(.72rem,.95vw,.82rem);color:${C.g5};line-height:1.9;margin:0 0 14px;flex:1;}
+        .sc-metas{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+        .sc-meta{font-family:${F};font-size:.7rem;font-weight:700;color:${C.g5};display:flex;align-items:flex-start;gap:6px;line-height:1.6;}
+        .sc-meta svg{flex-shrink:0;margin-top:2px;}
+        .sc-link{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-family:${F};font-size:.74rem;font-weight:700;color:${C.b};text-decoration:none;border-bottom:1px solid ${C.b};padding-bottom:2px;transition:gap .2s;}
+        .sc-link:hover{gap:10px;}
 
         .craft-card{padding:clamp(22px,3vw,36px);border:1px solid ${C.g3};border-radius:8px;background:${C.w};transition:border-color .25s,transform .25s;opacity:0;}
         .craft-card:hover{border-color:${C.o};transform:translateY(-4px);}
@@ -829,23 +944,24 @@ export default function Home() {
         .news-swiper .swiper-button-prev{right:-24px;}.news-swiper .swiper-button-next{left:-24px;right:auto;}
         .news-swiper .swiper-button-prev::after,.news-swiper .swiper-button-next::after{font-size:12px!important;font-weight:900;}
         .news-swiper .swiper-button-prev:hover,.news-swiper .swiper-button-next:hover{background:${C.b};border-color:${C.b};color:#fff!important;}
-.news-swiper .swiper-pagination-bullet-active{background:${C.o};}
+        .news-swiper .swiper-pagination-bullet-active{background:${C.o};}
+        @media(max-width:600px){.news-swiper .swiper-button-prev,.news-swiper .swiper-button-next{display:none!important;}}
 
-.cert-swiper .swiper-pagination-bullet{
-  background:rgba(255,255,255,.45);
-  opacity:1;
-  width:9px;
-  height:9px;
-  transition:all .3s ease;
-}
-.cert-swiper .swiper-pagination-bullet:hover{
-  background:rgba(255,255,255,.75);
-}
-.cert-swiper .swiper-pagination-bullet-active{
-  background:${C.b};
-  width:26px;
-  border-radius:999px;
-}        @media(max-width:600px){.news-swiper .swiper-button-prev,.news-swiper .swiper-button-next{display:none!important;}}
+        .cert-swiper .swiper-pagination-bullet{
+          background:rgba(255,255,255,.45);
+          opacity:1;
+          width:9px;
+          height:9px;
+          transition:all .3s ease;
+        }
+        .cert-swiper .swiper-pagination-bullet:hover{
+          background:rgba(255,255,255,.75);
+        }
+        .cert-swiper .swiper-pagination-bullet-active{
+          background:${C.b};
+          width:26px;
+          border-radius:999px;
+        }
 
         .lib-split{
           display:grid;
@@ -912,45 +1028,45 @@ export default function Home() {
         .about-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px;}
         .about-tag{font-family:${F};font-size:.7rem;font-weight:700;color:${C.b};background:rgba(8,101,168,.08);border:1px solid rgba(8,101,168,.18);padding:4px 12px;border-radius:20px;}
         .prog-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0 24px;}
-@media(max-width:480px){.prog-chips{grid-template-columns:1fr;}}
-.prog-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid ${C.g3};border-radius:6px;background:${C.w};text-decoration:none;font-family:${F};font-size:clamp(.74rem,1vw,.84rem);font-weight:800;color:${C.k};line-height:1.5;transition:border-color .2s,background .2s,transform .2s;}
-.prog-chip:hover{border-color:${C.o};background:rgba(245,124,0,.05);transform:translateY(-2px);}
-.prog-chip:focus-visible{outline:2px solid ${C.o};outline-offset:2px;}
-.prog-chip:last-child:nth-child(odd){grid-column:1/-1;}
+        @media(max-width:480px){.prog-chips{grid-template-columns:1fr;}}
+        .prog-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid ${C.g3};border-radius:6px;background:${C.w};text-decoration:none;font-family:${F};font-size:clamp(.74rem,1vw,.84rem);font-weight:800;color:${C.k};line-height:1.5;transition:border-color .2s,background .2s,transform .2s;}
+        .prog-chip:hover{border-color:${C.o};background:rgba(245,124,0,.05);transform:translateY(-2px);}
+        .prog-chip:focus-visible{outline:2px solid ${C.o};outline-offset:2px;}
+        .prog-chip:last-child:nth-child(odd){grid-column:1/-1;}
         .why-card{padding:clamp(18px,2.5vw,26px);border:1px solid ${C.g3};border-radius:8px;background:${C.w};transition:border-color .25s,transform .25s;display:flex;flex-direction:column;gap:10px;}
         .why-card:hover{border-color:${C.o};transform:translateY(-3px);}
         .about-img-wrap{opacity:0;overflow:hidden;}
         .about-img-wrap img{will-change:transform;}
         .about-txt-wrap>*{opacity:0;}
         .emb-card{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;border:2px solid ${C.o};border-radius:8px;overflow:hidden;background:${C.w};box-shadow:0 10px 30px rgba(0,0,0,.08);}
-.emb-text{padding:clamp(20px,3vw,36px);display:flex;flex-direction:column;justify-content:center;text-align:right;}
+        .emb-text{padding:clamp(20px,3vw,36px);display:flex;flex-direction:column;justify-content:center;text-align:right;}
 
-/* slider fills the whole card height */
-.emb-media{position:relative;align-self:stretch;min-height:clamp(320px,36vw,480px);background:#1f2937;overflow:hidden;}
-.emb-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;direction:ltr;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
-.emb-track::-webkit-scrollbar{display:none;}
-.emb-slide{position:relative;flex:0 0 100%;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;}
-.emb-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+        /* slider fills the whole card height */
+        .emb-media{position:relative;align-self:stretch;min-height:clamp(320px,36vw,480px);background:#1f2937;overflow:hidden;}
+        .emb-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;direction:ltr;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+        .emb-track::-webkit-scrollbar{display:none;}
+        .emb-slide{position:relative;flex:0 0 100%;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;}
+        .emb-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 
-/* dots float over the photo */
-.emb-dots{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(to top,rgba(0,0,0,.45),transparent);pointer-events:none;}
-.emb-dots button{pointer-events:auto;}
-.pmi-strip{display:flex;align-items:center;gap:clamp(16px,3vw,32px);flex-wrap:wrap;padding:clamp(18px,3vw,30px);background:${C.w};border:2px solid ${C.g3};border-right:5px solid ${C.o};border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.05);transition:box-shadow .3s,border-color .3s;}
-.pmi-strip:hover{box-shadow:0 12px 34px rgba(245,124,0,.14);}
-@media(max-width:700px){.pmi-strip{flex-direction:column;align-items:flex-start;}}
-@media(max-width:860px){
-  .emb-card{grid-template-columns:1fr;}
-  .emb-media{order:-1;min-height:0;height:clamp(240px,62vw,380px);}
-}
+        /* dots float over the photo */
+        .emb-dots{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(to top,rgba(0,0,0,.45),transparent);pointer-events:none;}
+        .emb-dots button{pointer-events:auto;}
+        .pmi-strip{display:flex;align-items:center;gap:clamp(16px,3vw,32px);flex-wrap:wrap;padding:clamp(18px,3vw,30px);background:${C.w};border:2px solid ${C.g3};border-right:5px solid ${C.o};border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.05);transition:box-shadow .3s,border-color .3s;}
+        .pmi-strip:hover{box-shadow:0 12px 34px rgba(245,124,0,.14);}
+        @media(max-width:700px){.pmi-strip{flex-direction:column;align-items:flex-start;}}
+        @media(max-width:860px){
+          .emb-card{grid-template-columns:1fr;}
+          .emb-media{order:-1;min-height:0;height:clamp(240px,62vw,380px);}
+        }
 
-@keyframes embFade{from{opacity:0}to{opacity:1}}
-@keyframes embZoom{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+        @keyframes embFade{from{opacity:0}to{opacity:1}}
+        @keyframes embZoom{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
         @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(7px);}}
         .scroll-ind{animation:bounce 2s ease-in-out infinite;position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:3;}
         .stat-counter{font-variant-numeric:lining-nums;unicode-bidi:plaintext;direction:ltr;display:inline-block;}
         @media(max-width:480px){.hero-h1{font-size:clamp(1.2rem,5.5vw,1.7rem)!important;}}
         @media(prefers-reduced-motion:reduce){
-          .hero-bg-layer img,.lib-visual,.lib-content,.vis-item,.proto-card,.school-featured,.school-card,.craft-card,.dl-item,.stat-cell,.feat-card{opacity:1!important;transform:none!important;}
+          .hero-bg-layer img,.lib-visual,.lib-content,.vis-item,.vis-values,.proto-card,.school-featured,.school-card,.craft-card,.dl-item,.stat-cell,.feat-card{opacity:1!important;transform:none!important;}
         }
       `}</style>
 
@@ -967,10 +1083,6 @@ export default function Home() {
                         style={{ height: '100%' }}>
                         {slides.map((sl, i) => (
                             <SwiperSlide key={i}>
-                                {/* ── FIX: replaced background-image div with <img> tag.
-                                    This lets the browser issue a proper high-priority
-                                    network request, prevents the compositing seam that
-                                    caused the dark flash, and improves LCP score. */}
                                 <div className="hero-bg-layer">
                                     <img
                                         src={sl.image}
@@ -979,8 +1091,6 @@ export default function Home() {
                                         fetchPriority={i === 0 ? 'high' : 'low'}
                                     />
                                 </div>
-                                {/* ── FIX: overlay opacity is now a static inline style (0.55).
-                                    Removed the GSAP scrub (0→0.75) that caused the flicker. */}
                                 <div className="hero-overlay" style={{ opacity: 0.55 }} />
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(0,0,0,.5) 0%,transparent 50%)', zIndex: 1 }} />
                                 <div
@@ -1166,7 +1276,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ── 5 VISION ────────────────────────────────────────────────────── */}
+            {/* ── 5 VISION (synced with the Vision & Goals page) ──────────────── */}
             <section className="S" style={{ background: C.k2, position: 'relative', overflow: 'hidden' }} ref={visionRef}>
                 <div className="section-parallax-bg" style={{ position: 'absolute', top: 0, right: 0, width: '40%', height: '100%', background: 'linear-gradient(270deg,rgba(8,101,168,.12) 0%,transparent 100%)', pointerEvents: 'none' }} />
                 <div className="W">
@@ -1186,9 +1296,26 @@ export default function Home() {
                                     <CheckCircleOutlineIcon sx={{ color: C.o, fontSize: 18 }} />
                                     <h3 style={{ fontFamily: F, fontSize: 'clamp(.9rem,1.3vw,1.05rem)', fontWeight: 800, color: C.k, lineHeight: 1.5 }}>{v.title}</h3>
                                 </div>
-                                <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.1vw,.88rem)', color: C.g5, lineHeight: 2 }}>{v.text}</p>
+                                {v.text && (
+                                    <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.1vw,.88rem)', color: C.g5, lineHeight: 2, marginBottom: 18 }}>{v.text}</p>
+                                )}
+                                {v.list && (
+                                    <ul className="vis-list">
+                                        {v.list.map(li => <li key={li}>{li}</li>)}
+                                    </ul>
+                                )}
+                                <Link to={v.link} className="vis-more">
+                                    اقرأ التفاصيل <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
+                                </Link>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="vis-values">
+                        <div className="vis-values-title">قيمنا</div>
+                        <div className="vis-chips">
+                            {coreValues.map(v => <span key={v} className="vis-chip">{v}</span>)}
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1381,7 +1508,7 @@ export default function Home() {
                 <DynamicCoursesSection />
             </section>
 
-            {/* ── 8 CERTIFICATIONS ─────────────────────────────────────────────── */}
+            {/* ── 8 CERTIFICATIONS (dynamic — /api/Certifications, type 1) ─────── */}
             <section className="S" style={{ background: C.k, position: 'relative', overflow: 'hidden' }} ref={certRef}>
                 <div className="cert-side-bar" style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: C.o }} />
                 <div className="W">
@@ -1392,21 +1519,41 @@ export default function Home() {
                         </div>
                         <ArrowBtn to="/certifications" inv>عرض الكل</ArrowBtn>
                     </div>
-                    <Swiper className="cert-swiper" modules={[Autoplay, Pagination]} autoplay={{ delay: 4500, disableOnInteraction: false }}
-                        pagination={{ clickable: true }} loop spaceBetween={16}
-                        breakpoints={{ 0: { slidesPerView: 1 }, 560: { slidesPerView: 2 }, 900: { slidesPerView: 3 } }}
-                        style={{ paddingBottom: 44 }}>
-                        {certificates.map((c, i) => (
-                            <SwiperSlide key={i} style={{ height: 'auto' }}>
-                                <div className="cert-card">
-                                    <div style={{ display: 'flex', gap: 3 }}>{[...Array(5)].map((_, j) => <StarIcon key={j} sx={{ color: C.o, fontSize: 13 }} />)}</div>
-                                    <h3 style={{ fontFamily: F, fontSize: 'clamp(.9rem,1.4vw,1.06rem)', fontWeight: 800, color: C.w, margin: 0, lineHeight: 1.5 }}>{c.title}</h3>
-                                    <p style={{ fontFamily: F, fontSize: 'clamp(.76rem,1.1vw,.87rem)', lineHeight: 1.9, color: 'rgba(255,255,255,.65)', flex: 1, margin: 0 }}>{c.text}</p>
-                                    <img src={c.image} alt={c.title} style={{ width: '100%', objectFit: 'contain', maxHeight: 100, background: C.w, padding: 8, borderRadius: 6 }} />
-                                </div>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
+
+                    {certLoading ? (
+                        <div className="cert-skeleton" aria-hidden="true" />
+                    ) : (
+                        <Swiper
+                            key={certList.length}
+                            className="cert-swiper"
+                            modules={[Autoplay, Pagination]}
+                            autoplay={certList.length > 1 ? { delay: 4500, disableOnInteraction: false } : false}
+                            pagination={{ clickable: true }}
+                            loop={certList.length > 3}
+                            spaceBetween={16}
+                            breakpoints={{ 0: { slidesPerView: 1 }, 560: { slidesPerView: 2 }, 900: { slidesPerView: 3 } }}
+                            style={{ paddingBottom: 44 }}>
+                            {certList.map((c) => (
+                                <SwiperSlide key={c.id} style={{ height: 'auto' }}>
+                                    <div className="cert-card">
+                                        <div style={{ display: 'flex', gap: 3 }}>{[...Array(5)].map((_, j) => <StarIcon key={j} sx={{ color: C.o, fontSize: 13 }} />)}</div>
+                                        <h3 style={{ fontFamily: F, fontSize: 'clamp(.9rem,1.4vw,1.06rem)', fontWeight: 800, color: C.w, margin: 0, lineHeight: 1.5 }}>{c.title}</h3>
+                                        <p className="cert-desc">{c.description}</p>
+                                        {isHttpUrl(c.linkUrl) && (
+                                            <a className="cert-link" href={c.linkUrl} target="_blank" rel="noopener noreferrer">
+                                                {c.linkText || c.linkUrl}
+                                            </a>
+                                        )}
+                                        {c.pic && (
+                                            <div className="cert-img-box">
+                                                <img src={c.pic} alt={c.title} loading="lazy" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    )}
                 </div>
             </section>
 
@@ -1424,50 +1571,52 @@ export default function Home() {
                 </div>
                 <div className="W" style={{ paddingTop: 'clamp(36px,5vw,56px)', paddingBottom: 'clamp(48px,7vw,80px)' }} ref={schoolsRef}>
                     <div className="schools-layout">
+
+                        {/* Featured school — full-width banner */}
                         <div className="school-featured">
-                            <div style={{ padding: '24px 20px 18px', borderBottom: '1px solid rgba(255,255,255,.15)' }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
+                            <div className="sf-head">
+                                <div className="sf-head-row">
                                     <div style={{ width: 54, height: 54, borderRadius: 10, flexShrink: 0, background: 'rgba(255,255,255,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <SchoolIcon sx={{ fontSize: 28, color: C.w }} />
+                                        <makawlenSchool.IconComp sx={{ fontSize: 28, color: C.w }} />
                                     </div>
-                                    <span style={{ fontFamily: F, fontSize: '.6rem', fontWeight: 700, letterSpacing: 1.2, padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,.15)', color: C.w, border: '1px solid rgba(255,255,255,.25)' }}>{makawlenSchool.tag}</span>
+                                    <span style={{ fontFamily: F, fontSize: '.62rem', fontWeight: 700, letterSpacing: 1.2, padding: '3px 12px', borderRadius: 20, background: 'rgba(255,255,255,.15)', color: C.w, border: '1px solid rgba(255,255,255,.25)' }}>{makawlenSchool.tag}</span>
                                 </div>
-                                <h3 style={{ fontFamily: F, fontSize: 'clamp(.92rem,1.4vw,1.08rem)', fontWeight: 900, lineHeight: 1.5, color: C.w, margin: 0 }}>{makawlenSchool.name}</h3>
+                                <h3 style={{ fontFamily: F, fontSize: 'clamp(.98rem,1.5vw,1.2rem)', fontWeight: 900, lineHeight: 1.6, color: C.w, margin: 0 }}>{makawlenSchool.name}</h3>
                             </div>
-                            <div style={{ padding: '18px 20px 24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                <p style={{ fontFamily: F, fontSize: 'clamp(.78rem,1vw,.88rem)', color: 'rgba(255,255,255,.75)', lineHeight: 1.9, marginBottom: 20, flex: 1 }}>{makawlenSchool.desc}</p>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>
+                            <div className="sf-body">
+                                <p style={{ fontFamily: F, fontSize: 'clamp(.8rem,1.05vw,.92rem)', color: 'rgba(255,255,255,.8)', lineHeight: 1.9, margin: 0 }}>{makawlenSchool.desc}</p>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px' }}>
                                     {[{ Icon: LocationOnIcon, text: makawlenSchool.location }, { Icon: CalendarTodayIcon, text: makawlenSchool.schedule }, { Icon: GroupsIcon, text: makawlenSchool.totalLabel }].map(({ Icon, text }, idx) => (
-                                        <span key={idx} style={{ fontFamily: F, fontSize: '.68rem', fontWeight: 700, color: 'rgba(255,255,255,.65)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <Icon sx={{ fontSize: 14, color: 'rgba(255,255,255,.45)' }} />{text}
+                                        <span key={idx} style={{ fontFamily: F, fontSize: '.72rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <Icon sx={{ fontSize: 15, color: 'rgba(255,255,255,.5)' }} />{text}
                                         </span>
                                     ))}
                                 </div>
-                                <SolidBtn to={makawlenSchool.link} orange small>اقرأ المزيد <ArrowForwardIosIcon sx={{ fontSize: 10 }} /></SolidBtn>
+                                <div><SolidBtn to={makawlenSchool.link} orange small>اقرأ المزيد <ArrowForwardIosIcon sx={{ fontSize: 10 }} /></SolidBtn></div>
                             </div>
                         </div>
+
+                        {/* 3 equal cards — same row, same height, links pinned to the bottom */}
                         <div className="schools-other-grid">
                             {otherSchools.map((sc, i) => (
                                 <div key={i} className="school-card">
-                                    <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${C.g3}`, background: C.w }}>
-                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-                                            <div style={{ width: 44, height: 44, borderRadius: 8, flexShrink: 0, background: 'rgba(8,101,168,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div className="sc-head">
+                                        <div className="sc-head-row">
+                                            <div className="sc-icon">
                                                 <sc.IconComp sx={{ fontSize: 22, color: C.b }} />
                                             </div>
-                                            <span style={{ fontFamily: F, fontSize: '.58rem', fontWeight: 700, letterSpacing: 1, padding: '3px 8px', borderRadius: 20, background: 'rgba(8,101,168,.1)', color: C.b, border: '1px solid rgba(8,101,168,.2)' }}>{sc.tag}</span>
+                                            <span className="sc-tag">{sc.tag}</span>
                                         </div>
-                                        <h3 style={{ fontFamily: F, fontSize: 'clamp(.78rem,1.05vw,.88rem)', fontWeight: 800, lineHeight: 1.5, color: C.k, margin: 0 }}>{sc.name}</h3>
+                                        <h3 className="sc-title">{sc.name}</h3>
                                     </div>
-                                    <div style={{ padding: '12px 16px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                        <p style={{ fontFamily: F, fontSize: 'clamp(.7rem,.9vw,.8rem)', color: C.g5, lineHeight: 1.8, marginBottom: 12, flex: 1 }}>{sc.desc}</p>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
-                                            <span className="sc-meta"><LocationOnIcon sx={{ fontSize: 13, color: C.b }} />{sc.location}</span>
-                                            <span className="sc-meta"><EngineeringIcon sx={{ fontSize: 12, color: C.b }} />{sc.major}</span>
-                                            <span className="sc-meta"><GroupsIcon sx={{ fontSize: 12, color: C.b }} />{sc.students} طالب</span>
+                                    <div className="sc-body">
+                                        <p className="sc-desc">{sc.desc}</p>
+                                        <div className="sc-metas">
+                                            <span className="sc-meta"><LocationOnIcon sx={{ fontSize: 14, color: C.b }} />{sc.location}</span>
+                                            <span className="sc-meta"><EngineeringIcon sx={{ fontSize: 14, color: C.b }} />{sc.major}</span>
+                                            <span className="sc-meta"><GroupsIcon sx={{ fontSize: 14, color: C.b }} />{sc.students} طالب</span>
                                         </div>
-                                        <Link to="/technical-education" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: F, fontSize: '.72rem', fontWeight: 700, color: C.b, textDecoration: 'none', borderBottom: `1px solid ${C.b}`, paddingBottom: 2, transition: 'gap .2s' }}
-                                            onMouseEnter={e => e.currentTarget.style.gap = '10px'}
-                                            onMouseLeave={e => e.currentTarget.style.gap = '6px'}>
+                                        <Link to="/technical-education" className="sc-link">
                                             عرض تطوير التعليم الفني <OpenInNewIcon sx={{ fontSize: 11 }} />
                                         </Link>
                                     </div>
