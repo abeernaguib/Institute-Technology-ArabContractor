@@ -1,6 +1,9 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
 const API_BASE_URL = 'https://icemt.arabcont.com/api';
 
+// Same font as --font in overview.css
+const PAGE_FONT = "'Noto Kufi Arabic', serif";
+
 // الـ logo من الـ API بييجي full URL من الـ Blob Storage، بنستخدمه مباشرة
 const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23f3f4f6' width='100' height='100'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='44' fill='%23899aaa'%3E%F0%9F%8F%A2%3C/text%3E%3C/svg%3E";
 
@@ -54,7 +57,7 @@ const CustomerCard = ({ item, index }) => {
                 />
             </div>
 
-            <p className="mt-4 line-clamp-2 px-2 text-center text-xs font-semibold text-gray-500 transition-colors duration-300 group-active:text-[#0865a8] md:text-sm md:group-hover:text-[#0865a8]">
+            <p className="mt-4 line-clamp-2 px-2 text-center text-xs font-bold leading-[1.8] text-gray-700 transition-colors duration-300 group-active:text-[#0865a8] md:text-[13px] md:group-hover:text-[#0865a8]">
                 {item.name}
             </p>
         </div>
@@ -87,33 +90,53 @@ const CustomersPage = () => {
     return (
         <div
             dir="rtl"
-            className="min-h-screen bg-white font-['Droid_Arabic_Kufi']"
+            className="min-h-screen bg-white"
+            style={{ fontFamily: PAGE_FONT }}
         >
-            {/* Fixed Overview Bar — SAME STYLE & COLORS */}
-            <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5', padding: '8px 20px' }}>
-                <div style={{ textAlign: 'center', fontFamily: '"Noto Kufi Arabic", serif', fontSize: '1rem' }}>
+            {/* Fixed Overview Bar — same as .overview-bar in overview.css */}
+            <div style={{ position: 'fixed', top: 70, left: 0, zIndex: 50, width: '100%', borderBottom: '1px solid #d1d5db', backgroundColor: '#f5f5f5' }}>
+                <div style={{ height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontFamily: PAGE_FONT, fontSize: 14, color: '#374151' }}>
                     <a
                         href="/"
-                        style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none', marginLeft: '8px' }}
+                        style={{ color: '#0865a8', fontWeight: 700, textDecoration: 'none' }}
                         onMouseEnter={e => e.target.style.color = '#f57c00'}
                         onMouseLeave={e => e.target.style.color = '#0865a8'}
                     >
                         الصفحة الرئيسية
                     </a>
-                    <span style={{ color: '#6b7280', margin: '0 6px' }}>•</span>
-                    <span style={{ color: '#374151', marginRight: '8px' }}>عملاؤنا</span>
+                    <span style={{ color: '#6b7280' }}>•</span>
+                    <span>عملاؤنا</span>
                 </div>
             </div>
 
             {/* PAGE CONTENT */}
-            <div className="container mx-auto px-9 pt-[110px] pb-24 sm:px-9 lg:px-16">
+            <div
+                className="container mx-auto px-9 pb-24 sm:px-9 lg:px-16"
+                style={{ paddingTop: 170 }}
+            >
                 {/* Header */}
                 <div className="mb-16 text-center">
-                    <h1 className="mb-2 text-3xl font-bold text-[#0865a8] md:text-4xl">
+                    <h1
+                        style={{
+                            margin: 0,
+                            color: '#0865a8',
+                            fontWeight: 900,
+                            lineHeight: 1.4,
+                            fontSize: 'clamp(23px, 3.2vw, 38px)',
+                        }}
+                    >
                         عملاؤنا
                     </h1>
-                    <div className="mx-auto mb-3 h-1 w-20 rounded-full bg-[#f57c00]" />
-                    <p className="text-gray-600">
+                    <div
+                        style={{
+                            width: 60,
+                            height: 4,
+                            borderRadius: 3,
+                            background: '#f57c00',
+                            margin: '15px auto 20px',
+                        }}
+                    />
+                    <p style={{ margin: 0, fontSize: 14, color: '#6b7280' }}>
                         نسعى دائمًا لإرضاء العميل بتقديم أفضل الخدمات
                     </p>
                 </div>
