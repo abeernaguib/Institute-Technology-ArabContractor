@@ -28,12 +28,14 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options =>
+{
+    options.Conventions.Add(new RequireAuthForAdminControllersConvention());
+})
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
-
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("CheckoutLimit", opt =>
@@ -268,7 +270,10 @@ builder.Services.AddAuthorization(options =>
         "News",
         "Books",
         "Workplan",
-        "Settings"
+        "Settings",
+        "Team",                                      // ← new
+        "Certificates and Letters of Appreciation",  // ← new
+        "Customers"                                  // ← new
     };
 
     foreach (var permissionName in permissionNames)
