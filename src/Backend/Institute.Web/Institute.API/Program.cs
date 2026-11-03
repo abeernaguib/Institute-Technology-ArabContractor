@@ -125,6 +125,7 @@ builder.Services.AddScoped<IBooksTypeService, BooksTypeService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IPlanworkService, PlanworkService>();
 builder.Services.AddScoped<IPlanFileService, PlanFileService>();
+builder.Services.AddScoped<IPlanAccessService, PlanAccessService>();
 builder.Services.AddSingleton<IBlobStorage, BlobStorage>();
 builder.Services.AddScoped<IRefundNotificationService, RefundNotificationService>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();

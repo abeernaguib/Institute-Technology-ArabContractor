@@ -73,6 +73,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<PlanworkRound> PlanworkRounds { get; set; }
 
+    public virtual DbSet<PlanEnrolledEmail> PlanEnrolledEmails { get; set; }
+
     // NOTE: the connection string must NOT live in source code.
     // Keep it in appsettings / environment variables / Azure Key Vault and
     // configure it with services.AddDbContext<AppDbContext>(o => o.UseSqlServer(...)).
@@ -674,6 +676,14 @@ public partial class AppDbContext : DbContext
             entity.Property(c => c.LinkText).HasMaxLength(200);
             entity.Property(c => c.Pic).HasMaxLength(255);
             entity.HasIndex(c => new { c.Type, c.DisplayOrder });
+        });
+
+        // PlanEnrolledEmail
+        modelBuilder.Entity<PlanEnrolledEmail>(e =>
+        {
+            e.ToTable("PlanEnrolledEmails");
+            e.Property(x => x.Email).HasMaxLength(256).IsRequired();
+            e.HasIndex(x => new { x.PlanId, x.Email }).IsUnique();
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -28,6 +28,7 @@ namespace Institute.API.Controllers
         private readonly IRepository<Order> _orderRepo;
         private readonly IRepository<PlanworkRound> _roundRepo;
         private readonly IRoundSelectionService _roundSelection;
+        private readonly IPlanAccessService _planAccess;                    // NEW
 
         public CourseController(
             IRepository<Planwork> planRepo,
@@ -38,7 +39,8 @@ namespace Institute.API.Controllers
             ICategoryService categoryService,
             IRepository<Order> orderRepo,
             IRepository<PlanworkRound> roundRepo,
-            IRoundSelectionService roundSelection)
+            IRoundSelectionService roundSelection,
+            IPlanAccessService planAccess)                                  // NEW
         {
             _planRepo = planRepo;
             _fileRepo = fileRepo;
@@ -49,6 +51,7 @@ namespace Institute.API.Controllers
             _orderRepo = orderRepo;
             _roundRepo = roundRepo;
             _roundSelection = roundSelection;
+            _planAccess = planAccess;                                       // NEW
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -362,6 +365,9 @@ namespace Institute.API.Controllers
         // ✱ CHANGED: بيرجع كمان UserId و PurchasedOnline و OnlineLink
         // رابط الاجتماع بيتبعت بس لو اليوزر اشترى أونلاين
         // ✱ NEW: بيرجع كمان RoundId و RoundStart و RoundEnd
+        // ✱ NEW (institute emails): الكورسات اللي الأدمن سجّل فيها إيميل اليوزر
+        //   بتظهر هنا برضه (FromInstitute = true) من غير ما نعمل Enrollment
+        //   حتى لا تتأثر الحضور والشهادات والتقارير المالية
         // ══════════════════════════════════════════════════════════════
         [HttpGet("my-courses")]
         public async Task<IActionResult> GetMyCourses()
@@ -387,8 +393,7 @@ namespace Institute.API.Controllers
             // عشان اليوزر المسجل يشوف دورته حتى لو اتقفلت)
             var roundsById = (await _roundRepo.GetAllAsync()).ToDictionary(r => r.Id);
 
-            // عمل Join يدوي بين Enrollment و Planwork
-            // IsFree = true لو مفيش OrderId (كورس مجاني)
+            // ── 1) الكورسات المشتراة / المسجل فيها (نفس المنطق القديم) ──
             var courses = userEnrollments
                 .Select(e =>
                 {
@@ -398,7 +403,7 @@ namespace Institute.API.Controllers
                     PlanworkRound? round = null;
                     if (e.RoundId.HasValue) roundsById.TryGetValue(e.RoundId.Value, out round);
 
-                    return new
+                    return new MyCourseDto
                     {
                         ChildId = plan.ChildId,
                         CoursePlace = plan.CoursePlace,
@@ -407,20 +412,62 @@ namespace Institute.API.Controllers
                         Slug = plan.Slug,
                         EnrolledAt = e.EnrolledAt,
                         OrderId = e.OrderId,
-                        UserId = e.UserId,                                   // ✱ NEW
+                        UserId = e.UserId,
                         Cost = plan.PlanCost,
                         IsFree = e.OrderId == null,
                         IsOnline = plan.IsOnline,                            // الكورس متاح أونلاين
                         OnlineCost = plan.OnlineCost,
-                        PurchasedOnline = e.IsOnline,                        // ✱ NEW: اليوزر اشترى أونلاين
-                        OnlineLink = e.IsOnline ? plan.OnlineLink : null,    // ✱ NEW: الرابط لمشتري الأونلاين فقط
-                        RoundId = e.RoundId,                                 // NEW
-                        RoundStart = round?.StartDate.ToString("yyyy-MM-dd"),// NEW
-                        RoundEnd = round?.EndDate.ToString("yyyy-MM-dd")     // NEW
+                        PurchasedOnline = e.IsOnline,                        // اليوزر اشترى أونلاين
+                        OnlineLink = e.IsOnline ? plan.OnlineLink : null,    // الرابط لمشتري الأونلاين فقط
+                        RoundId = e.RoundId,
+                        RoundStart = round?.StartDate.ToString("yyyy-MM-dd"),
+                        RoundEnd = round?.EndDate.ToString("yyyy-MM-dd"),
+                        FromInstitute = false
                     };
                 })
                 .Where(c => c != null)
+                .Select(c => c!)
                 .ToList();
+
+            // ── 2) NEW: كورسات الأدمن المسجل فيها إيميل اليوزر ──
+            var grants = await _planAccess.GetPlanGrantsByEmailAsync(appUser.Email);
+            if (grants.Count > 0)
+            {
+                var enrolledIds = courses.Select(c => c.ChildId).ToHashSet();
+
+                foreach (var (planId, grantedAt) in grants)
+                {
+                    if (enrolledIds.Contains(planId)) continue;   // اشتراه عادي => ما نكررهوش
+
+                    var plan = allPlanworks.FirstOrDefault(p => p.ChildId == planId);
+                    if (plan == null) continue;
+
+                    courses.Add(new MyCourseDto
+                    {
+                        ChildId = plan.ChildId,
+                        CoursePlace = plan.CoursePlace,
+                        CourseDate = plan.CourseDate,
+                        ServiceTitle = plan.ServiceTitle,
+                        Slug = plan.Slug,
+                        EnrolledAt = grantedAt,        // تاريخ تسجيل الإيميل بواسطة الأدمن
+                        OrderId = null,
+                        UserId = appUser.Id,
+                        Cost = plan.PlanCost,
+                        IsFree = false,
+                        IsOnline = plan.IsOnline,
+                        OnlineCost = plan.OnlineCost,
+                        PurchasedOnline = false,       // حضر في المعهد => مفيش رابط أونلاين
+                        OnlineLink = null,
+                        RoundId = null,
+                        RoundStart = null,
+                        RoundEnd = null,
+                        FromInstitute = true
+                    });
+                }
+
+                // أول مرة الإيميل يتستخدم => الأدمن يشوف "سجّل في الموقع"
+                await _planAccess.MarkClaimedAsync(appUser.Email);
+            }
 
             return Ok(courses);
         }
