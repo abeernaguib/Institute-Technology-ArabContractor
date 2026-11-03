@@ -8,7 +8,7 @@ namespace Institute.API.Controllers
 {
     [ApiController]
     [Route("api/admin/[controller]")]
-    [Authorize(Policy = "Settings")]   // see the security note in section 9
+    [Authorize(Policy = "Team")]
     public class AdminTeamController : ControllerBase
     {
         private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp" };

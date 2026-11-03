@@ -8,7 +8,7 @@ namespace Institute.API.Controllers
 {
     [ApiController]
     [Route("api/admin/[controller]")]          // => api/admin/AdminCertifications
-    [Authorize(Policy = "Settings")]
+    [Authorize(Policy = "Certificates and Letters of Appreciation")]
     public class AdminCertificationsController : ControllerBase
     {
         private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp" };
