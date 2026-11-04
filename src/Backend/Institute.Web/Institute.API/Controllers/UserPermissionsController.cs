@@ -22,11 +22,23 @@ namespace Institute.API.Controllers
         public async Task<IActionResult> Assign(
             [FromBody] AssignPermissionDto dto)
         {
-            await _service.AssignAsync(
-                dto.UserId,
-                dto.PermissionId);
+            try
+            {
+                await _service.AssignAsync(
+                    dto.UserId,
+                    dto.PermissionId);
 
-            return Ok("Permission assigned");
+                return Ok("Permission assigned");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Manager-only tab (ActivityLog / Settings)
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+            }
         }
 
         [HttpDelete("remove")]

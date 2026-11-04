@@ -11,15 +11,21 @@ namespace Institute.Application.Services
 {
     public class UserPermissionService : IUserPermissionService
     {
+        // Tabs that only managers can have. They can never be assigned to an Admin.
+        private static readonly string[] ManagerOnlyPermissions = { "ActivityLog", "Settings" };
+
         private readonly IRepository<UserPermission> _userPermissionsRepo;
         private readonly IRepository<AppUser> _appUserRepo;
+        private readonly IRepository<Permission> _permissionRepo;
 
         public UserPermissionService(
             IRepository<UserPermission> userPermissionsRepo,
-            IRepository<AppUser> appUserRepo)
+            IRepository<AppUser> appUserRepo,
+            IRepository<Permission> permissionRepo)
         {
             _userPermissionsRepo = userPermissionsRepo;
             _appUserRepo = appUserRepo;
+            _permissionRepo = permissionRepo;
         }
 
         public async Task AssignAsync(int userId, int permissionId)
@@ -27,7 +33,16 @@ namespace Institute.Application.Services
             var user = await _appUserRepo.GetByIdAsync(userId);
 
             if (user == null)
-                throw new Exception("User not found");
+                throw new KeyNotFoundException("User not found");
+
+            var permission = await _permissionRepo.GetByIdAsync(permissionId);
+
+            if (permission == null)
+                throw new KeyNotFoundException("Permission not found");
+
+            // Block manager-only tabs
+            if (ManagerOnlyPermissions.Contains(permission.Name, StringComparer.OrdinalIgnoreCase))
+                throw new InvalidOperationException("هذا التبويب للمدير فقط، لا يمكن منحه لـ Admin");
 
             var exists = await _userPermissionsRepo.AnyAsync(
                 x => x.AppUserId == userId &&
@@ -110,7 +125,7 @@ namespace Institute.Application.Services
                 .ToList();
         }
 
-        // ── New: powers GET /api/UserPermissions/me ──
+        // Powers GET /api/UserPermissions/me
         public async Task<(bool IsManager, List<string> Permissions)> GetMyRoleAsync(
             string clerkId)
         {
@@ -119,7 +134,6 @@ namespace Institute.Application.Services
             if (user == null)
                 return (false, new List<string>());
 
-            // ⚠️ Verify AppUser.IsManager is the real property name.
             if (user.IsManager)
                 return (true, new List<string>());
 

@@ -45,6 +45,19 @@ const fmt = (iso) => new Date(iso).toLocaleString('en-GB', {
 // today's date (YYYY-MM-DD) in Cairo
 const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
 
+// Removes the "CreatedBy" and "البريد الإلكتروني" parts from the details text
+const cleanDetails = (text = '') => {
+    if (!text) return '';
+    return text
+        .split(/\r?\n/)
+        .filter(line => !/CreatedBy/i.test(line) && !/البريد الإلكتروني/.test(line))
+        .join('\n')
+        // in case they come inline on the same line
+        .replace(/\s*[|،;]?\s*CreatedBy\s*[:：]\s*[«"]?[^»"\n|]*[»"]?/gi, '')
+        .replace(/\s*[|،;]?\s*البريد الإلكتروني\s*[:：]\s*[«"]?[^»"\n|]*[»"]?/g, '')
+        .trim();
+};
+
 const ActivityLogTab = ({ setExporting, setExportError }) => {
     const { getToken } = useAuth();
     const exportRef = useRef(null);
@@ -144,7 +157,7 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                 r.subSection || '',
                 r.entityType || '',
                 r.entityId || '',
-                (r.details || '').replace(/\s*\n\s*/g, ' | '),
+                cleanDetails(r.details).replace(/\s*\n\s*/g, ' | '),
                 r.ipAddress || '',
                 fmt(r.createdAt),
             ];
@@ -168,7 +181,8 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '.72rem', color: T.gray500 }}>
                     {lastUpdated && (
-                        <span>آخر تحديث: {lastUpdated.toLocaleTimeString('en-GB', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>                    )}
+                        <span>آخر تحديث: {lastUpdated.toLocaleTimeString('en-GB', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
+                    )}
                     <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                         <input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} />
                         تحديث تلقائي
@@ -260,11 +274,12 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                                                         <td>{r.subSection || '—'}</td>
                                                         <td style={{ fontSize: '.7rem', color: T.gray500 }}>{r.entityType || '—'}</td>
                                                         <td style={{ textAlign: 'center' }}>{r.entityId || '—'}</td>
-                                                        <td dir="auto" style={{ minWidth: 380, maxWidth: 520, whiteSpace: 'pre-line', lineHeight: 1.8, fontSize: '.72rem' }}>
-                                                            {r.details || '—'}
+                                                        <td dir="auto" style={{ minWidth: 380, maxWidth: 520, whiteSpace: 'pre-line', lineHeight: 1.7, fontSize: '.72rem' }}>
+                                                            {cleanDetails(r.details) || '—'}
                                                         </td>
                                                         <td style={{ direction: 'ltr', textAlign: 'right', fontSize: '.7rem' }}>{r.ipAddress || '—'}</td>
-                                                        <td dir="ltr" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>{fmt(r.createdAt)}</td>                                                    </tr>
+                                                        <td dir="ltr" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>{fmt(r.createdAt)}</td>
+                                                    </tr>
                                                 );
                                             })}
                                         </tbody>

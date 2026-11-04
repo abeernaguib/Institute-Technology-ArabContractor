@@ -34,7 +34,7 @@ import ActivityLogTab from './ActivityLogTab';
 // permissionName MUST match Permission.Name in the DB (case-insensitive).
 const TABS = [
     { id: 'users', label: 'المستخدمون', icon: '👤', permissionName: 'Users' },
-    { id: 'activity', label: 'سجل النشاط', icon: '🕵️', permissionName: 'ActivityLog' },
+    { id: 'activity', label: 'سجل النشاط', icon: '🕵️', permissionName: 'ActivityLog', managerOnly: true },
     { id: 'courses', label: 'الدورات', icon: '📚', permissionName: 'Courses' },
     { id: 'attendance', label: 'الحضور', icon: '✅', permissionName: 'Attendance' },
     { id: 'certificates', label: 'الشهادات', icon: '📜', permissionName: 'Certificates' },
@@ -48,7 +48,7 @@ const TABS = [
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan', alsoPermissions: ['PlanFiles', 'PlanEmails'] },
-    { id: 'settings', label: 'الإعدادات', icon: '⚙️', permissionName: 'Settings' },
+    { id: 'settings', label: 'الإعدادات', icon: '⚙️', permissionName: 'Settings', managerOnly: true },
 ];
 
 const permKey = (p) => (typeof p === 'string' ? p : p?.name ?? p?.permissionName ?? '').trim().toLowerCase();
@@ -209,9 +209,8 @@ const AdminDashboard = () => {
     // Redirect only after the role has finished loading and there is zero access
     useEffect(() => {
         if (!isLoaded || !user || myRoleLoading) return;
-        const hasAnyAccess = myRole.isManager || myRole.tabs.size > 0;
-        if (!hasAnyAccess) navigate('/');
-    }, [isLoaded, user, myRoleLoading, myRole, navigate]);
+        if (visibleTabs.length === 0) navigate('/');
+    }, [isLoaded, user, myRoleLoading, myRole, navigate]); // eslint-disable-line
 
     // Jump to first visible tab if the active one isn't allowed
     useEffect(() => {
@@ -644,8 +643,8 @@ const AdminDashboard = () => {
         </div>
     );
 
-    // No manager flag and zero granted permissions → no admin access (redirect effect handles navigation)
-    if (!myRole.isManager && myRole.tabs.size === 0) return null;
+    // No visible tabs (not a manager and no usable permissions) → no admin access (redirect effect handles navigation)
+    if (visibleTabs.length === 0) return null;
 
     return (
         <>

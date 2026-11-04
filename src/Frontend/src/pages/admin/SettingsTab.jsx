@@ -1,9 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // SettingsTab.jsx  —  src/pages/admin/SettingsTab.jsx
 //
-// FIX: GET /api/UserPermissions/{id} returns permission NAMES (["Users", ...]).
-// idsFromServer() now maps names → permission ids using /api/Permissions,
-// so saved permissions show up as checked.
+// - GET /api/UserPermissions/{id} returns permission NAMES (["Users", ...]).
+//   idsFromServer() maps names → permission ids using /api/Permissions.
+// - Tabs flagged `managerOnly` (ActivityLog, Settings) can NOT be granted to an
+//   Admin: ticking them shows an error, and "تحديد الكل" skips them and shows an error.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -21,16 +22,17 @@ const T = {
 };
 
 // permissionName must match Permission.Name in the database (case-insensitive).
+// managerOnly: true → cannot be assigned to an Admin (only a Manager gets it automatically).
 const ADMIN_TABS = [
     { id: 'users', label: '👤 المستخدمون', permissionName: 'Users' },
-    { id: 'activity', label: '🕵️ سجل النشاط', permissionName: 'ActivityLog' },
+    { id: 'activity', label: '🕵️ سجل النشاط', permissionName: 'ActivityLog', managerOnly: true },
     { id: 'courses', label: '📚 الدورات', permissionName: 'Courses' },
     { id: 'attendance', label: '✅ الحضور', permissionName: 'Attendance' },
     { id: 'certificates', label: '📜 الشهادات', permissionName: 'Certificates' },
     { id: 'refunds', label: '💳 المستردات', permissionName: 'Refunds' },
     { id: 'finance', label: '💰 المالية', permissionName: 'Finance' },
     { id: 'lecturers', label: '🎓 المحاضرون', permissionName: 'Lecturers' },
-   { id: 'customers', label: '🏢 العملاء', permissionName: 'Customers' },
+    { id: 'customers', label: '🏢 العملاء', permissionName: 'Customers' },
     { id: 'siteCerts', label: '🏅 الشهادات وخطابات الشكر', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'team', label: '👥 فريق العمل', permissionName: 'Team' },
     { id: 'news', label: '📰 الأخبار', permissionName: 'News' },
@@ -39,8 +41,11 @@ const ADMIN_TABS = [
     { id: 'workplan', label: '📋 الدورات التدريبية', permissionName: 'Workplan' },
     { id: 'planFiles', label: '📎 ملفات الخطة التدريبية', permissionName: 'PlanFiles' },
     { id: 'planEmails', label: '✉️ متدربو المعهد (البريد)', permissionName: 'PlanEmails' },
-    { id: 'settings', label: '⚙️ الإعدادات', permissionName: 'Settings' },
+    { id: 'settings', label: '⚙️ الإعدادات', permissionName: 'Settings', managerOnly: true },
 ];
+
+const MANAGER_ONLY_TABS = ADMIN_TABS.filter(t => t.managerOnly);
+const MANAGER_ONLY_NAMES = MANAGER_ONLY_TABS.map(t => t.label).join(' و ');
 
 const ITEMS_PER_PAGE = 6;
 
@@ -84,7 +89,7 @@ export default function SettingsTab({ currentUserEmail = '' }) {
 
     const showToast = useCallback((type, msg) => {
         setToast({ type, msg });
-        setTimeout(() => setToast(null), 3200);
+        setTimeout(() => setToast(null), 4200);
     }, []);
 
     // ── Authenticated fetch ──
@@ -223,14 +228,21 @@ export default function SettingsTab({ currentUserEmail = '' }) {
 
     // ── Toggle one tab ──
     const toggleTab = useCallback(async (userId, tab) => {
+        const current = roles[userId] ?? emptyRole();
         const permission = getPermissionForTab(tab);
+        const wasChecked = !!permission && current.tabs.has(permission.id);
+
+        // Manager-only tabs can't be GRANTED to an Admin (removing an old one is still allowed)
+        if (tab.managerOnly && !wasChecked) {
+            showToast('error', `⛔ لا يمكن منح "${tab.label}" لـ Admin — يجب أن يكون المستخدم Manager`);
+            return;
+        }
+
         if (!permission) {
             showToast('error', `صلاحية "${tab.label}" غير مضافة في قاعدة البيانات`);
             return;
         }
 
-        const current = roles[userId] ?? emptyRole();
-        const wasChecked = current.tabs.has(permission.id);
         const previousTabs = new Set(current.tabs);
 
         setRoles(prev => {
@@ -252,17 +264,20 @@ export default function SettingsTab({ currentUserEmail = '' }) {
         }
     }, [roles, getPermissionForTab, assignPermission, removePermission, setUserSaving, showToast]);
 
-    // ── Select all ──
+    // ── Select all (skips manager-only tabs and shows an error about them) ──
     const selectAllTabs = useCallback(async (userId) => {
         const current = roles[userId] ?? emptyRole();
         const previousTabs = new Set(current.tabs);
 
         const missing = ADMIN_TABS
+            .filter(tab => !tab.managerOnly)
             .map(tab => ({ tab, permission: getPermissionForTab(tab) }))
             .filter(item => item.permission && !previousTabs.has(item.permission.id));
 
+        const skippedMsg = `⛔ ${MANAGER_ONLY_NAMES} للمدير (Manager) فقط ولا يمكن منحها لـ Admin`;
+
         if (missing.length === 0) {
-            showToast('success', 'كل الصلاحيات المتاحة محددة بالفعل');
+            showToast('error', `كل الصلاحيات المتاحة لـ Admin محددة بالفعل — ${skippedMsg}`);
             return;
         }
 
@@ -273,7 +288,7 @@ export default function SettingsTab({ currentUserEmail = '' }) {
         setUserSaving(userId, true);
         try {
             await Promise.all(missing.map(item => assignPermission(userId, item.permission.id)));
-            showToast('success', `✅ تم تحديد ${missing.length} صلاحية`);
+            showToast('error', `تم تحديد ${missing.length} صلاحية — لكن ${skippedMsg}`);
         } catch (error) {
             await reloadUserTabs(userId, previousTabs);
             showToast('error', `فشل تحديد الصلاحيات: ${error.message}`);
@@ -353,7 +368,8 @@ export default function SettingsTab({ currentUserEmail = '' }) {
         );
     }
 
-    const anyMissingPermission = ADMIN_TABS.some(tab => !getPermissionForTab(tab));
+    // Manager-only tabs are intentionally ignored here (they are never assignable)
+    const anyMissingPermission = ADMIN_TABS.some(tab => !tab.managerOnly && !getPermissionForTab(tab));
 
     return (
         <div>
@@ -381,6 +397,8 @@ export default function SettingsTab({ currentUserEmail = '' }) {
                         <b>Admin:</b> اختر التبويبات التي يمكنه الوصول إليها يدوياً.
                         &nbsp;&nbsp;
                         <b>Manager:</b> يصل تلقائياً لجميع التبويبات دون قيود.
+                        <br />
+                        <b>Manager فقط:</b> سجل النشاط والإعدادات لا يمكن منحهما لـ Admin.
                     </div>
                 </div>
             </div>
@@ -595,33 +613,40 @@ export default function SettingsTab({ currentUserEmail = '' }) {
                                                                     const permission = getPermissionForTab(tab);
                                                                     const exists = !!permission;
                                                                     const checked = exists && role.tabs.has(permission.id);
+                                                                    const locked = !!tab.managerOnly && !checked;
+                                                                    // manager-only tabs stay clickable so the error message can show
+                                                                    const missing = !exists && !tab.managerOnly;
 
                                                                     return (
                                                                         <label
                                                                             key={tab.id}
-                                                                            title={exists ? '' : '⚠️ هذا التبويب غير مضاف في قاعدة البيانات'}
+                                                                            title={tab.managerOnly
+                                                                                ? '🔒 للمدير (Manager) فقط'
+                                                                                : exists ? '' : '⚠️ هذا التبويب غير مضاف في قاعدة البيانات'}
                                                                             style={{
                                                                                 display: 'flex', alignItems: 'center', gap: 6,
                                                                                 padding: '7px 13px', borderRadius: 3,
-                                                                                cursor: busy || !exists ? 'not-allowed' : 'pointer',
-                                                                                border: `1.5px solid ${checked ? T.blue : !exists ? '#f0c040' : T.gray300}`,
-                                                                                background: checked ? 'rgba(8,101,168,0.06)' : !exists ? T.yellowBg : T.white,
+                                                                                cursor: busy || missing ? 'not-allowed' : 'pointer',
+                                                                                border: `1.5px solid ${checked ? T.blue : missing ? '#f0c040' : T.gray300}`,
+                                                                                background: checked ? 'rgba(8,101,168,0.06)' : missing ? T.yellowBg : T.white,
                                                                                 transition: 'all .14s', fontFamily: T.font,
-                                                                                opacity: busy ? 0.6 : 1,
+                                                                                opacity: busy ? 0.6 : locked ? 0.75 : 1,
                                                                             }}
                                                                         >
                                                                             <input
                                                                                 type="checkbox"
                                                                                 checked={checked}
-                                                                                disabled={busy || !exists}
+                                                                                disabled={busy || missing}
                                                                                 onChange={() => toggleTab(user.id, tab)}
                                                                                 style={{ accentColor: T.blue, width: 13, height: 13 }}
                                                                             />
                                                                             <span style={{
                                                                                 fontSize: '.74rem', fontWeight: checked ? 700 : 500,
-                                                                                color: checked ? T.blue : !exists ? T.yellow : T.gray700,
+                                                                                color: checked ? T.blue : missing ? T.yellow : T.gray700,
                                                                             }}>
-                                                                                {tab.label}{!exists && ' ⚠️'}
+                                                                                {tab.label}
+                                                                                {missing && ' ⚠️'}
+                                                                                {tab.managerOnly && ' 🔒'}
                                                                             </span>
                                                                         </label>
                                                                     );
@@ -633,6 +658,10 @@ export default function SettingsTab({ currentUserEmail = '' }) {
                                                                     ⚠️ التبويبات المعلّمة بـ ⚠️ تحتاج إضافتها في جدول Permissions أولاً.
                                                                 </div>
                                                             )}
+
+                                                            <div style={{ marginTop: 6, fontSize: '.66rem', color: T.gray500, fontFamily: T.font }}>
+                                                                🔒 التبويبات المعلّمة بـ 🔒 متاحة للمدير (Manager) فقط.
+                                                            </div>
 
                                                             <div style={{ marginTop: 6, fontSize: '.68rem', color: T.gray500, fontFamily: T.font }}>
                                                                 {role.tabs.size === 0

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Institute.API.Controllers
 {
-    [Authorize(Policy = "ActivityLog")]
+    [Authorize(Policy = "ManagerOnly")]
     [Route("api/admin/[controller]")]
     [ApiController]
     public class AdminActivityController : ControllerBase
