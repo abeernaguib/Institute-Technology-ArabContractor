@@ -23,6 +23,9 @@
  *     instead of bulk textarea.
  *     POST   /api/admin/AdminPlanEmails/{planId}        { email }
  *     PUT    /api/admin/AdminPlanEmails/{planId}/{id}   { email }
+ *
+ * v5: Permission props (canFull / canFiles / canEmails). A limited user (no full
+ *     Workplan permission) only sees the Files and/or Emails sections of a course.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -1012,8 +1015,11 @@ function ParentSelector({ parentId, onChange, allTreeNodes }) {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PlanworkTab (main)
+// canFull   : full Workplan permission (manage courses + everything below)
+// canFiles  : may manage the Files section
+// canEmails : may manage the Enrolled Emails section
 // ══════════════════════════════════════════════════════════════════════════════
-const PlanworkTab = () => {
+const PlanworkTab = ({ canFull = true, canFiles = true, canEmails = true }) => {
     const [tree, setTree] = useState([]);
     const [allTreeNodes, setAllTreeNodes] = useState([]);
     const [records, setRecords] = useState([]);
@@ -1059,6 +1065,10 @@ const PlanworkTab = () => {
 
     const handleTreeSelect = async (node) => {
         setTreeSelected(node);
+        if (!canFull) {            // limited user: no record load, just remember the node
+            setSelected(null); setIsNew(true);
+            return;
+        }
         const cached = records.find(r => r.id === node.id);
         if (cached) { pick(cached); return; }
         setLoadingRecord(true);
@@ -1150,7 +1160,7 @@ const PlanworkTab = () => {
                     <div className="lec-panel-hdr" style={{ flexShrink: 0 }}>
                         <span className="lec-count-badge">{shownCount}</span>
                         <span style={{ fontWeight: 800, fontSize: '.8rem', color: '#0a0a0a', flex: 1, textAlign: 'center' }}>الدورات التدريبية</span>
-                        <button className="lec-new-btn" onClick={handleNew}>+ جديد</button>
+                        {canFull && <button className="lec-new-btn" onClick={handleNew}>+ جديد</button>}
                     </div>
 
                     {/* Search */}
@@ -1211,146 +1221,172 @@ const PlanworkTab = () => {
 
                 {/* FORM AREA */}
                 <div className="lec-form-wrap" style={{ height: 'calc(100vh - 120px)', overflowY: 'auto' }}>
-                    <div className="adm-card lec-form-card">
-                        <div className="lec-form-hdr">
-                            <div>
-                                <div className="adm-hero-tag" style={{ marginBottom: 6, position: 'relative', zIndex: 1 }}>
-                                    {isNew ? 'سجل جديد' : `ID: #${selected?.id}`}
-                                    {form.parentId != null && <span style={{ marginRight: 8, fontSize: '.72rem', opacity: .8 }}>↳ {parentName}</span>}
-                                </div>
-                                <h2 className="lec-form-title">{isNew ? '➕ إضافة سجل جديد' : '✏️ تعديل بيانات الدورات التدريبية'}</h2>
-                                {!isNew && selected && <p className="lec-form-sub" style={SUB_TITLE_STYLE}>{selected.name}</p>}
-                            </div>
-                            <div className="lec-stat-pill">📋 {totalCourses} دورة</div>
-                        </div>
-
-                        {loadingRecord ? (
-                            <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>⏳ جاري تحميل البيانات...</div>
-                        ) : (
-                            <div className="lec-form-body">
-                                <div className="lec-fields-grid" style={{ marginBottom: 20 }}>
-                                    <Field label="الرقم">
-                                        <input className="lec-inp" value={isNew ? 'تلقائي' : form.id} disabled style={{ background: T.gray100, color: T.gray500, cursor: 'not-allowed' }} />
-                                    </Field>
-                                    <div className="lec-field pw-parent-field">
-                                        <label className="lec-label">أساسى (الأب)</label>
-                                        <ParentSelector parentId={form.parentId} onChange={v => setForm(f => ({ ...f, parentId: v }))} allTreeNodes={allTreeNodes} />
+                    {!canFull ? (
+                        <div className="adm-card lec-form-card">
+                            <div className="lec-form-hdr">
+                                <div>
+                                    <div className="adm-hero-tag" style={{ marginBottom: 6, position: 'relative', zIndex: 1 }}>
+                                        {treeSelected ? `ID: #${treeSelected.id}` : '—'}
                                     </div>
-                                    <Field label="الأولويه"><input className="lec-inp" name="priority" type="number" min="1" value={form.priority} onChange={handleChange} placeholder="الأولويه..." /></Field>
+                                    <h2 className="lec-form-title">📎 ملفات ومتدربو الدورة</h2>
+                                    {treeSelected && <p className="lec-form-sub" style={SUB_TITLE_STYLE}>{treeSelected.title || treeSelected.label}</p>}
+                                </div>
+                            </div>
+                            <div className="lec-form-body">
+                                {!treeSelected ? (
+                                    <div className="adm-empty" style={{ padding: '40px 12px' }}><div className="adm-emi">👈</div><p>اختر دورة من الشجرة</p></div>
+                                ) : treeSelected.children?.length > 0 ? (
+                                    <div className="adm-empty" style={{ padding: '40px 12px' }}><div className="adm-emi">📂</div><p>هذا قسم رئيسي — اختر دورة منه</p></div>
+                                ) : (
+                                    <>
+                                        {canFiles && <FilesSection planworkId={treeSelected.id} planworkName={treeSelected.title || treeSelected.label} />}
+                                        {canEmails && <EnrolledEmailsSection planworkId={treeSelected.id} planworkName={treeSelected.title || treeSelected.label} />}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="adm-card lec-form-card">
+                            <div className="lec-form-hdr">
+                                <div>
+                                    <div className="adm-hero-tag" style={{ marginBottom: 6, position: 'relative', zIndex: 1 }}>
+                                        {isNew ? 'سجل جديد' : `ID: #${selected?.id}`}
+                                        {form.parentId != null && <span style={{ marginRight: 8, fontSize: '.72rem', opacity: .8 }}>↳ {parentName}</span>}
+                                    </div>
+                                    <h2 className="lec-form-title">{isNew ? '➕ إضافة سجل جديد' : '✏️ تعديل بيانات الدورات التدريبية'}</h2>
+                                    {!isNew && selected && <p className="lec-form-sub" style={SUB_TITLE_STYLE}>{selected.name}</p>}
+                                </div>
+                                <div className="lec-stat-pill">📋 {totalCourses} دورة</div>
+                            </div>
 
-                                    {!form.isParent && (
-                                        <Field label="عدد الأيام">
-                                            <input className="lec-inp" name="days" value={form.days} onChange={handleChange} placeholder="مثال: 5 ,ارقام فقظ" />
+                            {loadingRecord ? (
+                                <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>⏳ جاري تحميل البيانات...</div>
+                            ) : (
+                                <div className="lec-form-body">
+                                    <div className="lec-fields-grid" style={{ marginBottom: 20 }}>
+                                        <Field label="الرقم">
+                                            <input className="lec-inp" value={isNew ? 'تلقائي' : form.id} disabled style={{ background: T.gray100, color: T.gray500, cursor: 'not-allowed' }} />
                                         </Field>
-                                    )}
-
-                                    <Field label="الأسم" full><input className="lec-inp" name="name" value={form.name} onChange={handleChange} placeholder="الأسم..." /></Field>
-
-                                    <Field label="Slug (تلقائي)" full>
-                                        <input className="lec-inp" readOnly tabIndex={-1}
-                                            value={isNew ? 'يُولَّد تلقائياً بعد الحفظ' : (form.slug || '—')}
-                                            style={{ background: T.gray100, color: T.gray500, cursor: 'default', direction: 'ltr', textAlign: 'right', fontFamily: "'Courier New',monospace", fontSize: '.76rem' }} />
-                                    </Field>
-                                    <Field label="SKU (تلقائي)">
-                                        <input className="lec-inp" readOnly tabIndex={-1}
-                                            value={isNew ? 'يُولَّد تلقائياً بعد الحفظ' : (form.sku || '—')}
-                                            style={{ background: T.gray100, color: T.gray500, cursor: 'default', direction: 'ltr', textAlign: 'right', fontFamily: "'Courier New',monospace", fontSize: '.76rem' }} />
-                                    </Field>
-
-                                    {!form.isParent && (
-                                        <>
-                                            <Field label="السعر (حضوري)">
-                                                <input className="lec-inp" name="priceOnsite" type="number" min="0" value={form.priceOnsite} onChange={handleChange} placeholder="السعر الحضوري..." />
-                                            </Field>
-                                            <Field label="أونلاين">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', border: '1.5px solid #d0d3d8', borderRadius: 3, background: '#fff' }}>
-                                                    <input type="checkbox" name="isOnline" checked={!!form.isOnline} onChange={handleChange}
-                                                        style={{ width: 16, height: 16, accentColor: T.orange, cursor: 'pointer' }} />
-                                                    <label style={{ fontSize: '.8rem', fontWeight: 700, color: '#374151', cursor: 'pointer' }}>متاح أونلاين</label>
-                                                </div>
-                                            </Field>
-                                            {form.isOnline && (
-                                                <>
-                                                    <Field label="رابط الأونلاين" full>
-                                                        <input className="lec-inp" name="onlineLink" value={form.onlineLink || ''} onChange={handleChange}
-                                                            placeholder="https://zoom.us/..." style={{ direction: 'ltr', textAlign: 'right' }} />
-                                                    </Field>
-                                                    <Field label="السعر (أونلاين)">
-                                                        <input className="lec-inp" name="onlineCost" type="number" min="0" value={form.onlineCost} onChange={handleChange} placeholder="السعر الأونلاين..." />
-                                                    </Field>
-                                                </>
-                                            )}
-                                            <Field label="المكان"><input className="lec-inp" name="place" value={form.place} onChange={handleChange} placeholder="المكان..." /></Field>
-                                        </>
-                                    )}
-
-                                    <Field label="الوصف" full><input className="lec-inp" name="description" value={form.description} onChange={handleChange} placeholder="الوصف..." /></Field>
-
-                                    <div className="lec-field" style={{ gridColumn: '1/-1' }}>
-                                        <label className="lec-label">الخيارات - القسم رئيسي</label>
-                                        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', padding: '10px 12px', border: '1.5px solid #d0d3d8', borderRadius: 3, background: '#fff' }}>
-                                            {[
-                                                { name: 'show', label: 'عرض قسم رئيسي' },
-                                                { name: 'isParent', label: 'قسم رئيسي (يحتوي على دورات فرعية)' },
-                                                { name: 'isSponsored', label: 'عرض كقسم مميز علي الصفحة الرئيسية' },
-                                            ].map(cb => (
-                                                <label key={cb.name} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: '.8rem', fontWeight: 700, color: '#374151' }}>
-                                                    <input type="checkbox" name={cb.name} checked={!!form[cb.name]} onChange={handleChange}
-                                                        style={{ width: 16, height: 16, accentColor: T.orange, cursor: 'pointer' }} />
-                                                    {cb.label}
-                                                </label>
-                                            ))}
+                                        <div className="lec-field pw-parent-field">
+                                            <label className="lec-label">أساسى (الأب)</label>
+                                            <ParentSelector parentId={form.parentId} onChange={v => setForm(f => ({ ...f, parentId: v }))} allTreeNodes={allTreeNodes} />
                                         </div>
-                                        {form.isParent && (
-                                            <p style={{ fontSize: '.7rem', color: '#6b7280', margin: '6px 0 0' }}>
-                                                هذا السجل قسم: تم إخفاء السعر والمكان والأيام والأونلاين والمواعيد والملفات لأنها تخص الدورة فقط.
-                                            </p>
+                                        <Field label="الأولويه"><input className="lec-inp" name="priority" type="number" min="1" value={form.priority} onChange={handleChange} placeholder="الأولويه..." /></Field>
+
+                                        {!form.isParent && (
+                                            <Field label="عدد الأيام">
+                                                <input className="lec-inp" name="days" value={form.days} onChange={handleChange} placeholder="مثال: 5 ,ارقام فقظ" />
+                                            </Field>
+                                        )}
+
+                                        <Field label="الأسم" full><input className="lec-inp" name="name" value={form.name} onChange={handleChange} placeholder="الأسم..." /></Field>
+
+                                        <Field label="Slug (تلقائي)" full>
+                                            <input className="lec-inp" readOnly tabIndex={-1}
+                                                value={isNew ? 'يُولَّد تلقائياً بعد الحفظ' : (form.slug || '—')}
+                                                style={{ background: T.gray100, color: T.gray500, cursor: 'default', direction: 'ltr', textAlign: 'right', fontFamily: "'Courier New',monospace", fontSize: '.76rem' }} />
+                                        </Field>
+                                        <Field label="SKU (تلقائي)">
+                                            <input className="lec-inp" readOnly tabIndex={-1}
+                                                value={isNew ? 'يُولَّد تلقائياً بعد الحفظ' : (form.sku || '—')}
+                                                style={{ background: T.gray100, color: T.gray500, cursor: 'default', direction: 'ltr', textAlign: 'right', fontFamily: "'Courier New',monospace", fontSize: '.76rem' }} />
+                                        </Field>
+
+                                        {!form.isParent && (
+                                            <>
+                                                <Field label="السعر (حضوري)">
+                                                    <input className="lec-inp" name="priceOnsite" type="number" min="0" value={form.priceOnsite} onChange={handleChange} placeholder="السعر الحضوري..." />
+                                                </Field>
+                                                <Field label="أونلاين">
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', border: '1.5px solid #d0d3d8', borderRadius: 3, background: '#fff' }}>
+                                                        <input type="checkbox" name="isOnline" checked={!!form.isOnline} onChange={handleChange}
+                                                            style={{ width: 16, height: 16, accentColor: T.orange, cursor: 'pointer' }} />
+                                                        <label style={{ fontSize: '.8rem', fontWeight: 700, color: '#374151', cursor: 'pointer' }}>متاح أونلاين</label>
+                                                    </div>
+                                                </Field>
+                                                {form.isOnline && (
+                                                    <>
+                                                        <Field label="رابط الأونلاين" full>
+                                                            <input className="lec-inp" name="onlineLink" value={form.onlineLink || ''} onChange={handleChange}
+                                                                placeholder="https://zoom.us/..." style={{ direction: 'ltr', textAlign: 'right' }} />
+                                                        </Field>
+                                                        <Field label="السعر (أونلاين)">
+                                                            <input className="lec-inp" name="onlineCost" type="number" min="0" value={form.onlineCost} onChange={handleChange} placeholder="السعر الأونلاين..." />
+                                                        </Field>
+                                                    </>
+                                                )}
+                                                <Field label="المكان"><input className="lec-inp" name="place" value={form.place} onChange={handleChange} placeholder="المكان..." /></Field>
+                                            </>
+                                        )}
+
+                                        <Field label="الوصف" full><input className="lec-inp" name="description" value={form.description} onChange={handleChange} placeholder="الوصف..." /></Field>
+
+                                        <div className="lec-field" style={{ gridColumn: '1/-1' }}>
+                                            <label className="lec-label">الخيارات - القسم رئيسي</label>
+                                            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', padding: '10px 12px', border: '1.5px solid #d0d3d8', borderRadius: 3, background: '#fff' }}>
+                                                {[
+                                                    { name: 'show', label: 'عرض قسم رئيسي' },
+                                                    { name: 'isParent', label: 'قسم رئيسي (يحتوي على دورات فرعية)' },
+                                                    { name: 'isSponsored', label: 'عرض كقسم مميز علي الصفحة الرئيسية' },
+                                                ].map(cb => (
+                                                    <label key={cb.name} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: '.8rem', fontWeight: 700, color: '#374151' }}>
+                                                        <input type="checkbox" name={cb.name} checked={!!form[cb.name]} onChange={handleChange}
+                                                            style={{ width: 16, height: 16, accentColor: T.orange, cursor: 'pointer' }} />
+                                                        {cb.label}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            {form.isParent && (
+                                                <p style={{ fontSize: '.7rem', color: '#6b7280', margin: '6px 0 0' }}>
+                                                    هذا السجل قسم: تم إخفاء السعر والمكان والأيام والأونلاين والمواعيد والملفات لأنها تخص الدورة فقط.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {form.isSponsored && (
+                                            <Field label="وصف القسم المميز" full>
+                                                <textarea className="lec-inp" name="sponsorDesc" rows={3}
+                                                    value={form.sponsorDesc || ''} onChange={handleChange}
+                                                    placeholder="مثال: برامج تكنولوجيا بناء السفن — إبراز البرامج الجديدة وإضافة محتوى يعرّف الزائر بها"
+                                                    style={{ resize: 'vertical' }} />
+                                            </Field>
                                         )}
                                     </div>
 
-                                    {form.isSponsored && (
-                                        <Field label="وصف القسم المميز" full>
-                                            <textarea className="lec-inp" name="sponsorDesc" rows={3}
-                                                value={form.sponsorDesc || ''} onChange={handleChange}
-                                                placeholder="مثال: برامج تكنولوجيا بناء السفن — إبراز البرامج الجديدة وإضافة محتوى يعرّف الزائر بها"
-                                                style={{ resize: 'vertical' }} />
-                                        </Field>
+                                    <div className="lec-divider" />
+                                    <RichTextEditor icon="📄" label="تفاصيل الكورس"
+                                        sub="حدد النص أولاً ثم اختر الحجم أو اللون من شريط الأدوات"
+                                        name="details" value={form.details} onChange={handleChange}
+                                        placeholder="أدخل تفاصيل الكورس هنا..." minHeight={150} />
+
+                                    <div className="lec-actions">
+                                        <button className="lec-act-btn save" onClick={handleSave} disabled={saving || deleting}>{saving ? '⏳ جاري الحفظ...' : '💾 حفظ'}</button>
+                                        <button className="lec-act-btn new" onClick={handleNew}>➕ سجل جديد</button>
+                                        <button className="lec-act-btn reset" onClick={handleReset}>↩ إلغاء</button>
+                                        <div style={{ flex: 1 }} />
+                                        {!isNew && (
+                                            deleteConfirm
+                                                ? <div className="lec-delete-confirm">
+                                                    <span className="lec-delete-warn">⚠️ هل أنت متأكد؟</span>
+                                                    <button className="lec-act-btn delete" onClick={handleDelete} disabled={deleting}>{deleting ? '⏳...' : 'تأكيد الحذف'}</button>
+                                                    <button className="adm-fclear" onClick={() => setDeleteConfirm(false)}>إلغاء</button>
+                                                </div>
+                                                : <button className="lec-act-btn delete" onClick={handleDelete}>🗑 حذف السجل</button>
+                                        )}
+                                    </div>
+
+                                    <div className="lec-divider" style={{ marginTop: 8 }} />
+                                    {!isNew && selected && !form.isParent && (
+                                        <RoundsSection planworkId={selected.id} planworkName={selected.name} />
+                                    )}
+                                    {!isNew && selected && !form.isParent && <FilesSection planworkId={selected.id} planworkName={selected.name} />}
+                                    {!isNew && selected && !form.isParent && (
+                                        <EnrolledEmailsSection planworkId={selected.id} planworkName={selected.name} />
                                     )}
                                 </div>
-
-                                <div className="lec-divider" />
-                                <RichTextEditor icon="📄" label="تفاصيل الكورس"
-                                    sub="حدد النص أولاً ثم اختر الحجم أو اللون من شريط الأدوات"
-                                    name="details" value={form.details} onChange={handleChange}
-                                    placeholder="أدخل تفاصيل الكورس هنا..." minHeight={150} />
-
-                                <div className="lec-actions">
-                                    <button className="lec-act-btn save" onClick={handleSave} disabled={saving || deleting}>{saving ? '⏳ جاري الحفظ...' : '💾 حفظ'}</button>
-                                    <button className="lec-act-btn new" onClick={handleNew}>➕ سجل جديد</button>
-                                    <button className="lec-act-btn reset" onClick={handleReset}>↩ إلغاء</button>
-                                    <div style={{ flex: 1 }} />
-                                    {!isNew && (
-                                        deleteConfirm
-                                            ? <div className="lec-delete-confirm">
-                                                <span className="lec-delete-warn">⚠️ هل أنت متأكد؟</span>
-                                                <button className="lec-act-btn delete" onClick={handleDelete} disabled={deleting}>{deleting ? '⏳...' : 'تأكيد الحذف'}</button>
-                                                <button className="adm-fclear" onClick={() => setDeleteConfirm(false)}>إلغاء</button>
-                                            </div>
-                                            : <button className="lec-act-btn delete" onClick={handleDelete}>🗑 حذف السجل</button>
-                                    )}
-                                </div>
-
-                                <div className="lec-divider" style={{ marginTop: 8 }} />
-                                {!isNew && selected && !form.isParent && (
-                                    <RoundsSection planworkId={selected.id} planworkName={selected.name} />
-                                )}
-                                {!isNew && selected && !form.isParent && <FilesSection planworkId={selected.id} planworkName={selected.name} />}
-                                {!isNew && selected && !form.isParent && (
-                                    <EnrolledEmailsSection planworkId={selected.id} planworkName={selected.name} />
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

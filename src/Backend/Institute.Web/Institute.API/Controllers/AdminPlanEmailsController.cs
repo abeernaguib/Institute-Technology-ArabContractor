@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Institute.Domain.Entities;
+﻿using Institute.Domain.Entities;
 using Institute.Infrastructure;          // <- namespace of AppDbContext (Institute.Infrastructure/AppDbContext.cs); adjust if different
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Institute.API.Controllers;
 
@@ -13,6 +14,8 @@ public record EmailDto(string? Email);
 // if they differ. RequireAuthForAdminControllersConvention probably already secures "Admin*" controllers.
 [ApiController]
 [Route("api/admin/[controller]")]
+[Authorize(Policy = "PlanEmails")]
+
 public class AdminPlanEmailsController : ControllerBase
 {
     private readonly AppDbContext _db;

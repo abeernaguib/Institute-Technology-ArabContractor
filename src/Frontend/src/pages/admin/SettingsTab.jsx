@@ -36,6 +36,8 @@ const ADMIN_TABS = [
     { id: 'books', label: '📖 الكتب', permissionName: 'Books' },
     { id: 'protocols', label: '🤝 البروتوكولات', permissionName: 'Protocols' },
     { id: 'workplan', label: '📋 الدورات التدريبية', permissionName: 'Workplan' },
+    { id: 'planFiles', label: '📎 ملفات الخطة التدريبية', permissionName: 'PlanFiles' },
+    { id: 'planEmails', label: '✉️ متدربو المعهد (البريد)', permissionName: 'PlanEmails' },
     { id: 'settings', label: '⚙️ الإعدادات', permissionName: 'Settings' },
 ];
 

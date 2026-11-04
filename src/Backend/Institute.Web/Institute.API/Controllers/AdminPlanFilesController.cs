@@ -1,5 +1,6 @@
 ﻿using Institute.Application.DTOs.AdminDtos;
 using Institute.Application.Interfaces.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,8 @@ namespace Institute.API.Controllers
 {
     [Route("api/admin/[controller]")]
     [ApiController]
+    [Authorize(Policy = "PlanFiles")]
+
     public class AdminPlanFilesController : ControllerBase
     {
         private readonly IPlanFileService _service;

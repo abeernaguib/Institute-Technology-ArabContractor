@@ -136,6 +136,7 @@ builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<IProtocolService, ProtocolService>();
 builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AnyPermissionHandler>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
 
@@ -260,6 +261,7 @@ builder.Services
 builder.Services.AddAuthorization(options =>
 {
     // Permissions matching SettingsTab.jsx
+    // (PlanFiles and PlanEmails are defined separately below, so they also accept the full Workplan permission)
     var permissionNames = new[]
     {
         "Users",
@@ -289,11 +291,34 @@ builder.Services.AddAuthorization(options =>
         });
     }
 
+    // Plan files / emails: the specific permission OR the full Workplan permission
+    options.AddPolicy("PlanFiles", p =>
+    {
+        p.RequireAuthenticatedUser();
+        p.AddRequirements(new AnyPermissionRequirement("PlanFiles", "Workplan"));
+    });
+    options.AddPolicy("PlanEmails", p =>
+    {
+        p.RequireAuthenticatedUser();
+        p.AddRequirements(new AnyPermissionRequirement("PlanEmails", "Workplan"));
+    });
+
     // Manager-only operations
     options.AddPolicy("ManagerOnly", policy =>
     {
         policy.RequireAuthenticatedUser();
         policy.AddRequirements(new ManagerRequirement());
+    });
+    // Allow users with any Planwork-related permission to load the course tree/details
+    options.AddPolicy("PlanworkAny", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.AddRequirements(
+            new AnyPermissionRequirement(
+                "Workplan",
+                "PlanFiles",
+                "PlanEmails"
+            ));
     });
 });
 

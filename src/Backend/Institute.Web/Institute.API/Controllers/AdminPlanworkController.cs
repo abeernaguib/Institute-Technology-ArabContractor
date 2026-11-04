@@ -25,7 +25,7 @@ namespace Institute.API.Controllers
         // PLANWORK: requires Workplan permission
 
         [HttpGet("tree")]
-        [Authorize(Policy = "Workplan")]
+        [Authorize(Policy = "PlanworkAny")]   // was "Workplan"
         public async Task<IActionResult> GetAdminTree()
         {
             var tree = await _service.GetTreeForAdminAsync();

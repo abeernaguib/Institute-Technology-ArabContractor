@@ -40,12 +40,12 @@ const TABS = [
     { id: 'financial', label: 'المالية', icon: '💰', permissionName: 'Finance' },
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓', permissionName: 'Lecturers' },
     { id: 'team', label: 'فريق العمل', icon: '👥', permissionName: 'Team' },
-       { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
+    { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
     { id: 'protocols', label: 'البروتوكولات', icon: '🤝', permissionName: 'Protocols' },
     { id: 'siteCerts', label: 'لشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
-    { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan' },
+    { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan', alsoPermissions: ['PlanFiles', 'PlanEmails'] },
     { id: 'settings', label: 'الإعدادات', icon: '⚙️', permissionName: 'Settings' },
 ];
 
@@ -181,10 +181,12 @@ const AdminDashboard = () => {
 
     useEffect(() => { loadMyRole(); }, [loadMyRole]);
 
+    // A tab is visible if the user has its main permission OR any of its "also" permissions
+    const hasTab = t => [t.permissionName, ...(t.alsoPermissions || [])]
+        .some(n => myRole.tabs.has(n.trim().toLowerCase()));
+
     // Manager = all tabs, Admin = only granted permissions
-    const visibleTabs = myRole.isManager
-        ? TABS
-        : TABS.filter(t => myRole.tabs.has(t.permissionName.trim().toLowerCase()));
+    const visibleTabs = myRole.isManager ? TABS : TABS.filter(hasTab);
 
     // Redirect only after the role has finished loading and there is zero access
     useEffect(() => {
@@ -800,7 +802,17 @@ const AdminDashboard = () => {
                             />
                         )}
 
-                        {activeTab === 'planwork' && <PlanworkTab />}
+                        {activeTab === 'planwork' && (() => {
+                            const has = n => myRole.tabs.has(n);
+                            const full = myRole.isManager || has('workplan');
+                            return (
+                                <PlanworkTab
+                                    canFull={full}
+                                    canFiles={full || has('planfiles')}
+                                    canEmails={full || has('planemails')}
+                                />
+                            );
+                        })()}
 
                         {activeTab === 'settings' && (
                             <SettingsTab currentUserEmail={user?.primaryEmailAddress?.emailAddress || ''} />
