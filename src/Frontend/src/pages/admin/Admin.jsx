@@ -34,7 +34,7 @@ import ActivityLogTab from './ActivityLogTab';
 // permissionName MUST match Permission.Name in the DB (case-insensitive).
 const TABS = [
     { id: 'users', label: 'المستخدمون', icon: '👤', permissionName: 'Users' },
-    { id: 'activity', label: 'سجل النشاط', icon: '🕵️', permissionName: 'ActivityLog', managerOnly: true },
+    { id: 'activity', label: 'سجل النشاط', icon: '🕵️', permissionName: 'ActivityLog' },
     { id: 'courses', label: 'الدورات', icon: '📚', permissionName: 'Courses' },
     { id: 'attendance', label: 'الحضور', icon: '✅', permissionName: 'Attendance' },
     { id: 'certificates', label: 'الشهادات', icon: '📜', permissionName: 'Certificates' },
