@@ -86,8 +86,10 @@ namespace Institute.API.Helpers
             }
         }
 
+        // ───────────────────────── details text ─────────────────────────
         private async Task<string> BuildDetails(List<AuditChange> audits)
         {
+            var cache = new Dictionary<string, string?>();
             var lines = new List<string>();
 
             foreach (var a in audits.Take(15))
@@ -103,24 +105,124 @@ namespace Institute.API.Helpers
                          + (a.Label != null ? $" «{a.Label}»" : "")
                          + (a.Key != null ? $" (#{a.Key})" : "");
 
-                var parts = a.Fields.Select(f =>
-                {
-                    var name = ActivityMap.Field(f.Field);
-                    if (f.Long) return a.Action == "Update" ? $"{name}: تم التعديل" : $"{name}: (نص طويل)";
-                    return a.Action == "Update"
-                        ? $"{name}: من «{f.Old}» إلى «{f.New}»"
-                        : $"{name}: «{f.New ?? f.Old}»";
-                }).ToList();
+                var parts = new List<string>();
 
-                if (parts.Count == 0)
-                    lines.Add(head + (a.Action == "Update" ? " — بدون تغيير في البيانات" : ""));
-                else
-                    lines.Add(head + "\n   " + string.Join("\n   ", parts));
+                // which course / user / round ... this belongs to
+                foreach (var kv in a.Ctx)
+                {
+                    var text = await DescribeContext(a.Entity, kv.Key, kv.Value, cache);
+                    if (text != null) parts.Add(text);
+                }
+
+                foreach (var f in a.Fields)
+                {
+                    // ids already shown above as names (skip on add / delete)
+                    if (a.Action != "Update" && a.Ctx.ContainsKey(f.Field)) continue;
+
+                    var name = ActivityMap.Field(f.Field);
+                    if (f.Long)
+                        parts.Add(a.Action == "Update" ? $"{name}: تم التعديل" : $"{name}: (نص طويل)");
+                    else if (a.Action == "Update")
+                        parts.Add($"{name}: من «{f.Old}» إلى «{f.New}»");
+                    else
+                        parts.Add($"{name}: «{f.New ?? f.Old}»");
+                }
+
+                if (a.Action == "Update" && !a.Fields.Any())
+                    parts.Add("بدون تغيير في القيم");
+
+                lines.Add(parts.Count == 0 ? head : head + "\n   " + string.Join("\n   ", parts));
             }
 
             if (audits.Count > 15) lines.Add($"… و{audits.Count - 15} تغييرات أخرى");
             return string.Join("\n", lines);
         }
+
+        private async Task<string?> DescribeContext(string entity, string key, string value,
+            Dictionary<string, string?> cache)
+        {
+            if (!int.TryParse(value, out var id) || id <= 0) return null;
+
+            switch (key)
+            {
+                case "PlanId":
+                case "PlanworkId":
+                    if (entity == "Planwork") return null;
+                    var course = await Cached(cache, $"course:{id}", async () =>
+                        TitleOf(await _db.Planworks.AsNoTracking().FirstOrDefaultAsync(p => p.ChildId == id)));
+                    return $"الدورة: «{course ?? "—"}» (#{id})";
+
+                case "UserId":
+                case "AppUserId":
+                    if (entity == "AppUser") return null;
+                    var user = await Cached(cache, $"user:{id}", async () =>
+                    {
+                        var u = await _db.AppUsers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                        if (u == null) return null;
+                        var n = $"{u.FirstName} {u.LastName}".Trim();
+                        return $"{(string.IsNullOrWhiteSpace(n) ? u.Username : n)} ({u.Email})";
+                    });
+                    return $"المستخدم: «{user ?? "—"}» (#{id})";
+
+                case "RoundId":
+                    var round = await Cached(cache, $"round:{id}", async () =>
+                    {
+                        var r = await _db.PlanworkRounds.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                        return r == null ? null : $"من {r.StartDate:yyyy-MM-dd} إلى {r.EndDate:yyyy-MM-dd}";
+                    });
+                    return $"موعد الانعقاد: {round ?? "—"}";
+
+                case "GroupId":
+                    var group = await Cached(cache, $"group:{id}", async () =>
+                        TitleOf(await _db.ProtocolGroups.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)));
+                    return $"المجموعة: «{group ?? "—"}»";
+
+                case "TypeId":
+                    if (entity == "BooksType") return null;
+                    var type = await Cached(cache, $"btype:{id}", async () =>
+                        TitleOf(await _db.BooksTypes.AsNoTracking().FirstOrDefaultAsync(x => x.TypeId == id)));
+                    return $"نوع الكتاب: «{type ?? "—"}»";
+
+                case "OrderId":
+                    return $"رقم الطلب: #{id}";
+
+                default:
+                    return null;
+            }
+        }
+
+        private static async Task<string?> Cached(Dictionary<string, string?> cache, string key,
+            Func<Task<string?>> load)
+        {
+            if (cache.TryGetValue(key, out var v)) return v;
+            v = await load();
+            cache[key] = v;
+            return v;
+        }
+
+        // first short text property named like Name / Title (works for any entity)
+        private static string? TitleOf(object? entity)
+        {
+            if (entity == null) return null;
+            var props = entity.GetType().GetProperties().Where(p => p.PropertyType == typeof(string)).ToList();
+
+            foreach (var n in new[] { "Name", "Title", "PlanName", "CourseName", "CourseTitle", "PlanTitle", "TypeName" })
+            {
+                var p = props.FirstOrDefault(x => x.Name.Equals(n, StringComparison.OrdinalIgnoreCase));
+                if (p?.GetValue(entity) is string s && !string.IsNullOrWhiteSpace(s)) return Cut(s);
+            }
+            foreach (var p in props)
+            {
+                if (p.Name.Contains("name", StringComparison.OrdinalIgnoreCase)
+                    || p.Name.Contains("title", StringComparison.OrdinalIgnoreCase)
+                    || p.Name.Contains("titel", StringComparison.OrdinalIgnoreCase))
+                    if (p.GetValue(entity) is string s && !string.IsNullOrWhiteSpace(s) && s.Length <= 200)
+                        return Cut(s);
+            }
+            return null;
+        }
+
+        private static string Cut(string s) => s.Length > 80 ? s[..80] + "…" : s;
 
         private async Task<string> DescribePermission(AuditChange a)
         {

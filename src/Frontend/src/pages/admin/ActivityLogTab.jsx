@@ -130,7 +130,7 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
         const json = await request(1, 5000);
         const list = json.items || [];
         if (list.length === 0) throw new Error('لا توجد سجلات للتصدير');
-        const headers = ['#', 'المستخدم', 'البريد الإلكتروني', 'الدور', 'الإجراء', 'القسم', 'الجزء', 'رقم العنصر', 'التفاصيل', 'التاريخ والوقت'];
+        const headers = ['#', 'المستخدم', 'البريد الإلكتروني', 'الدور', 'الإجراء', 'القسم', 'الجزء', 'النوع', 'رقم العنصر', 'التفاصيل', 'عنوان IP', 'التاريخ والوقت'];
         const rows = list.map((r, i) => {
             const s = sectionOf(r.section);
             return [
@@ -139,10 +139,12 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                 r.adminEmail || '',
                 r.adminRole === 'Manager' ? 'مدير' : 'أدمن',
                 (ACTIONS[r.actionType]?.label || r.actionType).replace(/^\S+\s/, ''),
-                s ? s.label : (r.entityType || ''),
+                s ? s.label : '',
                 r.subSection || '',
+                r.entityType || '',
                 r.entityId || '',
                 (r.details || '').replace(/\s*\n\s*/g, ' | '),
+                r.ipAddress || '',
                 fmt(r.createdAt),
             ];
         });
@@ -221,8 +223,17 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                                     <table className="adm-tbl">
                                         <thead><tr>
                                             <th className="c" style={{ width: 40 }}>#</th>
-                                            <th>المستخدم</th><th className="c">الإجراء</th><th>القسم</th>
-                                            <th>التفاصيل</th><th>التاريخ والوقت</th>
+                                            <th>المستخدم</th>
+                                            <th>البريد الإلكتروني</th>
+                                            <th className="c">الدور</th>
+                                            <th className="c">الإجراء</th>
+                                            <th>القسم</th>
+                                            <th>الجزء</th>
+                                            <th>النوع</th>
+                                            <th className="c">رقم العنصر</th>
+                                            <th style={{ minWidth: 380 }}>التفاصيل</th>
+                                            <th>عنوان IP</th>
+                                            <th>التاريخ والوقت</th>
                                         </tr></thead>
                                         <tbody>
                                             {items.map((r, i) => {
@@ -233,9 +244,9 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                                                         <td style={{ color: T.gray500, fontSize: '.68rem', textAlign: 'center' }}>
                                                             {(page - 1) * ITEMS_PER_PAGE + i + 1}
                                                         </td>
-                                                        <td>
-                                                            <div className="adm-uname">{r.adminName || '—'}</div>
-                                                            <div className="adm-email">{r.adminEmail}</div>
+                                                        <td className="adm-uname">{r.adminName || '—'}</td>
+                                                        <td className="adm-email">{r.adminEmail || '—'}</td>
+                                                        <td style={{ textAlign: 'center' }}>
                                                             <span className="adm-mode-badge" style={r.adminRole === 'Manager'
                                                                 ? { background: '#fef3c7', color: '#92400e' }
                                                                 : { background: '#e0f2fe', color: '#0369a1' }}>
@@ -245,13 +256,14 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                                                         <td style={{ textAlign: 'center' }}>
                                                             <span className="adm-mode-badge" style={a.style}>{a.label}</span>
                                                         </td>
-                                                        <td>
-                                                            <div style={{ fontWeight: 700 }}>{s ? `${s.icon} ${s.label}` : (r.entityType || '—')}</div>
-                                                            {r.subSection && <div style={{ fontSize: '.68rem', color: T.gray500 }}>↳ {r.subSection}</div>}
-                                                        </td>
-                                                        <td dir="auto" style={{ maxWidth: 460, whiteSpace: 'pre-line', lineHeight: 1.8, fontSize: '.72rem' }}>
+                                                        <td style={{ fontWeight: 700 }}>{s ? `${s.icon} ${s.label}` : '—'}</td>
+                                                        <td>{r.subSection || '—'}</td>
+                                                        <td style={{ fontSize: '.7rem', color: T.gray500 }}>{r.entityType || '—'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{r.entityId || '—'}</td>
+                                                        <td dir="auto" style={{ minWidth: 380, maxWidth: 520, whiteSpace: 'pre-line', lineHeight: 1.8, fontSize: '.72rem' }}>
                                                             {r.details || '—'}
                                                         </td>
+                                                        <td style={{ direction: 'ltr', textAlign: 'right', fontSize: '.7rem' }}>{r.ipAddress || '—'}</td>
                                                         <td style={{ whiteSpace: 'nowrap' }}>{fmt(r.createdAt)}</td>
                                                     </tr>
                                                 );
