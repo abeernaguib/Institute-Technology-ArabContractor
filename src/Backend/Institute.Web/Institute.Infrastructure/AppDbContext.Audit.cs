@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace Institute.Infrastructure;
 
 public record FieldChange(string Field, string? Old, string? New, bool Long);
-public record AuditChange(string Action, string Entity, string? Key, string? Label, List<FieldChange> Fields);
+public record AuditChange(string Action, string Entity, string? Key, string? Label,
+                          List<FieldChange> Fields, Dictionary<string, string> Ctx);
 
 public partial class AppDbContext
 {
@@ -14,6 +15,10 @@ public partial class AppDbContext
 
     private static readonly HashSet<string> SkipProps = new(StringComparer.OrdinalIgnoreCase)
         { "PasswordHash", "PasswordSalt", "UserPassword", "CreatedAt", "UpdatedAt" };
+
+    // ids that tell us "which course / user / ..." the row belongs to
+    private static readonly HashSet<string> CtxProps = new(StringComparer.OrdinalIgnoreCase)
+        { "PlanId", "PlanworkId", "UserId", "AppUserId", "RoundId", "GroupId", "TypeId", "OrderId" };
 
     private static readonly string[] LabelProps =
         { "Name", "Title", "CourseName", "CourseTitle", "PlanName", "LecturerName", "ATitel",
@@ -26,6 +31,7 @@ public partial class AppDbContext
         public string? Key;
         public string? Label;
         public List<FieldChange> Fields = new();
+        public Dictionary<string, string> Ctx = new();
     }
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
@@ -42,7 +48,7 @@ public partial class AppDbContext
             {
                 if (p.Action == "Create") p.Key = KeyOf(p.Entry);   // id exists only after save
                 AuditChanges.Add(new AuditChange(p.Action, p.Entry.Metadata.ClrType.Name,
-                                                 p.Key, p.Label, p.Fields));
+                                                 p.Key, p.Label, p.Fields, p.Ctx));
             }
             catch { }
         }
@@ -79,6 +85,10 @@ public partial class AppDbContext
             foreach (var prop in e.Properties)
             {
                 var name = prop.Metadata.Name;
+
+                if (CtxProps.Contains(name) && !IsEmpty(prop.CurrentValue))
+                    p.Ctx[name] = prop.CurrentValue!.ToString() ?? "";
+
                 if (SkipProps.Contains(name) || prop.Metadata.IsPrimaryKey()) continue;
                 if (prop.CurrentValue is byte[]) continue;
 
@@ -93,7 +103,7 @@ public partial class AppDbContext
                 {
                     var v = prop.CurrentValue;
                     if (IsEmpty(v)) continue;
-                    if (p.Fields.Count >= 8) break;
+                    if (p.Fields.Count >= 12) break;
                     p.Fields.Add(e.State == EntityState.Added
                         ? new FieldChange(name, null, Fmt(v), IsLong(v))
                         : new FieldChange(name, Fmt(v), null, IsLong(v)));
@@ -117,6 +127,17 @@ public partial class AppDbContext
         {
             var pr = e.Properties.FirstOrDefault(x => x.Metadata.Name == n);
             if (pr?.CurrentValue is string s && !string.IsNullOrWhiteSpace(s))
+                return s.Length > 80 ? s[..80] : s;
+        }
+        // fallback: any short text property whose name contains name / title
+        foreach (var pr in e.Properties)
+        {
+            var n = pr.Metadata.Name;
+            if (pr.Metadata.IsPrimaryKey() || SkipProps.Contains(n)) continue;
+            if (pr.CurrentValue is string s && !string.IsNullOrWhiteSpace(s) && s.Length <= 200 &&
+                (n.Contains("name", StringComparison.OrdinalIgnoreCase)
+                 || n.Contains("title", StringComparison.OrdinalIgnoreCase)
+                 || n.Contains("titel", StringComparison.OrdinalIgnoreCase)))
                 return s.Length > 80 ? s[..80] : s;
         }
         return null;
