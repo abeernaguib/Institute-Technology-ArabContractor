@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Institute.API.Controllers
 {
-    [Authorize(Policy = "ManagerOnly")]
+    [Authorize(Policy = "ActivityLog")]
     [Route("api/admin/[controller]")]
     [ApiController]
     public class AdminActivityController : ControllerBase
@@ -18,18 +18,18 @@ namespace Institute.API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? search = null,
-            [FromQuery] string? entityType = null,
+            [FromQuery] string? section = null,
             [FromQuery] string? actionType = null,
             [FromQuery] string? role = null,
             [FromQuery] DateTime? from = null,
             [FromQuery] DateTime? to = null)
         {
             page = Math.Max(page, 1);
-            pageSize = Math.Clamp(pageSize, 1, 100);
+            pageSize = Math.Clamp(pageSize, 1, 5000);   // 5000 = used by the export
 
             var q = _context.AdminActivityLogs.AsNoTracking().AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(entityType)) q = q.Where(x => x.EntityType == entityType);
+            if (!string.IsNullOrWhiteSpace(section)) q = q.Where(x => x.Section == section);
             if (!string.IsNullOrWhiteSpace(actionType)) q = q.Where(x => x.ActionType == actionType);
             if (!string.IsNullOrWhiteSpace(role)) q = q.Where(x => x.AdminRole == role);
             if (from.HasValue) { var f = from.Value.ToUniversalTime(); q = q.Where(x => x.CreatedAt >= f); }
@@ -54,6 +54,8 @@ namespace Institute.API.Controllers
                 x.AdminEmail,
                 x.AdminRole,
                 x.ActionType,
+                x.Section,
+                x.SubSection,
                 x.EntityType,
                 x.EntityId,
                 x.Details,

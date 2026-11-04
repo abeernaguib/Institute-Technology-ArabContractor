@@ -105,23 +105,44 @@ export const ADMIN_STYLES = `
     /* ── Content area ── */
     .adm-content { padding: clamp(16px,2.5vw,32px) clamp(16px,3vw,40px) clamp(40px,5vw,64px); }
 
-    /* ── Stat cards ── */
-    .adm-stats { display:grid; grid-template-columns: repeat(6,1fr); gap: clamp(10px,1.5vw,18px); margin-bottom: clamp(20px,2.5vw,32px); }
-    @media(max-width:1100px){ .adm-stats{ grid-template-columns:repeat(3,1fr); } }
-    @media(max-width:640px) { .adm-stats{ grid-template-columns:repeat(2,1fr); } }
-    .adm-sc { background: ${T.white}; border-radius:3px; border: 1.5px solid ${T.gray300}; border-top: 4px solid ${T.orange}; padding: clamp(14px,2vw,20px) clamp(12px,1.8vw,16px); display:flex; flex-direction:column; gap:6px; position:relative; overflow:hidden; transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s cubic-bezier(.4,0,.2,1); box-shadow: 0 2px 10px rgba(0,0,0,0.06); min-width:0; }
-    .adm-sc:hover   { transform:translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
-    .adm-sc.blue    { border-top-color:${T.blue}; }
-    .adm-sc::before { content:''; position:absolute; top:0; right:0; width:3px; height:100%; background:${T.orange}; transform:scaleY(0); transform-origin:bottom; transition:transform .3s cubic-bezier(.4,0,.2,1); z-index:2; }
-    .adm-sc.blue::before  { background:${T.blue}; }
-    .adm-sc:hover::before { transform:scaleY(1); }
-    .adm-sc-icon { font-size:1.4rem; margin-bottom:2px; }
-    .adm-sc-val  { font-size:clamp(1.6rem,3vw,2rem); font-weight:900; color:${T.orange}; line-height:1; font-family:'Courier New',monospace; }
-    .adm-sc.blue .adm-sc-val { color:${T.blue}; }
-    .adm-sc-lbl  { font-size:clamp(.62rem,1.1vw,.72rem); color:${T.gray500}; font-weight:700; }
-    .adm-sc-bar  { height:3px; border-radius:2px; background:linear-gradient(to left,${T.orange},${T.orangeLight}); margin-top:4px; width:50%; opacity:.6; }
-    .adm-sc.blue .adm-sc-bar { background:linear-gradient(to left,${T.blue},${T.blueLight}); }
+        /* ── Stat cards (circles) ── */
+    .adm-stats {
+        display:grid; grid-template-columns:repeat(6,1fr);
+        gap: clamp(10px,1.5vw,20px) clamp(6px,1.2vw,18px);
+        margin-bottom: clamp(20px,2.5vw,32px);
+    }
+    .adm-sc {
+        display:flex; flex-direction:column; align-items:center; gap:8px;
+        min-width:0; background:none; border:none; box-shadow:none; padding:0;
+        --sc-color: ${T.orange};
+    }
+    .adm-sc.blue { --sc-color: ${T.blue}; }
+    .adm-sc-ring {
+        width: clamp(84px, 9.5vw, 124px); aspect-ratio: 1; border-radius: 50%;
+        background: ${T.white};
+        border: 4px solid var(--sc-color);
+        box-shadow: 0 4px 14px rgba(0,0,0,.08), inset 0 0 0 4px rgba(255,255,255,1);
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        gap:2px; line-height:1;
+        transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s;
+    }
+    .adm-sc:hover .adm-sc-ring { transform: translateY(-4px) scale(1.04); box-shadow: 0 10px 26px rgba(0,0,0,.14); }
+    .adm-sc-icon { font-size: clamp(1rem, 1.7vw, 1.4rem); }
+    .adm-sc-val  { font-size: clamp(1.1rem, 2.2vw, 1.75rem); font-weight:900; color:var(--sc-color); font-family:'Courier New',monospace; }
+    .adm-sc-lbl  { font-size: clamp(.64rem, 1.1vw, .74rem); color:${T.gray700}; font-weight:700; text-align:center; line-height:1.4; }
 
+    @media(max-width:1100px){ .adm-stats{ grid-template-columns:repeat(3,1fr); } }
+    @media(max-width:640px){
+        .adm-stats { gap: 14px 6px; }
+        .adm-sc-ring  { width: 74px; border-width: 3px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        .adm-sc-icon  { font-size: .9rem; }
+        .adm-sc-val   { font-size: 1.1rem; }
+        .adm-sc-lbl   { font-size: .64rem; }
+    }
+    @media(max-width:380px){
+        .adm-sc-ring { width: 64px; }
+        .adm-sc-val  { font-size: 1rem; }
+    }
     /* ── Section headers ── */
     .adm-section-hdr { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom: clamp(14px,2vw,22px); padding-bottom: clamp(10px,1.5vw,16px); border-bottom: 3px solid ${T.orange}; position:relative; }
     .adm-section-tag   { display:inline-block; background:${T.blue}; color:${T.white}; font-family:${T.font}; font-size:clamp(9px,1.1vw,12px); font-weight:700; padding:4px 14px; border-radius:2px; margin-bottom:4px; letter-spacing:.04em; }
@@ -396,6 +417,10 @@ export const ADMIN_STYLES = `
         .adm-expbtn { width:100%; justify-content:center; }
         .adm-expmenu { left:0; right:0; }
     }
+            /* push the page below the fixed navbar spacer + breadcrumb */
+    @media(max-width:1100px){ .adm-root { margin-top: 48px; } }   /* navbar spacer 70px */
+    @media(max-width:899px) { .adm-root { margin-top: 56px; } }   /* navbar spacer 64px */
+    @media(max-width:599px) { .adm-root { margin-top: 60px; } }   /* navbar spacer 56px */
     @media(max-width:480px){ .adm-content { padding:12px 10px 32px; } }
     @media print {
         .adm-sidebar,.adm-toolbar,.adm-bc { display:none!important; }

@@ -17,7 +17,8 @@ namespace Institute.Application.Services
             _repo = repo; _users = users; _http = http;
         }
 
-        public async Task LogAsync(string actionType, string entityType, string? entityId, string? details)
+        public async Task LogAsync(string actionType, string section, string? subSection,
+                                   string controller, string? entityId, string? details)
         {
             try   // logging must never break the admin's real action
             {
@@ -26,8 +27,6 @@ namespace Institute.Application.Services
                 if (string.IsNullOrEmpty(clerkId)) return;
 
                 var user = await _users.GetByClerkIdAsync(clerkId);
-
-                // the check you asked for: only Admins and Managers are traced
                 if (user == null || (!user.IsAdmin && !user.IsManager)) return;
 
                 var name = $"{user.FirstName} {user.LastName}".Trim();
@@ -36,7 +35,7 @@ namespace Institute.Application.Services
                 var ip = ctx?.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0].Trim()
                          ?? ctx?.Connection.RemoteIpAddress?.ToString();
 
-                if (details != null && details.Length > 1000) details = details[..1000];
+                if (details != null && details.Length > 4000) details = details[..4000] + "…";
 
                 await _repo.AddAsync(new AdminActivityLog
                 {
@@ -45,7 +44,9 @@ namespace Institute.Application.Services
                     AdminEmail = user.Email,
                     AdminRole = user.IsManager ? "Manager" : "Admin",
                     ActionType = actionType,
-                    EntityType = entityType,
+                    Section = section,
+                    SubSection = subSection,
+                    EntityType = controller,
                     EntityId = entityId,
                     Details = details,
                     IpAddress = ip,

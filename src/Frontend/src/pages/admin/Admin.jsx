@@ -740,7 +740,7 @@ const AdminDashboard = () => {
                             />
                         )}
 
-                        {activeTab === 'activity' && <ActivityLogTab />}
+                        {activeTab === 'activity' && <ActivityLogTab setExporting={setExporting} setExportError={setExportError} />}
 
                         {activeTab === 'courses' && (
                             <CoursesTab

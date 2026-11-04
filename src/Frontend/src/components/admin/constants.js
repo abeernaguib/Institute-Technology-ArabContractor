@@ -66,7 +66,7 @@ export const TABS = [
     { id: 'lecturers', label: 'المحاضرون', icon: '🎓' },
     { id: 'team', label: 'فريق العمل', icon: '👥' },
     { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
-    { id: 'siteCerts', label: 'لشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
+    { id: 'siteCerts', label: 'الشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'news', label: 'الأخبار', icon: '📰' },
     { id: 'books', label: 'الكتب', icon: '📖' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋' },
