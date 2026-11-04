@@ -37,10 +37,11 @@ const SECTIONS = [
 ];
 const sectionOf = (id) => SECTIONS.find(s => s.id === id);
 
-const fmt = (iso) => new Date(iso).toLocaleString('ar-EG', {
-    timeZone: 'Africa/Cairo', dateStyle: 'medium', timeStyle: 'short',
+const fmt = (iso) => new Date(iso).toLocaleString('en-GB', {
+    timeZone: 'Africa/Cairo',
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true,
 });
-
 // today's date (YYYY-MM-DD) in Cairo
 const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
 
@@ -167,8 +168,7 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '.72rem', color: T.gray500 }}>
                     {lastUpdated && (
-                        <span>آخر تحديث: {lastUpdated.toLocaleTimeString('ar-EG', { timeZone: 'Africa/Cairo' })}</span>
-                    )}
+                        <span>آخر تحديث: {lastUpdated.toLocaleTimeString('en-GB', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>                    )}
                     <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                         <input type="checkbox" checked={auto} onChange={e => setAuto(e.target.checked)} />
                         تحديث تلقائي
@@ -264,8 +264,7 @@ const ActivityLogTab = ({ setExporting, setExportError }) => {
                                                             {r.details || '—'}
                                                         </td>
                                                         <td style={{ direction: 'ltr', textAlign: 'right', fontSize: '.7rem' }}>{r.ipAddress || '—'}</td>
-                                                        <td style={{ whiteSpace: 'nowrap' }}>{fmt(r.createdAt)}</td>
-                                                    </tr>
+                                                        <td dir="ltr" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>{fmt(r.createdAt)}</td>                                                    </tr>
                                                 );
                                             })}
                                         </tbody>
