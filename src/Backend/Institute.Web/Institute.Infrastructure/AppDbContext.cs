@@ -74,6 +74,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<PlanworkRound> PlanworkRounds { get; set; }
 
     public virtual DbSet<PlanEnrolledEmail> PlanEnrolledEmails { get; set; }
+    public virtual DbSet<AdminActivityLog> AdminActivityLogs { get; set; }
     public virtual DbSet<ProtocolGroup> ProtocolGroups { get; set; }
     public virtual DbSet<ProtocolItem> ProtocolItems { get; set; }
 
@@ -708,6 +709,23 @@ public partial class AppDbContext : DbContext
             e.ToTable("PlanEnrolledEmails");
             e.Property(x => x.Email).HasMaxLength(256).IsRequired();
             e.HasIndex(x => new { x.PlanId, x.Email }).IsUnique();
+        });
+
+        // AdminActivityLog
+        modelBuilder.Entity<AdminActivityLog>(e =>
+        {
+            e.ToTable("AdminActivityLogs");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.AdminClerkId).HasMaxLength(100).IsRequired();
+            e.Property(x => x.AdminName).HasMaxLength(200);
+            e.Property(x => x.AdminEmail).HasMaxLength(255);
+            e.Property(x => x.AdminRole).HasMaxLength(20);
+            e.Property(x => x.ActionType).HasMaxLength(20).IsRequired();
+            e.Property(x => x.EntityType).HasMaxLength(100).IsRequired();
+            e.Property(x => x.EntityId).HasMaxLength(50);
+            e.Property(x => x.IpAddress).HasMaxLength(64);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasIndex(x => x.CreatedAt);
         });
 
         OnModelCreatingPartial(modelBuilder);

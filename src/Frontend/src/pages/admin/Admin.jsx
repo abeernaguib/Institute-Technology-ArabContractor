@@ -29,10 +29,12 @@ import PlanworkTab from './PlanworkTab';
 import SettingsTab from './SettingsTab';
 import TeamTab from './TeamTab';
 import CertificationsTab from './CertificationsTab';
+import ActivityLogTab from './ActivityLogTab';
 
 // permissionName MUST match Permission.Name in the DB (case-insensitive).
 const TABS = [
     { id: 'users', label: 'المستخدمون', icon: '👤', permissionName: 'Users' },
+    { id: 'activity', label: 'سجل النشاط', icon: '🕵️', permissionName: 'ActivityLog', managerOnly: true },
     { id: 'courses', label: 'الدورات', icon: '📚', permissionName: 'Courses' },
     { id: 'attendance', label: 'الحضور', icon: '✅', permissionName: 'Attendance' },
     { id: 'certificates', label: 'الشهادات', icon: '📜', permissionName: 'Certificates' },
@@ -186,7 +188,7 @@ const AdminDashboard = () => {
         .some(n => myRole.tabs.has(n.trim().toLowerCase()));
 
     // Manager = all tabs, Admin = only granted permissions
-    const visibleTabs = myRole.isManager ? TABS : TABS.filter(hasTab);
+    const visibleTabs = myRole.isManager ? TABS : TABS.filter(t => !t.managerOnly && hasTab(t));
 
     // Redirect only after the role has finished loading and there is zero access
     useEffect(() => {
@@ -715,6 +717,8 @@ const AdminDashboard = () => {
                                 setExporting={setExporting} setExportError={setExportError}
                             />
                         )}
+
+                        {activeTab === 'activity' && <ActivityLogTab />}
 
                         {activeTab === 'courses' && (
                             <CoursesTab

@@ -31,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers(options =>
 {
     options.Conventions.Add(new RequireAuthForAdminControllersConvention());
+    options.Filters.Add<AdminActivityFilter>();
 })
     .AddJsonOptions(options =>
     {
@@ -115,6 +116,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<ILecturerService, LecturerService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IAdminActivityService, AdminActivityService>();
 builder.Services.AddScoped<ICertificationService, CertificationService>();
 builder.Services.AddHttpClient<ClerkService>();
 builder.Services.AddScoped(typeof(IClerkService), typeof(ClerkService));
