@@ -267,6 +267,7 @@ builder.Services.AddAuthorization(options =>
     var permissionNames = new[]
     {
         "Users",
+        "ActivityLog",
         "Courses",
         "Attendance",
         "Certificates",

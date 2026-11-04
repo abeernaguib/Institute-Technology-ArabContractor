@@ -57,6 +57,7 @@ export const REFUND_STATUS_META = {
 // ════════════════════════════════════════════════════════════════════════════
 export const TABS = [
     { id: 'users', label: 'المستخدمون', icon: '👤' },
+    { id: 'activity', label: 'سجل النشاط', icon: '🕵️', permissionName: 'ActivityLog', managerOnly: true },
     { id: 'courses', label: 'الدورات', icon: '📚' },
     { id: 'attendance', label: 'الحضور', icon: '✅' },
     { id: 'certificates', label: 'الشهادات', icon: '📜' },
@@ -77,6 +78,7 @@ export const TABS = [
 // ════════════════════════════════════════════════════════════════════════════
 export const TAB_TITLES = {
     users: { tag: 'إدارة البيانات', title: ['المستخدمون', 'والدورات'] },
+    activity: { tag: 'مراقبة النظام', title: ['سجل', 'النشاط'] },
     courses: { tag: 'إدارة البيانات', title: ['الدورات', 'والمستخدمون'] },
     attendance: { tag: 'متابعة الحضور', title: ['سجل', 'الحضور'] },
     certificates: { tag: 'إدارة الشهادات', title: ['الشهادات', 'الإلكترونية'] },

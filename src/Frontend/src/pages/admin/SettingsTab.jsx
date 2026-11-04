@@ -23,6 +23,7 @@ const T = {
 // permissionName must match Permission.Name in the database (case-insensitive).
 const ADMIN_TABS = [
     { id: 'users', label: '👤 المستخدمون', permissionName: 'Users' },
+    { id: 'activity', label: '🕵️ سجل النشاط', permissionName: 'ActivityLog' },
     { id: 'courses', label: '📚 الدورات', permissionName: 'Courses' },
     { id: 'attendance', label: '✅ الحضور', permissionName: 'Attendance' },
     { id: 'certificates', label: '📜 الشهادات', permissionName: 'Certificates' },
