@@ -44,7 +44,7 @@ const TABS = [
     { id: 'team', label: 'فريق العمل', icon: '👥', permissionName: 'Team' },
     { id: 'customers', label: 'العملاء', icon: '🏢', permissionName: 'Customers' },
     { id: 'protocols', label: 'البروتوكولات', icon: '🤝', permissionName: 'Protocols' },
-    { id: 'siteCerts', label: 'لشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
+    { id: 'siteCerts', label: 'الشهادات وخطابات الشكر', icon: '🏅', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan', alsoPermissions: ['PlanFiles', 'PlanEmails'] },
@@ -66,6 +66,9 @@ const AdminDashboard = () => {
     const [expandedRow, setExpandedRow] = useState(null);
     const [exporting, setExporting] = useState(false);
     const [exportError, setExportError] = useState(null);
+
+    // ── Mobile drawer state ──
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // ── Data state ──
     const [usersData, setUsersData] = useState([]);
@@ -132,6 +135,19 @@ const AdminDashboard = () => {
     useEffect(() => { setAttPage(1); }, [attCourseFilter, attUserSearch]);
     useEffect(() => { setCertPage(1); }, [certSearch, certStatusFilter]);
     useEffect(() => { setRefundPage(1); }, [refundSearch, refundStatusFilter]);
+
+    // Lock page scroll + Esc to close while the mobile drawer is open
+    useEffect(() => {
+        if (!sidebarOpen) return;
+        const onKey = e => e.key === 'Escape' && setSidebarOpen(false);
+        document.addEventListener('keydown', onKey);
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prev;
+        };
+    }, [sidebarOpen]);
 
     // ── Auth fetch helpers ──
     const authFetch = useCallback(async (url, options = {}) => {
@@ -683,10 +699,16 @@ const AdminDashboard = () => {
                     user={user} activeTab={activeTab} tabs={visibleTabs}
                     totalCerts={totalCerts}
                     pendingRefunds={refunds.filter(r => r.status === 'Pending').length}
-                    onTabChange={id => { setActiveTab(id); setExpandedRow(null); setSearchQuery(''); }}
+                    open={sidebarOpen} onClose={() => setSidebarOpen(false)}
+                    onTabChange={id => { setActiveTab(id); setExpandedRow(null); setSearchQuery(''); setSidebarOpen(false); }}
                 />
 
                 <main className="adm-main">
+                    <button className="adm-menu-btn" onClick={() => setSidebarOpen(true)}>
+                        <span style={{ fontSize: '1.2rem' }}>☰</span> القائمة
+                        <span className="cur">{visibleTabs.find(t => t.id === activeTab)?.label}</span>
+                    </button>
+
                     <PageHero activeTab={activeTab} />
 
                     <div className="adm-content">

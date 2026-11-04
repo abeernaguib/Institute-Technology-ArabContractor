@@ -24,11 +24,10 @@ export const ADMIN_STYLES = `
 
     /* ── Sidebar ── */
     .adm-sidebar {
-    width: 220px; flex-shrink: 0;
+    width: 240px; flex-shrink: 0;
     background: ${T.blueDark};
     display: flex; flex-direction: column;
     position: sticky; top: 0;
-    /* CHANGE height to min-height */
     min-height: 100vh;
     height: auto;
     overflow: hidden; z-index: 200;
@@ -72,7 +71,9 @@ export const ADMIN_STYLES = `
         color: rgba(255,255,255,0.6); font-family: ${T.font};
         font-size:.8rem; font-weight:700; cursor:pointer;
         transition: all .22s cubic-bezier(.4,0,.2,1);
-        text-align:right; margin-bottom:3px; white-space:nowrap;
+        text-align:right; margin-bottom:3px;
+        white-space:normal;
+        min-height:42px; line-height:1.45;
         overflow:hidden; position:relative;
     }
     .adm-nav-btn::before { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background:${T.orange}; transform:scaleY(0); transform-origin:bottom; transition:transform .3s cubic-bezier(.4,0,.2,1); }
@@ -80,7 +81,7 @@ export const ADMIN_STYLES = `
     .adm-nav-btn.active { background: rgba(245,124,0,0.15); color:${T.white}; border-color:rgba(245,124,0,0.35); }
     .adm-nav-btn.active::before { transform:scaleY(1); }
     .adm-nav-icon  { font-size:.95rem; flex-shrink:0; }
-    .adm-nav-txt   { flex:1; text-align:right; overflow:hidden; text-overflow:ellipsis; }
+    .adm-nav-txt   { flex:1; text-align:right; overflow:visible; text-overflow:clip; word-break:break-word; }
     .adm-nav-badge { padding:1px 7px; border-radius:2px; font-size:.58rem; font-weight:900; background:${T.orange}; color:${T.white}; flex-shrink:0; }
     .adm-nav-badge.pulse { animation: adm-pulse 2s ease infinite; }
     .adm-sidebar-footer { position:relative; z-index:1; padding: 10px 14px; border-top: 1.5px solid rgba(245,124,0,0.2); font-size:.6rem; color:rgba(255,255,255,0.25); text-align:center; background:rgba(0,0,0,0.2); flex-shrink:0; }
@@ -340,17 +341,47 @@ export const ADMIN_STYLES = `
     .adm-footer p { color:rgba(255,255,255,0.25); font-family:${T.font}; font-size:clamp(.62rem,1.1vw,.7rem); }
 
     /* ── Responsive ── */
+
+    /* ── Drawer pieces (hidden on desktop) ── */
+    .adm-backdrop  { display:none; }
+    .adm-sb-close  { display:none; }
+    .adm-menu-btn  { display:none; }
+
     @media(max-width:1100px){
-        .adm-sidebar { 
-        width: 54px;
-        min-height: 100vh; /* add this */
-    }
-        .adm-sb-title,.adm-su-info,.adm-nav-label,.adm-nav-badge,.adm-sidebar-footer,.adm-nav-txt { display:none; }
-        .adm-sidebar-brand { padding:12px; justify-content:center; }
-        .adm-sidebar-user  { padding:10px; justify-content:center; }
-        .adm-sidebar-nav   { padding:8px 5px; }
-        .adm-nav-btn { justify-content:center; padding:10px 6px; }
-        .adm-sb-logo,.adm-su-av { width:28px; height:28px; }
+        .adm-sidebar {
+            position: fixed; top:0; right:0; bottom:0;
+            width: min(290px, 85vw);
+            height: 100vh; height: 100dvh; min-height: 0;
+            z-index: 5000;
+            transform: translateX(100%);
+            visibility: hidden;
+            transition: transform .28s cubic-bezier(.4,0,.2,1), visibility 0s linear .28s;
+        }
+        .adm-sidebar.open {
+            transform: translateX(0);
+            visibility: visible;
+            transition: transform .28s cubic-bezier(.4,0,.2,1), visibility 0s;
+        }
+        .adm-backdrop.show {
+            display:block; position:fixed; inset:0; z-index:4999;
+            background:rgba(4,30,60,.55); backdrop-filter:blur(2px);
+        }
+        .adm-sb-close {
+            display:flex; align-items:center; justify-content:center;
+            margin-right:auto; width:32px; height:32px; border-radius:3px;
+            background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+            color:#fff; font-size:1rem; cursor:pointer;
+        }
+        .adm-nav-btn { padding: 13px 14px; min-height:46px; font-size:.86rem; }  /* bigger touch targets */
+
+        .adm-menu-btn {
+            display:flex; align-items:center; gap:10px; width:100%;
+            padding:12px 16px; border:none; cursor:pointer;
+            background:${T.blueDark}; color:${T.white};
+            border-bottom:3px solid ${T.orange};
+            font-family:${T.font}; font-size:.86rem; font-weight:800; text-align:right;
+        }
+        .adm-menu-btn .cur { color:${T.orangeLight}; margin-right:auto; }
     }
     @media(max-width:768px){
         .rf-detail,.rf-bank-grid { grid-template-columns:1fr; }
@@ -358,18 +389,18 @@ export const ADMIN_STYLES = `
         .adm-mc { max-width:100%; }
         .adm-toolbar { flex-direction:column; align-items:stretch; }
         .adm-expw { align-self:flex-start; }
+
+        .adm-toolbar .adm-search { min-width:0 !important; width:100%; }
+        .adm-toolbar .adm-fdate, .adm-toolbar .adm-fsel { width:100%; }
+        .adm-expw { align-self:stretch !important; margin-right:0 !important; }
+        .adm-expbtn { width:100%; justify-content:center; }
+        .adm-expmenu { left:0; right:0; }
     }
     @media(max-width:480px){ .adm-content { padding:12px 10px 32px; } }
     @media print {
         .adm-sidebar,.adm-toolbar,.adm-bc { display:none!important; }
         .adm-root { margin-top:0!important; }
     }
-    // src/components/admin/styles.js
-// ─────────────────────────────────────────────────────────────────────────────
-// PASTE everything between the === markers into your ADMIN_STYLES template
-// literal, just before the closing backtick.
-// ─────────────────────────────────────────────────────────────────────────────
-// ==================  PASTE START  ==================
 
     /* ══ FINANCIAL TAB ══ */
     .fin-income-hero {
@@ -453,14 +484,7 @@ export const ADMIN_STYLES = `
     .adm-pill.gr { border-color:rgba(22,163,74,0.3); color:#16a34a; background:rgba(22,163,74,0.07); }
     .adm-pill.gr:hover,.adm-pill.gr.op { background:rgba(22,163,74,0.14); border-color:rgba(22,163,74,0.55); }
 
-// ==================  PASTE END  ==================
-// ──────────────────────────────────────────────────────────────────────────────
-// PASTE everything between ═══ START ═══ and ═══ END ═══
-// into ADMIN_STYLES in src/components/admin/styles.js
-// (right before the closing backtick of the template literal)
-// ──────────────────────────────────────────────────────────────────────────────
-
-/* ═══ START ═══ */
+    /* ═══ LECTURERS TAB ═══ */
 
     @keyframes lec-notif-in { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
 
@@ -481,10 +505,7 @@ export const ADMIN_STYLES = `
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
-    height: 100vh and max-height: 100vh */
-    //position: sticky;
     top: 16px;
-    /* ADD these: */
     height: fit-content;
     max-height: calc(100vh - 32px);
     overflow: hidden;
@@ -513,7 +534,6 @@ export const ADMIN_STYLES = `
         flex: 1; 
         overflow-y: auto; 
         padding: 6px 8px 10px;
-        /* ADD: */
         min-height: 0;  /* critical for flex children to scroll */
     }    
     .lec-list::-webkit-scrollbar { width:4px; }
@@ -953,31 +973,9 @@ export const ADMIN_STYLES = `
         .lec-tb-font-select { max-width: 80px; }
     }
 
-/* ═══ END ═══ */
-
-// ──────────────────────────────────────────────────────────────────────────────
-// PASTE everything between ═══ START ═══ and ═══ END ═══
-// into ADMIN_STYLES in src/components/admin/styles.js
-// (right before the closing backtick of the template literal)
-// ──────────────────────────────────────────────────────────────────────────────
-
-// ──────────────────────────────────────────────────────────────────────────────
-// PASTE everything between ═══ START ═══ and ═══ END ═══
-// into ADMIN_STYLES in src/components/admin/styles.js
-// (right before the closing backtick of the template literal)
-// ──────────────────────────────────────────────────────────────────────────────
-
-// ──────────────────────────────────────────────────────────────────────────────
-// PASTE everything between ═══ START ═══ and ═══ END ═══
-// into ADMIN_STYLES in src/components/admin/styles.js
-// (right before the closing backtick of the template literal)
-// ──────────────────────────────────────────────────────────────────────────────
-
-// ═══ START ═══
+    /* ═══ BOOKS TAB ═══ */
 
     @keyframes bk-notif-in { from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);} }
-
-    /* ══ BOOKS TAB ══ */
 
     /* ── Layout ── */
     .bk-layout {
@@ -1059,7 +1057,8 @@ export const ADMIN_STYLES = `
     overflow-y: auto;
     padding: 5px 7px 10px;
     max-height: 100%;      /* prevents overflow */
-}    .bk-list::-webkit-scrollbar { width: 4px; }
+}
+    .bk-list::-webkit-scrollbar { width: 4px; }
     .bk-list::-webkit-scrollbar-thumb { background: #d0d3d8; border-radius: 2px; }
 
     /* ── List row ── */
@@ -1292,15 +1291,7 @@ export const ADMIN_STYLES = `
         .bk-act-btn        { padding: 7px 12px; font-size: .74rem; }
     }
 
-// ═══ END ═══
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PASTE this entire block into ADMIN_STYLES in src/components/admin/styles.js
-// just before the closing backtick of the template literal.
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ═══ PLANWORK TAB ═══
+    /* ═══ PLANWORK TAB ═══ */
 
     /* sidebar nav accent */
     .adm-nav-btn.pw-nav::before   { background: #7c3aed; }
@@ -1594,8 +1585,6 @@ export const ADMIN_STYLES = `
         .pw-tree-scroll       { max-height: 100px; }
         .pw-files-body        { padding: 6px; }
     }
-
-// ═══ END PLANWORK STYLES ═══
 
 `;
 
