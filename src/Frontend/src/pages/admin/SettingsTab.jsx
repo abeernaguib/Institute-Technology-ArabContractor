@@ -35,6 +35,7 @@ const ADMIN_TABS = [
     { id: 'customers', label: '🏢 العملاء', permissionName: 'Customers' },
     { id: 'siteCerts', label: '🏅 الشهادات وخطابات الشكر', permissionName: 'Certificates and Letters of Appreciation' },
     { id: 'team', label: '👥 فريق العمل', permissionName: 'Team' },
+    { id: 'gallery', label: 'مكتبة الصور والفيديو', icon: '🖼️', permissionName: 'Gallery' },
     { id: 'news', label: '📰 الأخبار', permissionName: 'News' },
     { id: 'books', label: '📖 الكتب', permissionName: 'Books' },
     { id: 'protocols', label: '🤝 البروتوكولات', permissionName: 'Protocols' },

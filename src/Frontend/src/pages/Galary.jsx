@@ -1,115 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './galary.css';
 
-const albums = [
-    { id: 'album11', title: 'مركز التدريب الحرفى على مهن التشييد و البناء', imageUrl: '/images/pic11a1.jpg', photosCount: 24, photoPrefix: 'pic11a', category: 'training' },
-    { id: 'album12', title: 'مركز التدريب على المهن الميكانيكية و الكهربائية', imageUrl: '/images/pic12a1.jpg', photosCount: 11, photoPrefix: 'pic12a', category: 'training' },
-    { id: 'albumZ', title: 'CEA المجموعة الرابعة', imageUrl: '/images/PicCEA1.jpg', photosCount: 11, photoPrefix: 'PicCEA', category: 'training' },
-    { id: 'album15', title: 'معهد تدريب المهندسين العسكريين', imageUrl: '/images/Askry1.jpg', photosCount: 17, photoPrefix: 'Askry', category: 'training' },
-    { id: 'album17', title: 'فرع الاسكندرية_17_3_2019_PMPبرنامج', imageUrl: '/images/pic17a1.jpg', photosCount: 14, photoPrefix: 'pic17a', category: 'training' },
-    { id: 'album4', title: 'دورة اعداد السلامة_فرع شرق ووسط 24 - 3 - 2019', imageUrl: '/images/pic04a1.jpg', photosCount: 3, photoPrefix: 'pic04a', category: 'training' },
-    { id: 'album2', title: 'التدريب فى المانيا', imageUrl: '/images/pic02a1.jpg', photosCount: 4, photoPrefix: 'pic02a', category: 'training' },
-    { id: 'album6', title: 'زيارة المانيا مركز جسر السويس', imageUrl: '/images/pic06a1.jpg', photosCount: 23, photoPrefix: 'pic06a', category: 'training' },
-    { id: 'album3', title: 'دورة زامبيا', imageUrl: '/images/pic03a1.jpg', photosCount: 3, photoPrefix: 'pic03a', category: 'training' },
-    { id: 'album5', title: 'دورة طلبة كليات الهندسة جامعة جازان السعودية_اغسطس 2018', imageUrl: '/images/gazan0.jpg', photosCount: 17, photoPrefix: 'gazan', category: 'training' },
-    { id: 'album13', title: 'طلبة السودان 2016', imageUrl: '/images/pic13a1.jpg', photosCount: 27, photoPrefix: 'pic13a', category: 'training' },
-    { id: 'album7', title: 'زيارة طلاب التدريب الصيفى إلى العاصمة الإدارية الجديدة 2017-07-1', imageUrl: '/images/pic07a1.jpg', photosCount: 16, photoPrefix: 'pic07a', category: 'training' },
-    { id: 'album8', title: 'زيارة طلاب التدريب الصيفى إلى محور روض الفرج 2017-07-20', imageUrl: '/images/pic08a1.jpg', photosCount: 4, photoPrefix: 'pic08a', category: 'training' },
-    { id: 'album9', title: 'زيارة طلبة المدرسة الفنية مشروع ميناء شرق بورسعيد 2017-07', imageUrl: '/images/pic09a1.jpg', photosCount: 8, photoPrefix: 'pic09a', category: 'training' },
-    { id: 'album14', title: 'ندوة عقود الفيديك - د شريف الهجان', imageUrl: '/images/pic14a1.jpg', photosCount: 5, photoPrefix: 'pic14a', category: 'activities' },
-    { id: 'album16', title: 'السلامة فى اعمال الرفع والتصبين_مشروع معالجة مياه بحر البقر', imageUrl: '/images/pic16a1.jpg', photosCount: 6, photoPrefix: 'pic16a', category: 'activities' },
-    { id: 'album1', title: 'بروتوكول تعاون مع جمعية المحاسبين المصريين', imageUrl: '/images/pic01a1.jpg', photosCount: 1, photoPrefix: 'pic01a', category: 'visits' },
-    { id: 'album10', title: 'زيارة وفد دولة موريتانيا إلى مدرسة المقاولون العرب الثانوية النموذجية 2017-12-17', imageUrl: '/images/pic10a1.jpg', photosCount: 5, photoPrefix: 'pic10a', category: 'visits' },
-];
-
-const photoCategories = [
-    { key: 'all', label: 'الكل' },
-    { key: 'activities', label: 'الأنشطة والفعاليات' },
-    { key: 'training', label: 'الدورات التدريبية' },
-    { key: 'library', label: 'مكتبة المعهد وسفارة المعرفة' },
-    { key: 'labs', label: 'المعامل والقاعات' },
-    { key: 'visits', label: 'زيارات وبروتوكولات التعاون' },
-];
-
-const videoCategories = [
-    { key: 'all', label: 'الكل' },
-    { key: 'aboutAC', label: 'عن المقاولون العرب' },
-    { key: 'cea', label: 'آراء المهندسين — CEA' },
-    { key: 'media', label: 'فيديوهات تعريفية وإعلامية' },
-];
-
-const videoSections = [
-    {
-        key: 'aboutAC',
-        category: 'aboutAC',
-        title: 'فيديوهات عن المقاولون العرب ودورها التعليمى فى هندسة التشييد والبناء',
-        color: '#f57c00',
-        videos: [
-            { id: 'ZfDfud7dV50', title: 'فيديو 1' },
-            { id: '5f4Pb_agNR8', title: 'فيديو 2' },
-            { id: 'km_RuntColw', title: 'فيديو 3' },
-        ],
-    },
-    {
-        key: 'aboutAC_en',
-        category: 'aboutAC',
-        title: 'The Arab Contractors and Their Educational Role',
-        color: '#D32F2F',
-        videos: [
-            { id: 'XL-8BmDEaKM', title: 'Video 1' },
-            { id: 'DK91iVe4DuQ', title: 'Video 2' },
-            { id: 'dR5LsCk4b2Y', title: 'Video 3' },
-        ],
-    },
-    {
-        key: 'aboutAC_fr',
-        category: 'aboutAC',
-        title: 'Les entrepreneurs arabes et leur rôle éducatif',
-        color: '#0865a8',
-        videos: [
-            { id: '78_PrybZMtA', title: 'Vidéo 1' },
-            { id: '7CXLX7iCWcs', title: 'Vidéo 2' },
-            { id: 'Lb-f8lk_cCg', title: 'Vidéo 3' },
-        ],
-    },
-    {
-        key: 'cea_g1',
-        category: 'cea',
-        title: 'ICEMT_CEA_Group1',
-        color: '#E65100',
-        videos: [
-            { id: 'qVacL0aaqHY', title: 'مهندس 1' },
-            { id: 'MuQt0pQenhI', title: 'مهندس 2' },
-            { id: 'wujlFjykJO0', title: 'مهندس 3' },
-            { id: '4CA2Aj9xM0c', title: 'مهندس 4' },
-            { id: 'v-BCi9TsaoM', title: 'مهندس 5' },
-            { id: 'zYa5Ohpe2QE', title: 'مهندس 6' },
-            { id: 'D2GsCDbjvdY', title: 'مهندس 7' },
-        ],
-    },
-    {
-        key: 'cea_g2',
-        category: 'cea',
-        title: 'ICEMT_CEA_Group2',
-        color: '#E65100',
-        videos: [
-            { id: '1FxSAiZSx9c', title: 'مهندس 1' },
-            { id: 'fLsCp8m5gDw', title: 'مهندس 2' },
-            { id: '6R3PvQZml6k', title: 'مهندس 3' },
-            { id: 'pKkDOwUpQlE', title: 'مهندس 4' },
-            { id: 'xXBddNMMZ8E', title: 'مهندس 5' },
-            { id: 'qzmapa6fOo4', title: 'مهندس 6' },
-            { id: '0gN8RTYHafk', title: 'مهندس 7' },
-        ],
-    },
-    {
-        key: 'media_intro',
-        category: 'media',
-        title: 'فيديوهات تعريفية وإعلامية عن المعهد',
-        color: '#1a6b3c',
-        videos: [],
-    },
-];
+const API_URL = 'https://icemt.arabcont.com/api/Gallery';
 
 // ─── Shared filter bar ────────────────────────────────────────────────────────
 const CategoryBar = ({ categories, active, onChange }) => (
@@ -152,7 +44,7 @@ const VideoCard = ({ videoId, title, color }) => {
     const [imageError, setImageError] = useState(false);
     return (
         <div
-            onClick={() => window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank')}
+            onClick={() => window.open(`https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`, '_blank', 'noopener,noreferrer')}
             className="training-video-card"
             style={{ borderColor: `${color}50` }}
         >
@@ -176,7 +68,6 @@ const VideoCard = ({ videoId, title, color }) => {
                         <path d="M8 5v14l11-7z" />
                     </svg>
                 </div>
-                {/* ── LTR title at bottom of video card ── */}
                 <div className="training-video-title">
                     <span style={{ direction: 'ltr', textAlign: 'left' }}>{title}</span>
                 </div>
@@ -186,16 +77,19 @@ const VideoCard = ({ videoId, title, color }) => {
 };
 
 const VideoSection = ({ section }) => {
+    const header = (
+        <div
+            className="training-section-header"
+            style={{ background: `linear-gradient(135deg, ${section.color} 0%, ${section.color}cc 100%)` }}
+        >
+            <h2 style={{ direction: section.isLtr ? 'ltr' : 'rtl', textAlign: 'center' }}>{section.title}</h2>
+        </div>
+    );
+
     if (!section.videos || section.videos.length === 0) {
         return (
             <div className="training-section">
-                <div
-                    className="training-section-header"
-                    style={{ background: `linear-gradient(135deg, ${section.color} 0%, ${section.color}cc 100%)` }}
-                >
-                    {/* ── LTR section title ── */}
-                    <h2 style={{ direction: 'ltr', textAlign: 'center' }}>{section.title}</h2>
-                </div>
+                {header}
                 <div style={{ padding: '24px', textAlign: 'center', color: '#9ca3af', fontSize: 15 }}>
                     لا توجد فيديوهات متاحة حالياً في هذا القسم
                 </div>
@@ -204,31 +98,29 @@ const VideoSection = ({ section }) => {
     }
     return (
         <div className="training-section">
-            <div
-                className="training-section-header"
-                style={{ background: `linear-gradient(135deg, ${section.color} 0%, ${section.color}cc 100%)` }}
-            >
-                {/* ── LTR section title ── */}
-                <h2 style={{ direction: 'ltr', textAlign: 'center' }}>{section.title}</h2>
-            </div>
+            {header}
             <div className="training-videos-grid">
-                {section.videos.map((video, i) => (
-                    <VideoCard key={i} videoId={video.id} title={video.title} color={section.color} />
+                {section.videos.map(video => (
+                    <VideoCard key={video.id} videoId={video.youtubeId} title={video.title || ''} color={section.color} />
                 ))}
             </div>
         </div>
     );
 };
 
-const VideoGalleryPage = () => {
-    const [activeVideoCategory, setActiveVideoCategory] = useState('all');
+const VideoGalleryPage = ({ categories, groups }) => {
+    const [activeCat, setActiveCat] = useState('all');
 
-    const filtered = activeVideoCategory === 'all'
-        ? videoSections
-        : videoSections.filter(s => s.category === activeVideoCategory);
+    const barCategories = [
+        { key: 'all', label: 'الكل' },
+        ...categories.map(c => ({ key: String(c.id), label: c.name })),
+    ];
 
-    const showCeaBanner =
-        activeVideoCategory === 'all' || activeVideoCategory === 'cea';
+    const visibleCategories = activeCat === 'all'
+        ? categories
+        : categories.filter(c => String(c.id) === activeCat);
+
+    const hasAnything = visibleCategories.some(c => groups.some(g => g.categoryId === c.id));
 
     return (
         <div className="training-plan-container">
@@ -254,37 +146,88 @@ const VideoGalleryPage = () => {
                 .training-video-title span { color: white; font-size: 14px; font-weight: bold; text-shadow: 0 0 4px rgba(0,0,0,0.8); direction: ltr; display: block; text-align: left; }
             `}</style>
 
-            <CategoryBar
-                categories={videoCategories}
-                active={activeVideoCategory}
-                onChange={setActiveVideoCategory}
-            />
+            <CategoryBar categories={barCategories} active={activeCat} onChange={setActiveCat} />
 
             <div style={{ height: 20 }} />
 
-            {showCeaBanner && activeVideoCategory !== 'aboutAC' && activeVideoCategory !== 'media' && (
-                <div className="training-cea-header">
-                    <h2>رأي بعض المهندسين في البرنامج CEA</h2>
+            {!hasAnything && (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9ca3af', fontSize: 16 }}>
+                    لا توجد فيديوهات في هذا القسم
                 </div>
             )}
 
-            {filtered.map(section => (
-                <VideoSection key={section.key} section={section} />
-            ))}
+            {visibleCategories.map(cat => {
+                const catGroups = groups.filter(g => g.categoryId === cat.id);
+                if (catGroups.length === 0) return null;
+                return (
+                    <React.Fragment key={cat.id}>
+                        {cat.description && (
+                            <div className="training-cea-header">
+                                <h2>{cat.description}</h2>
+                            </div>
+                        )}
+                        {catGroups.map(section => (
+                            <VideoSection key={section.id} section={section} />
+                        ))}
+                    </React.Fragment>
+                );
+            })}
         </div>
     );
 };
 
 // ─── Album detail page ────────────────────────────────────────────────────────
 const AlbumDetailPage = ({ album, onBack }) => {
+    const [photos, setPhotos] = useState(null);          // null = still loading
+    const [loadFailed, setLoadFailed] = useState(false);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [imageLoading, setImageLoading] = useState({});
     const [imageError, setImageError] = useState({});
 
-    const photos = Array.from(
-        { length: album.photosCount },
-        (_, i) => `/images/${album.photoPrefix}${i + 1}.jpg`
+    useEffect(() => {
+        let cancelled = false;
+        fetch(`${API_URL}/albums/${album.id}`)
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(d => { if (!cancelled) setPhotos((d.photos || []).map(p => p.url)); })
+            .catch(() => { if (!cancelled) setLoadFailed(true); });
+        return () => { cancelled = true; };
+    }, [album.id]);
+
+    const backButton = (
+        <button onClick={onBack} className="back-button">
+            <svg className="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
     );
+
+    if (loadFailed || (photos && photos.length === 0)) {
+        return (
+            <div className="album-detail-page">
+                <div className="album-detail-header">
+                    <div className="album-header-content"><div className="album-title">{album.title}</div></div>
+                    {backButton}
+                </div>
+                <div style={{ textAlign: 'center', padding: '80px 20px', color: '#6b7280', fontSize: 16 }}>
+                    {loadFailed ? 'تعذر تحميل الصور' : 'لا توجد صور في هذا الألبوم'}
+                </div>
+            </div>
+        );
+    }
+
+    if (photos === null) {
+        return (
+            <div className="album-detail-page">
+                <div className="album-detail-header">
+                    <div className="album-header-content"><div className="album-title">{album.title}</div></div>
+                    {backButton}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 20px' }}>
+                    <div className="spinner"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="album-detail-page">
@@ -295,11 +238,7 @@ const AlbumDetailPage = ({ album, onBack }) => {
                         صورة {currentPhotoIndex + 1} من {photos.length}
                     </div>
                 </div>
-                <button onClick={onBack} className="back-button">
-                    <svg className="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
+                {backButton}
             </div>
 
             <div className="album-content">
@@ -318,7 +257,6 @@ const AlbumDetailPage = ({ album, onBack }) => {
                                         <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                                     </svg>
                                     <div className="error-text">لا يمكن تحميل الصورة</div>
-                                    <div className="error-url">{photos[currentPhotoIndex]}</div>
                                 </div>
                             ) : (
                                 <img
@@ -333,7 +271,6 @@ const AlbumDetailPage = ({ album, onBack }) => {
                                     onLoadStart={() => setImageLoading(prev => ({ ...prev, [currentPhotoIndex]: true }))}
                                 />
                             )}
-                            {/* ── photo badge REMOVED ── */}
                         </div>
                     </div>
                 </div>
@@ -389,6 +326,10 @@ const AlbumDetailPage = ({ album, onBack }) => {
 
 // ─── Main gallery ─────────────────────────────────────────────────────────────
 const PhotoGallery = () => {
+    const [overview, setOverview] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [showPhotos, setShowPhotos] = useState(true);
     const [selectedAlbum, setSelectedAlbum] = useState(null);
     const [activePhotoCategory, setActivePhotoCategory] = useState('all');
@@ -410,15 +351,39 @@ const PhotoGallery = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true);
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                setOverview(await res.json());
+                setError(null);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
 
     if (selectedAlbum) {
         return <AlbumDetailPage album={selectedAlbum} onBack={() => setSelectedAlbum(null)} />;
     }
 
+    const photoCategories = overview ? overview.categories.filter(c => c.kind === 1) : [];
+    const videoCategories = overview ? overview.categories.filter(c => c.kind === 2) : [];
+    const albums = overview ? overview.albums : [];
+
+    const photoBarCategories = [
+        { key: 'all', label: 'الكل' },
+        ...photoCategories.map(c => ({ key: String(c.id), label: c.name })),
+    ];
+
     const filteredAlbums = activePhotoCategory === 'all'
         ? albums
-        : albums.filter(a => a.category === activePhotoCategory);
+        : albums.filter(a => String(a.categoryId) === activePhotoCategory);
 
     return (
         <div dir="rtl" className="photo-gallery">
@@ -461,78 +426,92 @@ const PhotoGallery = () => {
             </div>
 
             {/* Category filter bar */}
-            {showPhotos && (
+            {showPhotos && overview && (
                 <CategoryBar
-                    categories={photoCategories}
+                    categories={photoBarCategories}
                     active={activePhotoCategory}
                     onChange={setActivePhotoCategory}
                 />
             )}
 
             <div className="gallery-content">
-                {showPhotos ? (
-                    <div className="albums-grid-wrapper">
-                        {filteredAlbums.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9ca3af', fontSize: 16 }}>
-                                لا توجد ألبومات في هذا القسم
-                            </div>
-                        ) : (
-                            <div
-                                className="albums-grid"
-                                style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-                            >
-                                {filteredAlbums.map(album => (
-                                    <button
-                                        key={album.id}
-                                        onClick={() => setSelectedAlbum(album)}
-                                        className="album-card"
-                                    >
-                                        <div className="album-image-container">
-                                            {imageLoading[album.id] && (
-                                                <div className="album-loading">
-                                                    <div className="spinner"></div>
-                                                </div>
-                                            )}
-                                            {imageError[album.id] ? (
-                                                <div className="album-error">
-                                                    <svg className="album-error-icon" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                                                    </svg>
-                                                    <div className="album-error-text">ألبوم الصور</div>
-                                                </div>
-                                            ) : (
-                                                <img
-                                                    src={album.imageUrl}
-                                                    alt={album.title}
-                                                    className="album-image"
-                                                    onLoad={() => setImageLoading(prev => ({ ...prev, [album.id]: false }))}
-                                                    onError={() => {
-                                                        setImageLoading(prev => ({ ...prev, [album.id]: false }));
-                                                        setImageError(prev => ({ ...prev, [album.id]: true }));
-                                                    }}
-                                                    onLoadStart={() => setImageLoading(prev => ({ ...prev, [album.id]: true }))}
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="album-info">
-                                            <div className="album-info-title">{album.title}</div>
-                                            <div className="album-footer">
-                                                <div className="album-action">
-                                                    <svg className="album-action-icon" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                                                    </svg>
-                                                    <span className="album-action-text">عرض الألبوم</span>
-                                                </div>
-                                                <div className="album-count">{album.photosCount} صورة</div>
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                {loading && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 20px' }}>
+                        <div className="spinner"></div>
                     </div>
-                ) : (
-                    <VideoGalleryPage />
+                )}
+
+                {!loading && error && (
+                    <div style={{ textAlign: 'center', padding: '60px 20px', color: '#b91c1c', fontSize: 16 }}>
+                        تعذر تحميل المحتوى ({error})
+                    </div>
+                )}
+
+                {!loading && !error && overview && (
+                    showPhotos ? (
+                        <div className="albums-grid-wrapper">
+                            {filteredAlbums.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9ca3af', fontSize: 16 }}>
+                                    لا توجد ألبومات في هذا القسم
+                                </div>
+                            ) : (
+                                <div
+                                    className="albums-grid"
+                                    style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+                                >
+                                    {filteredAlbums.map(album => (
+                                        <button
+                                            key={album.id}
+                                            onClick={() => setSelectedAlbum(album)}
+                                            className="album-card"
+                                        >
+                                            <div className="album-image-container">
+                                                {imageLoading[album.id] && (
+                                                    <div className="album-loading">
+                                                        <div className="spinner"></div>
+                                                    </div>
+                                                )}
+                                                {imageError[album.id] || !album.cover ? (
+                                                    <div className="album-error">
+                                                        <svg className="album-error-icon" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                                        </svg>
+                                                        <div className="album-error-text">ألبوم الصور</div>
+                                                    </div>
+                                                ) : (
+                                                    <img
+                                                        src={album.cover}
+                                                        alt={album.title}
+                                                        className="album-image"
+                                                        onLoad={() => setImageLoading(prev => ({ ...prev, [album.id]: false }))}
+                                                        onError={() => {
+                                                            setImageLoading(prev => ({ ...prev, [album.id]: false }));
+                                                            setImageError(prev => ({ ...prev, [album.id]: true }));
+                                                        }}
+                                                        onLoadStart={() => setImageLoading(prev => ({ ...prev, [album.id]: true }))}
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="album-info">
+                                                <div className="album-info-title">{album.title}</div>
+                                                <div className="album-footer">
+                                                    <div className="album-action">
+                                                        <svg className="album-action-icon" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                                        </svg>
+                                                        <span className="album-action-text">عرض الألبوم</span>
+                                                    </div>
+                                                    <div className="album-count">{album.photosCount} صورة</div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <VideoGalleryPage categories={videoCategories} groups={overview.videoGroups} />
+                    )
                 )}
             </div>
         </div>

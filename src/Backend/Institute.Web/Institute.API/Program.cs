@@ -141,6 +141,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ManagerAuthorizationHandler>()
 builder.Services.AddScoped<IAuthorizationHandler, AnyPermissionHandler>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
+builder.Services.AddScoped<IGalleryService, GalleryService>();
 
 // Rounds
 builder.Services.Configure<RoundsOptions>(builder.Configuration.GetSection("Rounds"));
@@ -281,7 +282,8 @@ builder.Services.AddAuthorization(options =>
         "Protocols",
         "Team",                                      // ← new
         "Certificates and Letters of Appreciation",  // ← new
-        "Customers"                                  // ← new
+        "Customers"  ,                                // ← new
+        "Gallery"
     };
 
     foreach (var permissionName in permissionNames)

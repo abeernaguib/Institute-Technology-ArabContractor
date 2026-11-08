@@ -78,6 +78,13 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<ProtocolGroup> ProtocolGroups { get; set; }
     public virtual DbSet<ProtocolItem> ProtocolItems { get; set; }
 
+    // Gallery
+    public virtual DbSet<GalleryCategory> GalleryCategories { get; set; }
+    public virtual DbSet<GalleryAlbum> GalleryAlbums { get; set; }
+    public virtual DbSet<GalleryPhoto> GalleryPhotos { get; set; }
+    public virtual DbSet<GalleryVideoGroup> GalleryVideoGroups { get; set; }
+    public virtual DbSet<GalleryVideo> GalleryVideos { get; set; }
+
     // NOTE: the connection string must NOT live in source code.
     // Keep it in appsettings / environment variables / Azure Key Vault and
     // configure it with services.AddDbContext<AppDbContext>(o => o.UseSqlServer(...)).
@@ -726,6 +733,50 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.IpAddress).HasMaxLength(64);
             e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
             e.HasIndex(x => x.CreatedAt);
+        });
+
+        // ===== Gallery =====
+        modelBuilder.Entity<GalleryCategory>(e =>
+        {
+            e.ToTable("GalleryCategories");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Description).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<GalleryAlbum>(e =>
+        {
+            e.ToTable("GalleryAlbums");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Title).IsRequired().HasMaxLength(300);
+            e.Property(x => x.CoverPic).HasMaxLength(255);
+            e.HasOne<GalleryCategory>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<GalleryPhoto>(e =>
+        {
+            e.ToTable("GalleryPhotos");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Pic).IsRequired().HasMaxLength(255);
+            e.HasOne<GalleryAlbum>().WithMany().HasForeignKey(x => x.AlbumId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<GalleryVideoGroup>(e =>
+        {
+            e.ToTable("GalleryVideoGroups");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Title).IsRequired().HasMaxLength(300);
+            e.Property(x => x.Color).IsRequired().HasMaxLength(7);
+            e.HasOne<GalleryCategory>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<GalleryVideo>(e =>
+        {
+            e.ToTable("GalleryVideos");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.YoutubeId).IsRequired().HasMaxLength(20);
+            e.Property(x => x.Title).HasMaxLength(200);
+            e.HasOne<GalleryVideoGroup>().WithMany().HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);
