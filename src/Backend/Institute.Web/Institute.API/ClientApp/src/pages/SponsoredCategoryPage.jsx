@@ -4,7 +4,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 const F = '"Noto Kufi Arabic",serif';
 const C = { o: '#f57c00', b: '#0865a8', bd: '#044474', k: '#0a0a0a', g3: '#e5e7eb', g5: '#6b7280', tint: '#f4f8fc' };

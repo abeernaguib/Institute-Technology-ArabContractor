@@ -24,4 +24,12 @@
     <ProjectReference Include="..\Institute.Infrastructure\Institute.Infrastructure.csproj" />
   </ItemGroup>
 
+  <!-- React app lives in ClientApp: keep it out of the .NET build and publish -->
+  <ItemGroup>
+    <Compile Remove="ClientApp\**" />
+    <Content Remove="ClientApp\**" />
+    <EmbeddedResource Remove="ClientApp\**" />
+    <None Remove="ClientApp\**" />
+  </ItemGroup>
+
 </Project>

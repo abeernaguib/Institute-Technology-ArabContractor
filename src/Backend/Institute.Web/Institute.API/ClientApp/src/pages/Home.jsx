@@ -93,7 +93,7 @@ const fallbackCertificates = [
     { id: 'f3', title: 'PMI', description: 'اعتماد معهد إدارة الأعمال (PMI) للإعداد لاجتياز شهادة PMP.', pic: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/pmi.jpg' },
     { id: 'f4', title: 'Autodesk Training Center', description: 'مركز تدريب معتمد من Autodesk لأحدث برامج الهندسة والتصميم.', pic: 'https://images.weserv.nl/?url=www.arabcont.com/icemt/assets/images/autodeskCert.jpg' },
 ];
-const CERTS_API = 'https://icemt.arabcont.com/api/Certifications';
+const CERTS_API = '/api/Certifications';
 const isHttpUrl = (u) => /^https?:\/\//i.test(u || '');
 
 const otherSchools = [
@@ -140,7 +140,7 @@ const makawlenSchool = {
 };
 
 // ─── PROTOCOLS (dynamic, from /api/Protocol) ──────────────────────────────────
-const PROTOCOLS_API = 'https://icemt.arabcont.com/api/Protocol';
+const PROTOCOLS_API = '/api/Protocol';
 const HOME_PROTOCOLS_LIMIT = 9;
 
 // Takes one item from each section in turn, so the home page shows a mix instead of only the first section
@@ -453,7 +453,7 @@ export default function Home() {
     const [protoLoading, setProtoLoading] = useState(true);
 
     useEffect(() => {
-        fetch('https://icemt.arabcont.com/api/Admin/stats')
+        fetch('/api/Admin/stats')
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(d => setApiStats(d))
             .catch(() => setApiStats(null));
@@ -531,7 +531,7 @@ export default function Home() {
     const statsCounted = useRef(false);
 
     useEffect(() => {
-        fetch('https://icemt.arabcont.com/api/News/getAllNews')
+        fetch('/api/News/getAllNews')
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(d => {
                 setNewsItems((d.data || []).sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)).slice(0, 6));

@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { SignedIn, SignedOut, SignInButton, useUser, useAuth } from '@clerk/clerk-react';
 import { Button } from '@mui/material';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 function resolveCertUrl(url) {
     if (!url) return null;

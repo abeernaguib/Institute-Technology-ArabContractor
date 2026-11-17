@@ -28,7 +28,7 @@ const Instructors = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const API_BASE_URL = 'https://icemt.arabcont.com/api';
+    const API_BASE_URL = '/api';
 
     // الـ pic من الـ API بييجي full URL زي:
     // "https://acwebappbackup.blob.core.windows.net/icemt/lecturers/lect01.jpg"

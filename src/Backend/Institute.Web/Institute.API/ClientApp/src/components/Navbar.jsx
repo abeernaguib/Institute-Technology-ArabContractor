@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 
 const RECENT_SEARCHES_KEY = 'recentSearches';
 const MAX_RECENT_SEARCHES = 5;
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 const FONT = '"Noto Kufi Arabic",serif';
 
 // Width (px) from which the desktop menu is used. Below it the hamburger drawer is shown.

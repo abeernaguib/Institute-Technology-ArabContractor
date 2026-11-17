@@ -12,7 +12,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 
-const API_BASE = "https://icemt.arabcont.com/api";
+const API_BASE = "/api";
 
 // ── Helper: normalize item من الـ API response ──────────────────────────────
 function normalizeCartItem(item) {

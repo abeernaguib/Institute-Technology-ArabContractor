@@ -50,7 +50,7 @@ const MANAGER_ONLY_NAMES = MANAGER_ONLY_TABS.map(t => t.label).join(' و ');
 
 const ITEMS_PER_PAGE = 6;
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? 'https://icemt.arabcont.com/').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_URL ?? '/').replace(/\/$/, '');
 
 // Accepts names ("Users"), ids (3) or objects ({ permissionId } / { name })
 // and always returns permission ids.

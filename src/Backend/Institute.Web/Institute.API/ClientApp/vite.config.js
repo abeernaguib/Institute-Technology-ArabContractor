@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import prerender from '@prerenderer/rollup-plugin'
 import PuppeteerRenderer from '@prerenderer/renderer-puppeteer'
 
-const API = 'https://icemt.arabcont.com/api';
+const API = '/api';
 // Cap on prerendered news pages (newest first), to keep build time sane
 const MAX_NEWS = 200;
 const STATIC_ROUTES = [
@@ -146,6 +146,9 @@ export default defineConfig(async ({ command }) => {
             ]
         },
         build: {
+            // build straight into the API's wwwroot, without deleting uploaded files there
+            outDir: '../wwwroot',
+            emptyOutDir: false,
             chunkSizeWarningLimit: 1000,
             rollupOptions: {
                 output: {

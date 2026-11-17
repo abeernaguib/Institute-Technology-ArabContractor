@@ -246,7 +246,7 @@ const News = () => {
 
     const scrollRef = useRef(null);
     const sectionInner = { maxWidth: 'min(1280px,94vw)', margin: '0 auto' };
-    const BASE = 'https://icemt.arabcont.com/api/News';
+    const BASE = '/api/News';
 
     /* ── styles + title ── */
     useEffect(() => {

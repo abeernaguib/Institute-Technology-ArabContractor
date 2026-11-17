@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
-const API_BASE_URL = 'https://icemt.arabcont.com/api';
+const API_BASE_URL = '/api';
 
 // Same font as --font in overview.css
 const PAGE_FONT = "'Noto Kufi Arabic', serif";

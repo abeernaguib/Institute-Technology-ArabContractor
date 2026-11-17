@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 
-const API_BASE_URL = 'https://icemt.arabcont.com/api';
+const API_BASE_URL = '/api';
 
 export default function Protocols() {
     const isMobile = window.innerWidth < 700;
