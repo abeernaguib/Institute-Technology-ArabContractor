@@ -35,19 +35,10 @@ jobs:
           cd "$env:API_PROJECT/ClientApp"
           npm ci
 
-      - name: Create .env file for frontend
-        shell: pwsh
-        run: |
-          $envContent = @"
-          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          "@
-          $envContent.Trim() | Out-File -FilePath "$env:API_PROJECT/ClientApp/.env" -Encoding utf8
-          Write-Host "Frontend .env file created"
-
       - name: Build frontend
         shell: pwsh
         env:
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_TEST }}
         run: |
           cd "$env:API_PROJECT/ClientApp"
           npm run build
