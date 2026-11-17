@@ -11,8 +11,8 @@ import './i18n/index.js';
 import App from './App.jsx';
 import ErrorBoundary from './pages/ErrorBoundary.jsx';
 
-// Test key, used ONLY when the app runs on localhost (the build's prerender step
-// and local development), where there is no Azure backend to ask.
+// Test key, used ONLY on localhost (the build's prerender step and local development),
+// where there is no Azure backend to ask.
 const LOCAL_FALLBACK_KEY = 'pk_test_bWlnaHR5LWJhc2lsaXNrLTExLmNsZXJrLmFjY291bnRzLmRldiQ';
 
 const IS_LOCALHOST = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
@@ -71,7 +71,7 @@ async function loadPublishableKey() {
             console.warn('Using local fallback Clerk key:', err);
             return LOCAL_FALLBACK_KEY;
         }
-        // On the real sites, never guess: a wrong key would silently break login.
+        // On the real sites never guess: a wrong key would silently break login.
         throw err;
     }
 }

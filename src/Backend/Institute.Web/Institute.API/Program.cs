@@ -83,6 +83,7 @@ var allowedOrigins = new List<string>
 {
     "https://acwebsite-icmet-test.azurewebsites.net",
     "https://icmet-a3bvdmgua9akf7c5.westeurope-01.azurewebsites.net",
+    "https://icmet-vstesticmet-hqddb4hnhceucaeh.westeurope-01.azurewebsites.net",
     "https://icemt.arabcont.com"
 };
 
@@ -280,9 +281,9 @@ builder.Services.AddAuthorization(options =>
         "Workplan",
         "Settings",
         "Protocols",
-        "Team",                                      // ← new
-        "Certificates and Letters of Appreciation",  // ← new
-        "Customers"  ,                                // ← new
+        "Team",
+        "Certificates and Letters of Appreciation",
+        "Customers",
         "Gallery"
     };
 
@@ -356,9 +357,10 @@ app.MapControllers();
 // so the same build works on production (pk_live) and the test slot (pk_test).
 app.MapGet("/api/config", (HttpContext context, IConfiguration config) =>
 {
-    var key = config["Clerk:PublishableKey"];
-    if (string.IsNullOrWhiteSpace(key))
-        return Results.Problem("Clerk:PublishableKey is not configured.");
+    var key = config["Clerk:PublishableKey"]?.Trim();
+    if (string.IsNullOrWhiteSpace(key) ||
+        !(key.StartsWith("pk_live_") || key.StartsWith("pk_test_")))
+        return Results.Problem("Clerk:PublishableKey is missing or not a valid publishable key.");
 
     context.Response.Headers.CacheControl = "no-store";
     return Results.Ok(new { clerkPublishableKey = key });
