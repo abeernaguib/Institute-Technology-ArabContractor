@@ -352,6 +352,18 @@ app.UseRateLimiter();
 
 app.MapControllers();
 
+// Gives the frontend its Clerk publishable key at runtime (from App Settings),
+// so the same build works on production (pk_live) and the test slot (pk_test).
+app.MapGet("/api/config", (HttpContext context, IConfiguration config) =>
+{
+    var key = config["Clerk:PublishableKey"];
+    if (string.IsNullOrWhiteSpace(key))
+        return Results.Problem("Clerk:PublishableKey is not configured.");
+
+    context.Response.Headers.CacheControl = "no-store";
+    return Results.Ok(new { clerkPublishableKey = key });
+}).AllowAnonymous();
+
 // Serve the prerendered page for a route if it exists
 // (/pmi -> wwwroot/pmi/index.html or wwwroot/pmi.html), otherwise the SPA shell.
 app.MapFallback(async context =>

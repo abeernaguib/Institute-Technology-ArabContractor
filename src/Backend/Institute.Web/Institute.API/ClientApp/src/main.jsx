@@ -11,17 +11,6 @@ import './i18n/index.js';
 import App from './App.jsx';
 import ErrorBoundary from './pages/ErrorBoundary.jsx';
 
-const PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYXJhYmNvbnQuY29tJA';
-
-if (!PUBLISHABLE_KEY) {
-    throw new Error('Add your Clerk Publishable Key to the .env file');
-}
-
-const container = document.getElementById('root');
-
-// Remove any prerendered markup (it has no Emotion CSS) so React renders the styled version.
-container.innerHTML = '';
-
 // Reveal the page only after React has painted with its styles.
 function revealApp() {
     requestAnimationFrame(() => {
@@ -52,21 +41,44 @@ function RevealOnMount({ children }) {
     return children;
 }
 
-ReactDOM.createRoot(container).render(
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <CacheProvider value={cacheRtl}>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <BrowserRouter>
-                    <div dir="rtl">
-                        <ErrorBoundary>
-                            <RevealOnMount>
-                                <App />
-                            </RevealOnMount>
-                        </ErrorBoundary>
-                    </div>
-                </BrowserRouter>
-            </ThemeProvider>
-        </CacheProvider>
-    </ClerkProvider>
-);
+// The key comes from the backend (Azure App Settings), so one build works everywhere.
+async function loadPublishableKey() {
+    const res = await fetch('/api/config', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load app config');
+    const { clerkPublishableKey } = await res.json();
+    if (!clerkPublishableKey) throw new Error('Missing Clerk publishable key');
+    return clerkPublishableKey;
+}
+
+async function start() {
+    const PUBLISHABLE_KEY = await loadPublishableKey();
+
+    const container = document.getElementById('root');
+    // Remove any prerendered markup (it has no Emotion CSS) so React renders the styled version.
+    container.innerHTML = '';
+
+    ReactDOM.createRoot(container).render(
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+            <CacheProvider value={cacheRtl}>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <BrowserRouter>
+                        <div dir="rtl">
+                            <ErrorBoundary>
+                                <RevealOnMount>
+                                    <App />
+                                </RevealOnMount>
+                            </ErrorBoundary>
+                        </div>
+                    </BrowserRouter>
+                </ThemeProvider>
+            </CacheProvider>
+        </ClerkProvider>
+    );
+}
+
+start().catch((err) => {
+    console.error(err);
+    // Prerendered markup stays visible if the config can't be loaded
+    document.documentElement.classList.remove('js-loading');
+});
