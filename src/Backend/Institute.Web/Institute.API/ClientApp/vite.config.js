@@ -146,7 +146,7 @@ export default defineConfig(async ({ command }) => {
             ]
         },
         build: {
-            // build straight into the API's wwwroot, without deleting uploaded files there
+            // build straight into the API's wwwroot, without deleting uploaded files theree
             outDir: '../wwwroot',
             emptyOutDir: false,
             chunkSizeWarningLimit: 1000,
