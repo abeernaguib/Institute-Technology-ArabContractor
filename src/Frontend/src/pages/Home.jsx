@@ -452,12 +452,12 @@ export default function Home() {
     const [protoList, setProtoList] = useState([]);
     const [protoLoading, setProtoLoading] = useState(true);
 
-    useEffect(() => {
-        fetch('https://icemt.arabcont.com/api/Admin/stats')
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(d => setApiStats(d))
-            .catch(() => setApiStats(null));
-    }, []);
+    // useEffect(() => {
+    //     fetch('https:icemt.arabcont.com/api/Admin/stats')
+    //         .then(r => r.ok ? r.json() : Promise.reject())
+    //         .then(d => setApiStats(d))
+    //         .catch(() => setApiStats(null));
+    // }, []);
 
     useEffect(() => {
         let cancelled = false;
