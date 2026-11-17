@@ -147,13 +147,12 @@ jobs:
           }
           Write-Host "Artifact downloaded successfully."
 
-      # >>> Replace the three secret names below with the NEW ones Azure added to GitHub <<<
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_<NEW_ID> }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_<NEW_ID> }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_<NEW_ID> }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3425383CFDD642EDA82861804329F239 }}          # <<<
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}          # <<<
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}  # <<<
 
       - name: Get GitHub Runner IP
         run: |
