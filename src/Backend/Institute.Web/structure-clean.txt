@@ -1,5 +1,322 @@
-backend-structure.txt
-Institute.Web.sln
-ngrok.exe
-structure-clean.txt
-tree.txt
+﻿Backend/
+|-- Domain
+|   \-- Entities
+|       |-- AppDbContext.cs
+|       |-- AppUser.cs
+|       |-- CoursePurchase.cs
+|       \-- Payment.cs
+|-- Institute.API
+|   |-- Controllers
+|   |   |-- AccountController.cs
+|   |   |-- AdminActivityController.cs
+|   |   |-- AdminBookController.cs
+|   |   |-- AdminBooksTypeController.cs
+|   |   |-- AdminCertificationsController.cs
+|   |   |-- AdminController.cs
+|   |   |-- AdminCustomerController.cs
+|   |   |-- AdminGalleryController.cs
+|   |   |-- AdminLecturerController.cs
+|   |   |-- AdminNewsController.cs
+|   |   |-- AdminPlanEmailsController.cs
+|   |   |-- AdminPlanFilesController.cs
+|   |   |-- AdminPlanworkController.cs
+|   |   |-- AdminProtocolController.cs
+|   |   |-- AdminTeamController.cs
+|   |   |-- AdminUsersController.cs
+|   |   |-- BookController.cs
+|   |   |-- CartController.cs
+|   |   |-- CategoriesController.cs
+|   |   |-- CertificationsController.cs
+|   |   |-- CheckoutController.cs
+|   |   |-- ClerkWebhookController.cs
+|   |   |-- CourseController.cs
+|   |   |-- CustomerController.cs
+|   |   |-- FinancialController.cs
+|   |   |-- GalleryController.cs
+|   |   |-- LecturerController.cs
+|   |   |-- NewsController.cs
+|   |   |-- PermissionsController.cs
+|   |   |-- ProtocolController.cs
+|   |   |-- RefundController.cs
+|   |   |-- TeamController.cs
+|   |   |-- UserPermissionsController.cs
+|   |   \-- UserPermissionsMeController.cs
+|   |-- DTOs
+|   |   |-- PaymentDtos
+|   |   |   |-- CheckoutRequestDto.cs
+|   |   |   |-- OrderDto.cs
+|   |   |   |-- PaymentResponseDto.cs
+|   |   |   \-- RefundRequestResponseDto.cs
+|   |   |-- AssignPermissionDto.cs
+|   |   |-- AxisDto.cs
+|   |   |-- BookResponseDto.cs
+|   |   |-- CartDto.cs
+|   |   |-- CartItemDto.cs
+|   |   |-- CourseCardDto.cs
+|   |   |-- CourseDto.cs
+|   |   |-- CourseFileDto.cs
+|   |   |-- EnrollFreeDto.cs
+|   |   |-- MyCourseDto.cs
+|   |   |-- NewsDetailsDto.cs
+|   |   |-- NewsImageDto.cs
+|   |   |-- NewsListDto.cs
+|   |   |-- ProgramCoursesDto.cs
+|   |   \-- RoundDto.cs
+|   |-- Helpers
+|   |   |-- ActivityMap.cs
+|   |   |-- AdminActivityFilter.cs
+|   |   |-- MappingProfiles.cs
+|   |   |-- NewsPicHelper.cs
+|   |   |-- NewsPictureUrlResolver.cs
+|   |   |-- NewsPictureUrlsResolver.cs
+|   |   |-- Pagination.cs
+|   |   \-- RequireAuthForAdminControllersConvention.cs
+|   |-- Properties
+|   |   \-- launchSettings.json
+|   |-- wwwroot
+|   |   |-- certificates
+|   |   |   |-- 1b083ffd-4f1d-4996-86fc-1cac4b4c258c.pdf
+|   |   |   \-- 53facd75-39fb-42ca-ba46-9b6dd23a1196.pdf
+|   |   \-- images
+|   |       |-- lecturers
+|   |       |   \-- 2c7aede9-970d-44a7-8208-b920cc9fd746.png
+|   |       \-- icemt-logo.png
+|   |-- appsettings.json
+|   |-- Institute.API.csproj
+|   |-- Institute.API.csproj.user
+|   |-- Institute.API.http
+|   \-- Program.cs
+|-- Institute.Application
+|   |-- Configurations
+|   |   |-- AzureStorageSettings.cs
+|   |   |-- Emailsettings.cs
+|   |   \-- RoundsOptions.cs
+|   |-- DTOs
+|   |   |-- AdminDtos
+|   |   |   |-- AdminStatsDto.cs
+|   |   |   |-- BookDto.cs
+|   |   |   |-- BooksTypeDto.cs
+|   |   |   |-- CertificateDto.cs
+|   |   |   |-- CreateBookDto.cs
+|   |   |   |-- CreateBooksTypeDto.cs
+|   |   |   |-- CreatePlanFileDto.cs
+|   |   |   |-- CreatePlanworkDto.cs
+|   |   |   |-- EnrollmentWithCertificateDto.cs
+|   |   |   |-- PaidOrderDto.cs
+|   |   |   |-- PlanFileDto.cs
+|   |   |   |-- PlanworkDto.cs
+|   |   |   |-- PlanworkTreeDto.cs
+|   |   |   |-- PlanworkWithUsersDto.cs
+|   |   |   |-- RoundAdminDtos.cs
+|   |   |   |-- UpdateBookDto.cs
+|   |   |   |-- UpdateBooksTypeDto.cs
+|   |   |   |-- UpdateCertificateDto.cs
+|   |   |   |-- UpdatePlanFileDto.cs
+|   |   |   |-- UploadCertificateDto.cs
+|   |   |   |-- UserCourseDto.cs
+|   |   |   |-- UserEnrollmentDto.cs
+|   |   |   \-- UserWithCoursesDto.cs
+|   |   |-- FinancialDtos
+|   |   |   \-- FinancialReportDtos.cs
+|   |   |-- CategoryTreeDto.cs
+|   |   |-- CertificationItemCreateUpdateDto.cs
+|   |   |-- CertificationItemResponseDto.cs
+|   |   |-- CheckoutDtos.cs
+|   |   |-- ClerkUserDto.cs
+|   |   |-- CustomerCreateUpdateDto.cs
+|   |   |-- CustomerListDto.cs
+|   |   |-- CustomerResponseDto.cs
+|   |   |-- GalleryDtos.cs
+|   |   |-- LecturerCreateUpdateDto.cs
+|   |   |-- LecturerResponseDto.cs
+|   |   |-- NewsCreateUpdateDto.cs
+|   |   |-- PaymentSettings.cs
+|   |   |-- ProtocolGroupCreateUpdateDto.cs
+|   |   |-- ProtocolGroupPublicDto.cs
+|   |   |-- ProtocolGroupResponseDto.cs
+|   |   |-- ProtocolItemCreateUpdateDto.cs
+|   |   |-- ProtocolItemPublicDto.cs
+|   |   |-- ProtocolItemResponseDto.cs
+|   |   |-- TeamMemberCreateUpdateDto.cs
+|   |   |-- TeamMemberListDto.cs
+|   |   \-- TeamMemberResponseDto.cs
+|   |-- Exceptions
+|   |   \-- BusinessRuleException.cs
+|   |-- Interfaces
+|   |   |-- IService
+|   |   |   |-- IAdminActivityService.cs
+|   |   |   |-- IAdminService.cs
+|   |   |   |-- IBankPaymentService.cs
+|   |   |   |-- IBlobStorage.cs
+|   |   |   |-- IBookService.cs
+|   |   |   |-- IBooksTypeService.cs
+|   |   |   |-- ICartService.cs
+|   |   |   |-- ICategoryService.cs
+|   |   |   |-- ICertificationService.cs
+|   |   |   |-- ICheckoutService.cs
+|   |   |   |-- IClerkService.cs
+|   |   |   |-- ICurrentUserService.cs
+|   |   |   |-- ICustomerService.cs
+|   |   |   |-- IEmailService.cs
+|   |   |   |-- IFinancialReportService.cs
+|   |   |   |-- IGalleryService.cs
+|   |   |   |-- ILecturerService.cs
+|   |   |   |-- INewsService.cs
+|   |   |   |-- IOrderNotificationService.cs
+|   |   |   |-- IPermissionService.cs
+|   |   |   |-- IPlanAccessService.cs
+|   |   |   |-- IPlanFileService.cs
+|   |   |   |-- IPlanworkRoundService.cs
+|   |   |   |-- IPlanworkService.cs
+|   |   |   |-- IProtocolService.cs
+|   |   |   |-- IReadOnlyService.cs
+|   |   |   |-- IRefundNotificationService.cs
+|   |   |   |-- IRefundService.cs
+|   |   |   |-- IRoundSelectionService.cs
+|   |   |   |-- ITeamService.cs
+|   |   |   \-- IUserPermissionService.cs
+|   |   \-- IRepository.cs
+|   |-- Security
+|   |   |-- AnyPermissionRequirement.cs
+|   |   |-- HasPermissionAttribute.cs
+|   |   |-- ManagerAuthorizationHandler.cs
+|   |   |-- ManagerRequirement.cs
+|   |   |-- PermissionHandler.cs
+|   |   \-- PermissionRequirement.cs
+|   |-- Services
+|   |   |-- AdminActivityService.cs
+|   |   |-- AdminService.cs
+|   |   |-- BankPaymentService.cs
+|   |   |-- BlobStorage.cs
+|   |   |-- BookService.cs
+|   |   |-- BooksTypeService.cs
+|   |   |-- CartService.cs
+|   |   |-- CategoryService.cs
+|   |   |-- CertificationService.cs
+|   |   |-- ChangeLog.cs
+|   |   |-- CheckoutService.cs
+|   |   |-- ClerkService.cs
+|   |   |-- CurrentUserService.cs
+|   |   |-- CustomerService.cs
+|   |   |-- FinancialReportService.cs
+|   |   |-- GalleryService.cs
+|   |   |-- LecturerService.cs
+|   |   |-- NewsService.cs
+|   |   |-- OrderNotificationService.cs
+|   |   |-- OrderPaidEmailRenderer.cs
+|   |   |-- PermissionService.cs
+|   |   |-- PlanFileService.cs
+|   |   |-- PlanworkRoundService.cs
+|   |   |-- PlanworkService.cs
+|   |   |-- ProtocolService.cs
+|   |   |-- ReadOnlyService.cs
+|   |   |-- RefundNotificationService.cs
+|   |   |-- RefundRequestedEmailRenderer.cs
+|   |   |-- RefundService.cs
+|   |   |-- RoundSelectionService.cs
+|   |   |-- SmtpEmailService.cs
+|   |   |-- TeamService.cs
+|   |   \-- UserPermissionService.cs
+|   \-- Institute.Application.csproj
+|-- Institute.Domain
+|   |-- Entities
+|   |   |-- Action.cs
+|   |   |-- AdminActivityLog.cs
+|   |   |-- AppUser.cs
+|   |   |-- Book.cs
+|   |   |-- BooksType.cs
+|   |   |-- BooksView.cs
+|   |   |-- Cart.cs
+|   |   |-- CartItem.cs
+|   |   |-- Certificate.cs
+|   |   |-- CertificationItem.cs
+|   |   |-- CoursePurchase.cs
+|   |   |-- Customer.cs
+|   |   |-- Dailynews.cs
+|   |   |-- Enrollment.cs
+|   |   |-- ErrorDesc.cs
+|   |   |-- Form.cs
+|   |   |-- FormsCategory.cs
+|   |   |-- GalleryEntities.cs
+|   |   |-- GetNewsDetailsView.cs
+|   |   |-- Lecturer.cs
+|   |   |-- NewsPic.cs
+|   |   |-- Order.cs
+|   |   |-- OrderItem.cs
+|   |   |-- Payment.cs
+|   |   |-- Permission.cs
+|   |   |-- PlanEnrolledEmail.cs
+|   |   |-- PlanFile.cs
+|   |   |-- Planwork.cs
+|   |   |-- PlanworkRound.cs
+|   |   |-- ProtocolGroup.cs
+|   |   |-- ProtocolItem.cs
+|   |   |-- RefundResult.cs
+|   |   |-- SitePic.cs
+|   |   |-- SiteVideo.cs
+|   |   |-- SiteVideoType.cs
+|   |   |-- TeamMember.cs
+|   |   |-- User.cs
+|   |   |-- UserPermission.cs
+|   |   |-- UsersForm.cs
+|   |   |-- UsersFormsView.cs
+|   |   \-- UsersLog.cs
+|   |-- Enums
+|   |   |-- OrderStatus.cs
+|   |   |-- PaymentMethod.cs
+|   |   \-- PaymentStatus.cs
+|   |-- specifications
+|   |   |-- AdminSpec
+|   |   |   |-- Certificates
+|   |   |   |   |-- AllCertificateWithUserAndPlanworkSpec.cs
+|   |   |   |   |-- CertificateWithUserAndPlanworkSpec.cs
+|   |   |   |   |-- EnrollmentWithUserAndPlanworkSpec.cs
+|   |   |   |   \-- UserByClerkIdSpec.cs
+|   |   |   |-- Course
+|   |   |   |   |-- PlanworkCount.cs
+|   |   |   |   |-- PlanworkSearchSpec.cs
+|   |   |   |   |-- PlanworkSpecParams.cs
+|   |   |   |   \-- PlanworksWithEnrollmentsSpec.cs
+|   |   |   |-- Planfiles
+|   |   |   |   |-- PlanFileByIdSpec.cs
+|   |   |   |   \-- PlanFilesByPlanIdSpec.cs
+|   |   |   |-- User
+|   |   |   |   |-- UserSearchSpec.cs
+|   |   |   |   |-- UserSpecParams.cs
+|   |   |   |   \-- UsersWithEnrollmentsSpec.cs
+|   |   |   \-- AttendedEnrollmentsSpec.cs
+|   |   |-- BookSpec
+|   |   |   |-- Book&LoadNafigationProperty.cs
+|   |   |   |-- BookSpecParams.cs
+|   |   |   \-- BooksWithFiltersForCountSpec.cs
+|   |   |-- CourseSpec
+|   |   |   |-- EnrollmentsByUserSpecification.cs
+|   |   |   |-- LatestCoursesSpecification.cs
+|   |   |   \-- TrainingPlanSpec.cs
+|   |   |-- NewsSpec
+|   |   |   |-- AdminNewsWithMainPicSpec.cs
+|   |   |   |-- NewsSpecParames.cs
+|   |   |   |-- NewsWithDetailsSpec.cs
+|   |   |   |-- NewsWithFiltersForCountSpec.cs
+|   |   |   \-- NewsWithMainPicSpec.cs
+|   |   |-- PermissionsSpec
+|   |   |   |-- UserPermissionByUserAndPermissionSpec.cs
+|   |   |   \-- UserPermissionsSpec.cs
+|   |   |-- BaseSpecification.cs
+|   |   |-- Ispecification.cs
+|   |   \-- SpecificationEvaluator.cs
+|   |-- Institute.Domain.csproj
+|   \-- RoundRules.cs
+|-- Institute.Infrastructure
+|   |-- Migrations
+|   |-- Repositories
+|   |   \-- BaseRepository.cs
+|   |-- AppDbContext.Audit.cs
+|   |-- AppDbContext.cs
+|   |-- Institute.Infrastructure.csproj
+|   |-- PlanAccessService.cs
+|   \-- SpecificationEvaluator.cs
+|-- backend-structure.txt
+|-- Institute.Web.sln
+|-- ngrok.exe
+\-- tree.txt
