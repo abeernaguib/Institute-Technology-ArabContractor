@@ -35,10 +35,9 @@ jobs:
           cd "$env:API_PROJECT/ClientApp"
           npm ci
 
+      # No Clerk key here: the publishable key is served at runtime by /api/config
       - name: Build frontend
         shell: pwsh
-        env:
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_TEST }}
         run: |
           cd "$env:API_PROJECT/ClientApp"
           npm run build
