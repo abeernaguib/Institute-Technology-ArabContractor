@@ -11,6 +11,12 @@ import './i18n/index.js';
 import App from './App.jsx';
 import ErrorBoundary from './pages/ErrorBoundary.jsx';
 
+// Test key, used ONLY when the app runs on localhost (the build's prerender step
+// and local development), where there is no Azure backend to ask.
+const LOCAL_FALLBACK_KEY = 'pk_test_bWlnaHR5LWJhc2lsaXNrLTExLmNsZXJrLmFjY291bnRzLmRldiQ';
+
+const IS_LOCALHOST = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+
 // Reveal the page only after React has painted with its styles.
 function revealApp() {
     requestAnimationFrame(() => {
@@ -41,13 +47,33 @@ function RevealOnMount({ children }) {
     return children;
 }
 
-// The key comes from the backend (Azure App Settings), so one build works everywhere.
+// Asks the backend for the key stored in Azure App Settings (Clerk__PublishableKey).
+async function fetchKeyFromBackend() {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    try {
+        const res = await fetch('/api/config', { cache: 'no-store', signal: controller.signal });
+        if (!res.ok) throw new Error('Config request failed: ' + res.status);
+        const data = await res.json();
+        if (!data.clerkPublishableKey) throw new Error('No key in config response');
+        return data.clerkPublishableKey;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 async function loadPublishableKey() {
-    const res = await fetch('/api/config', { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to load app config');
-    const { clerkPublishableKey } = await res.json();
-    if (!clerkPublishableKey) throw new Error('Missing Clerk publishable key');
-    return clerkPublishableKey;
+    try {
+        return await fetchKeyFromBackend();
+    } catch (err) {
+        // On localhost (build prerender / local dev) there is no Azure backend, so use the test key.
+        if (IS_LOCALHOST) {
+            console.warn('Using local fallback Clerk key:', err);
+            return LOCAL_FALLBACK_KEY;
+        }
+        // On the real sites, never guess: a wrong key would silently break login.
+        throw err;
+    }
 }
 
 async function start() {
