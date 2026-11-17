@@ -1,22 +1,65 @@
-name: Build and deploy ASP+React to Azure Web App - acwebsite
+name: Build and deploy ASP+React to Azure Web App - icmet (slot vstesticmet)
 
 on:
-  # push:
-    # branches:
-      # - main
+  push:
+    branches:
+      - test
   workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  API_PROJECT: src/Backend/Institute.Web/Institute.API
+  SOLUTION: src/Backend/Institute.Web/Institute.Web.sln
 
 jobs:
   build:
     runs-on: windows-latest
 
+    permissions:
+      contents: read
+
     steps:
       # ------------------ Checkout ------------------
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # ------------------ Frontend first (Vite builds into Institute.API/wwwroot) ------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install frontend dependencies
+        shell: pwsh
+        run: |
+          cd "$env:API_PROJECT/ClientApp"
+          npm ci
+
+      - name: Create .env file for frontend
+        shell: pwsh
+        run: |
+          $envContent = @"
+          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          "@
+          $envContent.Trim() | Out-File -FilePath "$env:API_PROJECT/ClientApp/.env" -Encoding utf8
+          Write-Host "Frontend .env file created"
+
+      - name: Build frontend
+        shell: pwsh
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          cd "$env:API_PROJECT/ClientApp"
+          npm run build
+
+      - name: Verify React index.html
+        shell: pwsh
+        run: |
+          if (!(Test-Path "$env:API_PROJECT/wwwroot/index.html")) {
+            Write-Error "ERROR: wwwroot/index.html was not found. Frontend build failed."
+            exit 1
+          }
+          Write-Host "SUCCESS: wwwroot/index.html exists."
 
       # ------------------ Backend ------------------
       - name: Setup MSBuild
@@ -26,98 +69,66 @@ jobs:
         uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
-        run: nuget restore src/Backend/Institute.Web/Institute.Web.sln
+        run: nuget restore ${{ env.SOLUTION }}
 
       - name: Build backend solution
-        run: msbuild src/Backend/Institute.Web/Institute.Web.sln /p:Configuration=Release
+        run: msbuild ${{ env.SOLUTION }} /p:Configuration=Release
 
-      - name: Build and publish backend API
-        run: |
-          dotnet publish src/Backend/Institute.Web/Institute.API/Institute.API.csproj -c Release -o published
+      - name: Build and publish backend API (includes wwwroot)
+        run: dotnet publish ${{ env.API_PROJECT }}/Institute.API.csproj -c Release -o published
 
-      # ------------------ Frontend ------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-
-      - name: Install frontend dependencies
-        shell: pwsh
-        run: |
-          cd src/Frontend
-          npm ci
-
-      # ✅ Write .env file with secrets before build
-      - name: Create .env file for frontend
-        shell: pwsh
-        run: |
-          $envContent = @"
-          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          "@
-          $envContent.Trim() | Out-File -FilePath "src/Frontend/.env" -Encoding utf8
-          Write-Host "✅ .env file created"
-
-      # Build frontend (Vite will pick up .env automatically)
-      - name: Build frontend
-        shell: pwsh
-        env:
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-        run: |
-          cd src/Frontend
-          npm run build
-
-      - name: Copy React dist to wwwroot
-        shell: pwsh
-        run: |
-          if (!(Test-Path "published/wwwroot")) {
-            New-Item -ItemType Directory -Path "published/wwwroot" | Out-Null
-          }
-          Copy-Item -Path src/Frontend/dist/* -Destination published/wwwroot -Recurse -Force
-
-      # ✅ Remove web.config from wwwroot — ASP.NET handles all routing via UseDefaultFiles + MapFallbackToFile
+      # web.config in wwwroot is not needed, ASP.NET handles the routing
       - name: Remove web.config from wwwroot if present
         shell: pwsh
         run: |
           $dest = "published/wwwroot/web.config"
           if (Test-Path $dest) {
             Remove-Item -Path $dest -Force
-            Write-Host "Removed web.config from wwwroot (ASP.NET handles routing)"
+            Write-Host "Removed web.config from wwwroot"
           } else {
             Write-Host "No web.config in wwwroot - nothing to remove"
           }
 
       # ------------------ Verify publish folder ------------------
-      - name: Show publish folder contents
-        shell: pwsh
-        run: Get-ChildItem -Path published -Recurse
-
       - name: Verify publish folder
         shell: pwsh
         run: |
-          $files = Get-ChildItem published -Recurse
-          if ($files.Count -eq 0) {
-            Write-Host "❌ ERROR: Publish folder is empty! Build/publish failed."
+          if (!(Test-Path "published/Institute.API.dll")) {
+            Write-Error "ERROR: Institute.API.dll missing from publish folder."
             exit 1
-          } else {
-            Write-Host "✅ Publish folder has files:"
-            $files
           }
+          if (!(Test-Path "published/wwwroot/index.html")) {
+            Write-Error "ERROR: wwwroot/index.html missing from publish folder."
+            exit 1
+          }
+          Write-Host "Publish folder looks correct"
 
-      # ------------------ Upload artifact (معدّل) ------------------
+      # ------------------ Upload artifact ------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
           path: published/
-          retention-days: 1 # 👈 بيقلل استهلاك المساحة بمسح الملف بعد يوم واحد تلقائياً
+          retention-days: 1
 
   deploy:
-    runs-on: windows-latest
+    # azure/cli is a Docker-based action and only runs on Linux runners
+    runs-on: ubuntu-latest
     needs: build
+
+    concurrency:
+      group: deploy-icmet-test
+      cancel-in-progress: false
 
     permissions:
       id-token: write
       contents: read
+
+    env:
+      RESOURCE_GROUP: RG-Website-App
+      APP_NAME: icmet
+      SLOT_NAME: vstesticmet
+      RULE_NAME: GitHubRunner-${{ github.run_id }}
 
     steps:
       - name: Download artifact
@@ -131,17 +142,85 @@ jobs:
         run: |
           $files = Get-ChildItem artifact -Recurse
           if ($files.Count -eq 0) {
-            Write-Host "❌ ERROR: Artifact folder is empty! Download failed."
+            Write-Error "ERROR: Artifact folder is empty!"
             exit 1
-          } else {
-            Write-Host "✅ Artifact downloaded successfully."
-            $files
           }
+          Write-Host "Artifact downloaded successfully."
 
-      - name: Deploy to Azure Web App
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3425383CFDD642EDA82861804329F239 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28BAC65785F849618D391DD4B3AEC846 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B6FD5AC0498743EB9EA4B66A46679582 }}
+
+      - name: Get GitHub Runner IP
+        run: |
+          IP=$(curl -s https://api.ipify.org)
+          if [ -z "$IP" ]; then
+            echo "Failed to determine runner IP"
+            exit 1
+          fi
+          echo "Runner IP: $IP"
+          echo "RUNNER_IP=$IP" >> $GITHUB_ENV
+
+      # Whitelist the runner on the SLOT's SCM (Kudu) site only
+      - name: Whitelist Runner IP on slot SCM site
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config access-restriction add \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --slot "$SLOT_NAME" \
+              --rule-name "$RULE_NAME" \
+              --action Allow \
+              --ip-address "${RUNNER_IP}/32" \
+              --priority 2 \
+              --scm-site true
+
+      - name: Wait for rule propagation
+        run: |
+          URL="https://icmet-vstesticmet-hqddb4hnhceucaeh.scm.westeurope-01.azurewebsites.net/"
+          for i in $(seq 1 20); do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
+            echo "Attempt $i: HTTP $CODE"
+            if [ -n "$CODE" ] && [ "$CODE" != "000" ] && [ "$CODE" != "403" ]; then
+              echo "SCM site is reachable."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "SCM site still not reachable after waiting."
+          exit 1
+
+      - name: Deploy to Azure Web App slot
         uses: azure/webapps-deploy@v3
         with:
-          app-name: acwebsite
-          slot-name: icmet-test
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          app-name: icmet
+          slot-name: vstesticmet
           package: artifact/
+
+      - name: Remove Whitelisted IP
+        if: always()
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            EXISTS=$(az webapp config access-restriction show \
+              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" \
+              --slot "$SLOT_NAME" \
+              --query "scmIpSecurityRestrictions[?name=='$RULE_NAME'] | length(@)" \
+              -o tsv)
+
+            if [ "$EXISTS" != "0" ]; then
+              echo "Removing SCM rule $RULE_NAME"
+              az webapp config access-restriction remove \
+                --resource-group "$RESOURCE_GROUP" \
+                --name "$APP_NAME" \
+                --slot "$SLOT_NAME" \
+                --rule-name "$RULE_NAME" \
+                --scm-site true
+            else
+              echo "Rule $RULE_NAME not present - nothing to remove"
+            fi
