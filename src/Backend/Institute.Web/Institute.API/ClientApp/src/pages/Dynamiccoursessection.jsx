@@ -15,7 +15,7 @@ import ScienceIcon from '@mui/icons-material/Science';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 const toastAnim = `

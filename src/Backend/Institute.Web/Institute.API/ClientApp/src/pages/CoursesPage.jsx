@@ -5,7 +5,7 @@ import Seo from '../components/Seo';
 import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
 import { getCategoryTrailBySlug } from '../utils/categoryPath';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 // ── Online info for a course (from the list endpoint) ────────────────────────
 // - Online is offered only if the admin ticked "متاح أونلاين"

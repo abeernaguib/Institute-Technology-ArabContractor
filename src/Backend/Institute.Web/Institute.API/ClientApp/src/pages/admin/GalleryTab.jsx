@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { T } from '../../components/admin/constants';
 
-const API = 'https://icemt.arabcont.com/api/admin/AdminGallery';
+const API = '/api/admin/AdminGallery';
 
 const SECTIONS = [
     { id: 'albums', label: '🖼️ ألبومات الصور' },

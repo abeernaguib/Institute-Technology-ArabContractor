@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './galary.css';
 
-const API_URL = 'https://icemt.arabcont.com/api/Gallery';
+const API_URL = '/api/Gallery';
 
 // ─── Shared filter bar ────────────────────────────────────────────────────────
 const CategoryBar = ({ categories, active, onChange }) => (

@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { T } from '../../components/admin/constants';
 
-const API_BASE = 'https://icemt.arabcont.com/api/admin/AdminCertifications';
+const API_BASE = '/api/admin/AdminCertifications';
 
 const TYPES = [
     { value: 1, label: 'شهادة / اعتماد' },

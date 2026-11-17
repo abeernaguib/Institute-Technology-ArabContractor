@@ -6,7 +6,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // Production API. For local testing temporarily use 'https://localhost:7177/api'
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 // ── Texts (change them here) ─────────────────────────────────────────────────
 const EYEBROW = 'جديد';

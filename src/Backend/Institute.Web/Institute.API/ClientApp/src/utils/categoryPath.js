@@ -1,4 +1,4 @@
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 let treePromise = null;
 export const fetchTreeOnce = () => {

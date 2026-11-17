@@ -5,7 +5,7 @@ import { T } from "../../components/admin/constants";
 // ─────────────────────────────────────────────────────────────────────────────
 // API CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
-const API_BASE = 'https://icemt.arabcont.com/api/admin';
+const API_BASE = '/api/admin';
 const BOOKS_API = `${API_BASE}/AdminBook`;
 const TYPES_API = `${API_BASE}/AdminBooksType`;
 

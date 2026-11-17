@@ -12,7 +12,7 @@ const T = {
     font: '"Noto Kufi Arabic", serif',
 };
 
-const BASE = 'https://icemt.arabcont.com/api';
+const BASE = '/api';
 
 function resolveImg(url) {
     if (!url || url === 'N/A' || url === 'pending') return null;

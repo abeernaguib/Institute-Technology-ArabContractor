@@ -2,7 +2,7 @@
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { BookOpen, Calendar, MapPin, Search, X, TrendingUp, Clock } from 'lucide-react';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 const SearchPage = () => {
     const navigate = useNavigate();

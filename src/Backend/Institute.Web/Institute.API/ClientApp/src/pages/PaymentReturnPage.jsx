@@ -15,7 +15,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 // ─── Persist purchased courses to localStorage ────────────────────────────────
 const persistPurchasedCourses = (cartItems) => {

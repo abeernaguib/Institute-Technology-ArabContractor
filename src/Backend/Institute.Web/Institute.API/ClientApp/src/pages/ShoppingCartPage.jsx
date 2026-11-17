@@ -3,7 +3,7 @@ import { ShoppingCart, Trash2, ArrowRight, BookOpen } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { useAuth } from '@clerk/clerk-react';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 
 const fmtDate = (d) => (d || '').replace(/-/g, '/');
 

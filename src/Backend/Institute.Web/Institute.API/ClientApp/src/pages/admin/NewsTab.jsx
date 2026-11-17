@@ -37,7 +37,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // No trailing slash: every path passed to apiFetch/resolveImg starts with "/".
-const BASE = "https://icemt.arabcont.com";
+const BASE = "";
 
 const T = {
     orange: '#f57c00', orangeLight: '#ff9a3c', orangeDark: '#bf5200',

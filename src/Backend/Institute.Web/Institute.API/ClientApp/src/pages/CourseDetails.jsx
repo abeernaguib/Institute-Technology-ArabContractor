@@ -7,7 +7,7 @@ import Seo from '../components/Seo';
 import CategoryBreadcrumb from '../components/CategoryBreadcrumb';
 import { getCategoryTrailForCourse } from '../utils/categoryPath';
 
-const API_BASE = 'https://icemt.arabcont.com/api';
+const API_BASE = '/api';
 const API_ORIGIN = API_BASE.replace('/api', '');
 
 // 👈 The API returns plan files as bare names (e.g. "180805_الهيكل الخرساني.pdf").

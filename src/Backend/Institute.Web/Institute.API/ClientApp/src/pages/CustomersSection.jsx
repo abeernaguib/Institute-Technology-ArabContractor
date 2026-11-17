@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-const API_BASE_URL = 'https://icemt.arabcont.com/api';
+const API_BASE_URL = '/api';
 const AUTO_PLAY_MS = 4000;
 const SWIPE_THRESHOLD = 40;
 

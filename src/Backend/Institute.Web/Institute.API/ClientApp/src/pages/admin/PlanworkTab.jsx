@@ -32,7 +32,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { T } from "../../components/admin/constants";
 
 // No trailing slash (all requests use `${BASE_URL}/api/...`)
-const BASE_URL = 'https://icemt.arabcont.com';
+const BASE_URL = '';
 
 // Bigger, orange course title used in the form header and in the Rounds / Files headers
 const SUB_TITLE_STYLE = { fontSize: '1.1rem', fontWeight: 800, color: T.orange, lineHeight: 1.5, marginTop: 4, opacity: 1 };

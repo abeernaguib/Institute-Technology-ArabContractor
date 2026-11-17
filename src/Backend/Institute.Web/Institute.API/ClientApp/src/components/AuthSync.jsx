@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://icemt.arabcont.com/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export default function AuthSync() {
     const { isSignedIn, getToken } = useAuth();

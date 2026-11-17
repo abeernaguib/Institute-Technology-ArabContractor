@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 // Adjust this path to where your richText utils live
 import { decodeRichText, parseHTMLContent } from "../utils/richText";
 
-const API_URL = 'https://icemt.arabcont.com/api/Team';
+const API_URL = '/api/Team';
 
 const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23dde3ea' width='300' height='300'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='120' fill='%23899aaa'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";
 

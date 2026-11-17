@@ -9,7 +9,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-const API_URL = 'https://icemt.arabcont.com/api/Certifications';
+const API_URL = '/api/Certifications';
 
 // Only real web links are rendered as <a href>
 const isHttpUrl = (u) => /^https?:\/\//i.test(u || '');
