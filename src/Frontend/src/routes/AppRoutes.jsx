@@ -24,6 +24,7 @@ const ContactPage = lazy(() => import('../pages/ContactPage'));
 const Galery = lazy(() => import('../pages/Galary'));
 const SearchPage = lazy(() => import('../pages/Searchpage'));
 const NotFound = lazy(() => import('../pages/NotFound')); // NEW: 404 page
+const Archive = lazy(() => import('../pages/Archive')); // NEW: Archive page
 
 // ─── Training Pages ──────────────────────────────────────────────────────────
 const VocationalTraining = lazy(() => import('../pages/VocationalTraining'));
@@ -96,6 +97,7 @@ const AppRoutes = () => {
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/gallery" element={<Galery />} />
                     <Route path="/search" element={<SearchPage />} />
+                    <Route path="/archive" element={<Archive />} />
 
                     {/* Training */}
                     <Route path="/vocational-training" element={<VocationalTraining />} />
