@@ -96,17 +96,20 @@ namespace Institute.API.Controllers
             return Ok(result);
         }
 
+        // Admin lookup by userId + planworkId (unchanged)
         [HttpGet("certificates/{userId}/{planworkId}")]
         public async Task<ActionResult<CertificateDto>> GetCertificate(int userId, int planworkId)
         {
             var result = await _adminService.GetCertificateAsync(userId, planworkId);
 
             if (result == null)
-                return NoContent();
+                return NotFound();
 
             return Ok(result);
         }
 
+        // Signed-in student's own certificate.
+        // 204 = no certificate yet (normal case, not an error) so the browser console stays clean.
         [HttpGet("certificates/{planworkId}")]
         public async Task<IActionResult> GetMyCertificate(int planworkId)
         {
@@ -118,7 +121,7 @@ namespace Institute.API.Controllers
             var cert = await _adminService.GetCertificateByClerkIdAsync(clerkId, planworkId);
 
             if (cert == null)
-                return NotFound();
+                return NoContent();
 
             return Ok(cert);
         }
@@ -146,31 +149,5 @@ namespace Institute.API.Controllers
                 message = "Certificate deleted successfully"
             });
         }
-
-        //[HttpGet("certificates/download/{fileName}")]
-        //[AllowAnonymous]
-        //public IActionResult DownloadCertificate(string fileName)
-        //{
-        //    var filePath = Path.Combine(
-        //        "D:\\home\\site\\userfiles\\certificates",
-        //        fileName
-        //    );
-
-        //    if (!System.IO.File.Exists(filePath))
-        //        return NotFound();
-
-        //    var contentType = Path.GetExtension(fileName).ToLower() switch
-        //    {
-        //        ".pdf" => "application/pdf",
-        //        ".png" => "image/png",
-        //        ".jpg" => "image/jpeg",
-        //        ".jpeg" => "image/jpeg",
-        //        _ => "application/octet-stream"
-        //    };
-
-        //    Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
-        //    var fileBytes = System.IO.File.ReadAllBytes(filePath);
-        //    return File(fileBytes, contentType);
-        //}
     }
 }
