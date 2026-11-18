@@ -24,7 +24,7 @@ const ContactPage = lazy(() => import('../pages/ContactPage'));
 const Galery = lazy(() => import('../pages/Galary'));
 const SearchPage = lazy(() => import('../pages/Searchpage'));
 const NotFound = lazy(() => import('../pages/NotFound')); // NEW: 404 page
-const Archive = lazy(() => import('../pages/Archive')); // NEW: Archive page
+//const Archive = lazy(() => import('../pages/Archive')); // NEW: Archive page
 
 // ─── Training Pages ──────────────────────────────────────────────────────────
 const VocationalTraining = lazy(() => import('../pages/VocationalTraining'));
