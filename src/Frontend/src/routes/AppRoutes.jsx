@@ -23,6 +23,7 @@ const Protocols = lazy(() => import('../pages/Protocols'));
 const ContactPage = lazy(() => import('../pages/ContactPage'));
 const Galery = lazy(() => import('../pages/Galary'));
 const SearchPage = lazy(() => import('../pages/Searchpage'));
+const NotFound = lazy(() => import('../pages/NotFound')); // NEW: 404 page
 
 // ─── Training Pages ──────────────────────────────────────────────────────────
 const VocationalTraining = lazy(() => import('../pages/VocationalTraining'));
@@ -123,6 +124,9 @@ const AppRoutes = () => {
                     <Route path="/admin/news" element={<NewsTab />} />
                     <Route path="/admin/books" element={<BooksTab />} />
                     <Route path="/admin/planwork" element={<PlanworkTab />} />
+
+                    {/* 404: must stay LAST so it only catches URLs that matched nothing above */}
+                    <Route path="*" element={<NotFound />} />
 
                 </Routes>
             </Suspense>
