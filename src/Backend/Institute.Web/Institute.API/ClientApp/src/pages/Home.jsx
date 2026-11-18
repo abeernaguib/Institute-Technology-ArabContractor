@@ -452,12 +452,8 @@ export default function Home() {
     const [protoList, setProtoList] = useState([]);
     const [protoLoading, setProtoLoading] = useState(true);
 
-    useEffect(() => {
-        fetch('/api/Admin/stats')
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(d => setApiStats(d))
-            .catch(() => setApiStats(null));
-    }, []);
+    // NOTE: /api/Admin/stats is an admin-only endpoint (401 for visitors), so it is NOT called here.
+    // Stats fall back to the defaults in buildStats().
 
     useEffect(() => {
         let cancelled = false;
@@ -741,7 +737,7 @@ export default function Home() {
     }, [protoList]);
 
     return (
-        <div dir="rtl" style={{ fontFamily: F, overflowX: 'hidden', background: C.w, paddingTop: -20, marginTop: -23 }}>
+        <div dir="rtl" style={{ fontFamily: F, overflowX: 'hidden', background: C.w, marginTop: -23 }}>
 
             {/* NEW: the single H1 of the page (visually hidden) */}
             <h1 style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
@@ -878,12 +874,13 @@ export default function Home() {
         .vis-more{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-family:${F};font-size:.76rem;font-weight:700;color:${C.b};text-decoration:none;border-bottom:1px solid ${C.b};padding-bottom:2px;transition:gap .2s,color .2s,border-color .2s;}
         .vis-more:hover{gap:10px;color:${C.o};border-color:${C.o};}
         .vis-values{
-  margin-top:clamp(16px,2.5vw,24px);
-  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
-  opacity:0;
-}
-.vis-values-title{font-family:${F};font-size:.85rem;font-weight:800;color:${C.o};}
-.vis-chip{font-family:${F};font-size:.72rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:4px 12px;border-radius:20px;}is-chip{font-family:${F};font-size:.74rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:5px 14px;border-radius:20px;}
+          margin-top:clamp(16px,2.5vw,24px);
+          display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;
+          opacity:0;
+        }
+        .vis-values-title{font-family:${F};font-size:.85rem;font-weight:800;color:${C.o};}
+        .vis-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
+        .vis-chip{font-family:${F};font-size:.72rem;font-weight:700;color:${C.w};background:rgba(245,124,0,.15);border:1px solid rgba(245,124,0,.35);padding:4px 12px;border-radius:20px;}
 
         .dl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2vw,16px);max-width:720px;margin:0 auto;}
         @media(max-width:600px){.dl-grid{grid-template-columns:1fr;}}

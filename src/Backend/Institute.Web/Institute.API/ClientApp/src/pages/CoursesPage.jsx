@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import Seo from '../components/Seo';
@@ -462,7 +462,7 @@ const RefundModal = ({ course, price, onClose, getToken }) => {
                             <textarea style={styles.refundTextarea} placeholder="يرجى توضيح سبب رغبتك في استرداد المبلغ..." value={refundReason} onChange={e => { setRefundReason(e.target.value); setError(null); }} rows={3} maxLength={500} />
                             <div style={styles.charCount}>{refundReason.length} / 500</div>
                             <div style={{ borderTop: '1px dashed #e0e0e0', paddingTop: '12px', marginBottom: '4px' }}>
-                                <p style={{ fontSize: '12px', color: '#888', marginBottom: '10px', fontFamily: '"Droid Arabic Kufi", serif' }}>بيانات بنكية (اختياري)</p>
+                                <p style={{ fontSize: '12px', color: '#888', marginBottom: '10px', fontFamily: '"Noto Kufi Arabic", serif' }}>بيانات بنكية (اختياري)</p>
                                 <label style={styles.formLabel}>اسم البنك</label>
                                 <input style={styles.formInput} type="text" placeholder="مثال: بنك مصر" value={bankName} onChange={e => setBankName(e.target.value)} maxLength={100} />
                                 <label style={styles.formLabel}>رقم الـ IBAN أو الحساب</label>
@@ -559,23 +559,43 @@ const CoursesPage = () => {
         } catch { setOwnedCourseIds(new Set()); setOwnedEnrollments([]); }
     }, [isSignedIn, safeGetToken]);
 
-    const fetchCertForCourse = useCallback(async (planworkId) => {
-        if (!isSignedIn) return;
+    // ── Certificates ─────────────────────────────────────────────────────────
+    // Courses already checked for a certificate (prevents repeated requests / repeated 404s)
+    const certsChecked = useRef(new Set());
+    // The full certificates list is fetched at most once and shared between courses
+    const allCertsPromise = useRef(null);
+
+    // Reset the cache when the user signs in / out
+    useEffect(() => {
+        certsChecked.current = new Set();
+        allCertsPromise.current = null;
+        setCertificates({});
+    }, [isSignedIn]);
+
+    const loadAllCerts = useCallback((token) => {
+        if (!allCertsPromise.current) {
+            allCertsPromise.current = fetch(`${API_BASE}/Admin/certificates`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+                .then(r => (r.ok ? r.json() : []))
+                .then(d => (Array.isArray(d) ? d : d ? [d] : []))
+                .catch(() => []);
+        }
+        return allCertsPromise.current;
+    }, []);
+
+    const fetchCertForCourse = useCallback(async (enrollment, token) => {
+        const planworkId = enrollment.childId;
+        const userId = enrollment.userId ?? enrollment.UserId ?? null;
 
         setCertsLoading(prev => ({ ...prev, [planworkId]: true }));
         try {
-            const token = await safeGetToken();
-            if (!token) return;
-
-            const enrollment = ownedEnrollments.find(e => String(e.childId) === String(planworkId));
-            const internalUserId = enrollment?.userId ?? enrollment?.UserId ?? null;
-
             let raw = null;
 
-            if (internalUserId) {
+            if (userId) {
                 try {
                     const res = await fetch(
-                        `${API_BASE}/Admin/certificates/${internalUserId}/${planworkId}`,
+                        `${API_BASE}/Admin/certificates/${userId}/${planworkId}`,
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                     if (res.ok) {
@@ -583,50 +603,52 @@ const CoursesPage = () => {
                         raw = Array.isArray(data) ? data[0] : data;
                     }
                 } catch { /* fall through */ }
-            }
 
-            if (!raw) {
-                try {
-                    const res = await fetch(`${API_BASE}/Admin/certificates`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        const list = Array.isArray(data) ? data : [data];
-                        raw = list.find(c =>
-                            String(c.planworkId ?? c.PlanworkId ?? '') === String(planworkId)
-                        ) ?? null;
-                    }
-                } catch { /* give up */ }
-            }
-
-            if (raw) {
-                const url = raw.url ?? raw.fileUrl ?? raw.filePath ?? raw.path ?? null;
-                if (url) {
-                    setCertificates(prev => ({
-                        ...prev,
-                        [planworkId]: {
-                            ...raw,
-                            url,
-                            name: raw.fileName ?? raw.filename ?? raw.name ?? null,
-                        },
-                    }));
+                // Fallback only when we know the user, so we never show someone else's certificate
+                if (!raw) {
+                    const list = await loadAllCerts(token);
+                    raw = list.find(c =>
+                        String(c.planworkId ?? c.PlanworkId ?? '') === String(planworkId) &&
+                        String(c.userId ?? c.UserId ?? '') === String(userId)
+                    ) ?? null;
                 }
+            }
+
+            const url = raw && (raw.url ?? raw.fileUrl ?? raw.filePath ?? raw.path ?? null);
+            if (url) {
+                setCertificates(prev => ({
+                    ...prev,
+                    [planworkId]: {
+                        ...raw,
+                        url,
+                        name: raw.fileName ?? raw.filename ?? raw.name ?? null,
+                    },
+                }));
             }
         } catch {
             /* no certificate available for this course */
         } finally {
             setCertsLoading(prev => ({ ...prev, [planworkId]: false }));
         }
-    }, [isSignedIn, safeGetToken, ownedEnrollments]);
+    }, [loadAllCerts]);
 
-    const fetchCertsForOwned = useCallback(async (ownedIds) => {
-        if (!ownedIds?.size) return;
-        await Promise.allSettled([...ownedIds].map(id => fetchCertForCourse(id)));
-    }, [fetchCertForCourse]);
+    const fetchCertsForOwned = useCallback(async (enrollments) => {
+        if (!isSignedIn || !enrollments?.length) return;
+        const pending = enrollments.filter(e => !certsChecked.current.has(String(e.childId)));
+        if (!pending.length) return;
+        pending.forEach(e => certsChecked.current.add(String(e.childId)));
+
+        const token = await safeGetToken();
+        if (!token) {
+            pending.forEach(e => certsChecked.current.delete(String(e.childId)));
+            return;
+        }
+
+        await Promise.allSettled(pending.map(e => fetchCertForCourse(e, token)));
+    }, [isSignedIn, safeGetToken, fetchCertForCourse]);
 
     useEffect(() => { fetchOwnedCourses(); }, [fetchOwnedCourses]);
-    useEffect(() => { if (ownedCourseIds.size > 0) fetchCertsForOwned(ownedCourseIds); }, [ownedCourseIds, fetchCertsForOwned]);
+    useEffect(() => { fetchCertsForOwned(ownedEnrollments); }, [ownedEnrollments, fetchCertsForOwned]);
 
     useEffect(() => {
         const onUpdate = () => fetchOwnedCourses();

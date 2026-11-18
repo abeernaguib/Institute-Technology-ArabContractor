@@ -891,6 +891,7 @@ const CourseDetails = () => {
 
             let raw = null;
 
+            // Without the user id we cannot tell whose certificate it is, so we do not look it up
             if (userId) {
                 try {
                     const res = await fetch(
@@ -902,25 +903,24 @@ const CourseDetails = () => {
                         raw = Array.isArray(data) ? data[0] : data;
                     }
                 } catch { /* fall through */ }
-            }
 
-            if (!raw) {
-                try {
-                    const res = await fetch(
-                        `${API_BASE}/Admin/certificates`,
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    if (res.ok) {
-                        const data = await res.json();
-                        const list = Array.isArray(data) ? data : [data];
-                        raw = list.find(c =>
-                            String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId) &&
-                            (!userId || String(c.userId ?? c.UserId ?? '') === String(userId))
-                        ) ?? list.find(c =>
-                            String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId)
-                        ) ?? null;
-                    }
-                } catch { /* give up */ }
+                // Fallback: match on BOTH course and user, never on the course alone
+                if (!raw) {
+                    try {
+                        const res = await fetch(
+                            `${API_BASE}/Admin/certificates`,
+                            { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        if (res.ok) {
+                            const data = await res.json();
+                            const list = Array.isArray(data) ? data : [data];
+                            raw = list.find(c =>
+                                String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId) &&
+                                String(c.userId ?? c.UserId ?? '') === String(userId)
+                            ) ?? null;
+                        }
+                    } catch { /* give up */ }
+                }
             }
 
             setCert(normaliseCert(raw));

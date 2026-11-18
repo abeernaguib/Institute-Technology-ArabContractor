@@ -47,7 +47,9 @@ const TABS = [
 
 const AdminDashboard = () => {
     const { user, isLoaded } = useUser();
-    const { getToken } = useAuth();
+    // authLoaded / isSignedIn come from useAuth() — they flip to true only once
+    // Clerk can actually hand out a session token, which avoids the early 401.
+    const { getToken, isLoaded: authLoaded, isSignedIn } = useAuth();
     const navigate = useNavigate();
 
     // ── Tab / UI state ──
@@ -140,7 +142,7 @@ const AdminDashboard = () => {
 
     // ── Load current user's role/permissions via the single /me endpoint ──
     const loadMyRole = useCallback(async () => {
-        if (!isLoaded || !user) return;
+        if (!isLoaded || !user || !authLoaded || !isSignedIn) return;
         setMyRoleLoading(true);
         setMyRoleError(null);
 
@@ -162,7 +164,7 @@ const AdminDashboard = () => {
         } finally {
             setMyRoleLoading(false);
         }
-    }, [isLoaded, user, authFetch]);
+    }, [isLoaded, user, authLoaded, isSignedIn, authFetch]);
 
     useEffect(() => { loadMyRole(); }, [loadMyRole]);
 
@@ -225,8 +227,8 @@ const AdminDashboard = () => {
             } catch (err) { setError(err.message || 'حدث خطأ أثناء تحميل البيانات'); }
             finally { setLoading(false); }
         };
-        if (isLoaded && user) load();
-    }, [isLoaded, user, authFetch]);
+        if (isLoaded && user && authLoaded && isSignedIn) load();
+    }, [isLoaded, user, authLoaded, isSignedIn, authFetch]);
 
     useEffect(() => { if (activeTab === 'refunds') fetchRefunds(refundStatusFilter); }, [activeTab, refundStatusFilter]); // eslint-disable-line
     useEffect(() => { if (activeTab === 'certificates') refreshCertificates(); }, [activeTab]);                      // eslint-disable-line
