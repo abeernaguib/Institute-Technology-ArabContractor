@@ -97,7 +97,7 @@ const AppRoutes = () => {
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/gallery" element={<Galery />} />
                     <Route path="/search" element={<SearchPage />} />
-                    <Route path="/archive" element={<Archive />} />
+                    
 
                     {/* Training */}
                     <Route path="/vocational-training" element={<VocationalTraining />} />

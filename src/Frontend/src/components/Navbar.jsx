@@ -61,7 +61,7 @@ const serviceLinks = [
 const mediaLinks = [
     { ar: 'مكتبة الصور والفيديوهات', path: '/gallery' },
     { ar: 'الأخبار', path: '/news' },
-    { ar: 'الأرشيف', path: '/archive' },
+    //{ ar: 'الأرشيف', path: '/archive' },
 ];
 
 const label = (item) => item.ar;
