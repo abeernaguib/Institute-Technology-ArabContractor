@@ -102,7 +102,7 @@ namespace Institute.API.Controllers
             var result = await _adminService.GetCertificateAsync(userId, planworkId);
 
             if (result == null)
-                return NotFound();
+                return NoContent();
 
             return Ok(result);
         }
