@@ -869,6 +869,11 @@ const CourseDetails = () => {
         }
     }, [safeGetToken]);
 
+    // ── Certificate ──────────────────────────────────────────────────────────
+    // User-facing endpoint: GET api/my-certificates/{courseId}
+    //   200 -> certificate object | 204 -> no certificate yet (no console error)
+    // The backend reads the user from the Clerk token, so no user id is sent and
+    // no other user's certificate can ever be returned.
     const fetchCertForCourse = useCallback(async (courseId) => {
         if (!isSignedIn || !courseId) return;
         setCert(null);
@@ -877,52 +882,15 @@ const CourseDetails = () => {
             const token = await safeGetToken();
             if (!token) return;
 
-            let userId = null;
-            try {
-                const mcRes = await fetch(`${API_BASE}/course/my-courses`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (mcRes.ok) {
-                    const list = await mcRes.json();
-                    const match = list.find(e => String(e.childId) === String(courseId));
-                    if (match) userId = match.userId ?? match.UserId ?? null;
-                }
-            } catch { /* continue without userId */ }
+            const res = await fetch(`${API_BASE}/my-certificates/${courseId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-            let raw = null;
+            // 204 = no certificate yet (no body to parse); anything else not ok = ignore
+            if (res.status === 204 || !res.ok) return;
 
-            if (userId) {
-                try {
-                    const res = await fetch(
-                        `${API_BASE}/Admin/certificates/${userId}/${courseId}`,
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    if (res.ok) {
-                        const data = await res.json();
-                        raw = Array.isArray(data) ? data[0] : data;
-                    }
-                } catch { /* fall through */ }
-            }
-
-            if (!raw) {
-                try {
-                    const res = await fetch(
-                        `${API_BASE}/Admin/certificates`,
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    if (res.ok) {
-                        const data = await res.json();
-                        const list = Array.isArray(data) ? data : [data];
-                        raw = list.find(c =>
-                            String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId) &&
-                            (!userId || String(c.userId ?? c.UserId ?? '') === String(userId))
-                        ) ?? list.find(c =>
-                            String(c.planworkId ?? c.PlanworkId ?? '') === String(courseId)
-                        ) ?? null;
-                    }
-                } catch { /* give up */ }
-            }
-
+            const data = await res.json();
+            const raw = Array.isArray(data) ? data[0] : data;
             setCert(normaliseCert(raw));
         } catch {
             setCert(null);
