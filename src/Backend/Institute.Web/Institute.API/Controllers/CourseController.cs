@@ -370,6 +370,8 @@ namespace Institute.API.Controllers
         // ✱ NEW (institute emails): الكورسات اللي الأدمن سجّل فيها إيميل اليوزر
         //   بتظهر هنا برضه (FromInstitute = true) من غير ما نعمل Enrollment
         //   حتى لا تتأثر الحضور والشهادات والتقارير المالية
+        // ✱ FIX: لو اليوزر مش موجود في الـ DB المحلي نرجع قائمة فاضية (200)
+        //   بدل 404 — اليوزر ده ببساطة مالوش كورسات
         // ══════════════════════════════════════════════════════════════
         [HttpGet("my-courses")]
         public async Task<IActionResult> GetMyCourses()
@@ -381,7 +383,7 @@ namespace Institute.API.Controllers
 
             var appUser = await _userRepo.GetByClerkIdAsync(clerkUserId);
             if (appUser == null)
-                return NotFound("User not found in local DB");
+                return Ok(new List<MyCourseDto>());   // FIX: was NotFound("User not found in local DB")
 
             // جيب كل الـ Enrollments بتاعت اليوزر ده
             var allEnrollments = await _enrollmentRepo.GetAllAsync();

@@ -560,77 +560,46 @@ const CoursesPage = () => {
     }, [isSignedIn, safeGetToken]);
 
     // ── Certificates ─────────────────────────────────────────────────────────
-    // Courses already checked for a certificate (prevents repeated requests / repeated 404s)
+    // Courses already checked for a certificate (prevents repeated requests)
     const certsChecked = useRef(new Set());
-    // The full certificates list is fetched at most once and shared between courses
-    const allCertsPromise = useRef(null);
 
     // Reset the cache when the user signs in / out
     useEffect(() => {
         certsChecked.current = new Set();
-        allCertsPromise.current = null;
         setCertificates({});
     }, [isSignedIn]);
 
-    const loadAllCerts = useCallback((token) => {
-        if (!allCertsPromise.current) {
-            allCertsPromise.current = fetch(`${API_BASE}/Admin/certificates`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .then(r => (r.ok ? r.json() : []))
-                .then(d => (Array.isArray(d) ? d : d ? [d] : []))
-                .catch(() => []);
-        }
-        return allCertsPromise.current;
-    }, []);
-
+    // Uses GET /api/Admin/certificates/{planworkId}: the server resolves the user from the
+    // token, so only the signed-in user's certificate is returned. 204 = no certificate yet.
     const fetchCertForCourse = useCallback(async (enrollment, token) => {
         const planworkId = enrollment.childId;
-        const userId = enrollment.userId ?? enrollment.UserId ?? null;
 
         setCertsLoading(prev => ({ ...prev, [planworkId]: true }));
         try {
-            let raw = null;
-
-            if (userId) {
-                try {
-                    const res = await fetch(
-                        `${API_BASE}/Admin/certificates/${userId}/${planworkId}`,
-                        { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    if (res.ok) {
-                        const data = await res.json();
-                        raw = Array.isArray(data) ? data[0] : data;
-                    }
-                } catch { /* fall through */ }
-
-                // Fallback only when we know the user, so we never show someone else's certificate
-                if (!raw) {
-                    const list = await loadAllCerts(token);
-                    raw = list.find(c =>
-                        String(c.planworkId ?? c.PlanworkId ?? '') === String(planworkId) &&
-                        String(c.userId ?? c.UserId ?? '') === String(userId)
-                    ) ?? null;
+            const res = await fetch(`${API_BASE}/Admin/certificates/${planworkId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok && res.status !== 204) {
+                const data = await res.json();
+                const raw = Array.isArray(data) ? data[0] : data;
+                const url = raw && (raw.url ?? raw.fileUrl ?? raw.filePath ?? raw.path ?? null);
+                if (url) {
+                    setCertificates(prev => ({
+                        ...prev,
+                        [planworkId]: {
+                            ...raw,
+                            url,
+                            name: raw.fileName ?? raw.filename ?? raw.name ?? null,
+                        },
+                    }));
                 }
-            }
-
-            const url = raw && (raw.url ?? raw.fileUrl ?? raw.filePath ?? raw.path ?? null);
-            if (url) {
-                setCertificates(prev => ({
-                    ...prev,
-                    [planworkId]: {
-                        ...raw,
-                        url,
-                        name: raw.fileName ?? raw.filename ?? raw.name ?? null,
-                    },
-                }));
             }
         } catch {
             /* no certificate available for this course */
         } finally {
             setCertsLoading(prev => ({ ...prev, [planworkId]: false }));
         }
-    }, [loadAllCerts]);
+    }, []);
 
     const fetchCertsForOwned = useCallback(async (enrollments) => {
         if (!isSignedIn || !enrollments?.length) return;

@@ -8,6 +8,8 @@
 //  • Stats are a 3‑column grid that shrinks (no more wrapping/orphan card).
 //  • Breadcrumb / hero offset use ONE variable: --mc-hdr (height of your site header).
 //  • flex/grid children got min-width:0 so nothing is pushed outside the screen.
+//  • FIX: certificates are now fetched per course from /Admin/certificates/{planworkId}
+//    (scoped to the signed-in user by the server) instead of downloading everyone's certificates.
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -119,7 +121,9 @@ const MyCourses = () => {
         }
     }, [isSignedIn, getToken]);
 
-    // ── Fetch ALL certificates with ONE request, then match by planworkId ────
+    // ── Fetch the signed-in user's certificate for each course ───────────────
+    // The server resolves the user from the token, so each user only gets their own certificate.
+    // 204 = no certificate yet (normal, not an error).
     const fetchAllCerts = useCallback(async (courseList) => {
         if (!isSignedIn || !courseList?.length) return;
         const loadingMap = {};
@@ -127,16 +131,18 @@ const MyCourses = () => {
         setCertsLoading(loadingMap);
         try {
             const token = await getToken();
-            const res = await fetch(`${API_BASE}/Admin/certificates`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = res.ok ? await res.json() : [];
-            const list = Array.isArray(data) ? data : [data];
+            const results = await Promise.all(courseList.map(async (c) => {
+                try {
+                    const res = await fetch(`${API_BASE}/Admin/certificates/${c.id}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (!res.ok || res.status === 204) return null;
+                    const data = await res.json();
+                    return Array.isArray(data) ? data[0] : data;
+                } catch { return null; }
+            }));
             const map = {};
-            courseList.forEach(c => {
-                const raw = list.find(x => String(x?.planworkId ?? x?.PlanworkId ?? '') === String(c.id));
-                map[c.id] = normaliseCert(raw);
-            });
+            courseList.forEach((c, i) => { map[c.id] = normaliseCert(results[i]); });
             setCertificates(map);
         } catch {
             setCertificates({});
