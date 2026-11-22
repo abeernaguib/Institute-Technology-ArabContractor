@@ -67,6 +67,10 @@ const downloadItems = [
     { title: 'الخطة الاستراتيجية', Icon: HomeWorkIcon, pdfUrl: '/pdf/StrategicPlan_2024_2030.pdf', desc: '2024 — 2030' },
 ];
 
+// Dynamic downloads (from /api/SiteDocument). downloadItems above is only the fallback if the API fails.
+const DOCUMENTS_API = '/api/SiteDocument';
+const DOC_ICONS = { AnnualTrainingPlan: EmojiEventsIcon, StrategicPlan: HomeWorkIcon };
+
 // ─── VISION (synced with the Vision & Goals page: /mission) ───────────────────
 // أي تعديل على صفحة الرؤية والأهداف (Vision_goals.jsx) يجب تكراره هنا.
 const visionItems = [
@@ -452,6 +456,17 @@ export default function Home() {
     const [protoList, setProtoList] = useState([]);
     const [protoLoading, setProtoLoading] = useState(true);
 
+    // ── Downloads (dynamic, from /api/SiteDocument) ──
+    const [docList, setDocList] = useState([]);
+    const dlItems = docList.length
+        ? docList.map(d => ({
+            title: d.title,
+            Icon: DOC_ICONS[d.docKey] || DescriptionIcon,
+            pdfUrl: d.fileUrl,
+            desc: d.subtitle,
+        }))
+        : downloadItems;
+
     // NOTE: /api/Admin/stats is an admin-only endpoint (401 for visitors), so it is NOT called here.
     // Stats fall back to the defaults in buildStats().
 
@@ -486,6 +501,19 @@ export default function Home() {
             })
             .catch(() => { if (!cancelled) setProtoList([]); })
             .finally(() => { if (!cancelled) setProtoLoading(false); });
+        return () => { cancelled = true; };
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch(DOCUMENTS_API)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => {
+                if (cancelled) return;
+                const arr = Array.isArray(d) ? d : (d?.data || []);
+                setDocList(arr.filter(x => x.fileUrl));
+            })
+            .catch(() => { /* keep the static fallback */ });
         return () => { cancelled = true; };
     }, []);
 
@@ -1335,7 +1363,7 @@ export default function Home() {
                         <h3 style={{ fontFamily: F, fontSize: 'clamp(1.1rem,2vw,1.5rem)', fontWeight: 900, color: C.w, lineHeight: 1.5 }}>تحميل الملفات والتقارير</h3>
                     </div>
                     <div className="dl-grid">
-                        {downloadItems.map((item, i) => (
+                        {dlItems.map((item, i) => (
                             <a key={i} className="dl-item" href={item.pdfUrl} target="_blank" rel="noopener noreferrer"
                                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: 'clamp(16px,2.5vw,24px) clamp(12px,2vw,20px)', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, textDecoration: 'none', color: C.w, textAlign: 'center', transition: 'background .2s,transform .2s' }}
                                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.13)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}

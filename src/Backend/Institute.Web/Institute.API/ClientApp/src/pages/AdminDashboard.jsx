@@ -27,6 +27,7 @@ import NewsTab from './NewsTab';
 import BooksTab from './BooksTab';
 import PlanworkTab from './PlanworkTab';
 import SettingsTab from './SettingsTab';
+import DocumentsTab from './DocumentsTab';
 
 // ── TABS ──
 // permissionName MUST match Permission.Name in the DB — same strings used in
@@ -42,7 +43,9 @@ const TABS = [
     { id: 'news', label: 'الأخبار', icon: '📰', permissionName: 'News' },
     { id: 'books', label: 'الكتب', icon: '📖', permissionName: 'Books' },
     { id: 'planwork', label: 'الدورات التدريبية', icon: '📋', permissionName: 'Workplan' },
+    { id: 'documents', label: 'الملفات والتقارير', icon: '📄', permissionName: 'Documents' },
     { id: 'settings', label: 'الإعدادات', icon: '⚙️', permissionName: 'Settings' },
+
 ];
 
 const AdminDashboard = () => {
@@ -627,6 +630,8 @@ const AdminDashboard = () => {
                         )}
 
                         {activeTab === 'planwork' && <PlanworkTab />}
+
+                        {activeTab === 'documents' && <DocumentsTab />}
 
                         {activeTab === 'settings' && (
                             <SettingsTab
