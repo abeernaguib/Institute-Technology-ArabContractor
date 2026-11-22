@@ -142,6 +142,8 @@ builder.Services.AddScoped<IAuthorizationHandler, AnyPermissionHandler>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.Configure<PaymentSettings>(builder.Configuration.GetSection("PaymentSettings"));
 builder.Services.AddScoped<IGalleryService, GalleryService>();
+//Document Service 
+builder.Services.AddScoped<ISiteDocumentService, SiteDocumentService>();
 
 // Rounds
 builder.Services.Configure<RoundsOptions>(builder.Configuration.GetSection("Rounds"));

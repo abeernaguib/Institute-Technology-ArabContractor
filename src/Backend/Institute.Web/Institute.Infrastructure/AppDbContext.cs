@@ -56,7 +56,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<UsersFormsView> UsersFormsViews { get; set; }
 
     public virtual DbSet<UsersLog> UsersLogs { get; set; }
-
+    //
+    public virtual DbSet<SiteDocument> SiteDocuments { get; set; }
 
     //// Custom DbSets for the new entities
     public virtual DbSet<AppUser> AppUsers { get; set; }
@@ -768,6 +769,17 @@ public partial class AppDbContext : DbContext
             e.Property(x => x.Title).IsRequired().HasMaxLength(300);
             e.Property(x => x.Color).IsRequired().HasMaxLength(7);
             e.HasOne<GalleryCategory>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<SiteDocument>(e =>
+        {
+            e.ToTable("SiteDocuments");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.DocKey).IsRequired().HasMaxLength(50);
+            e.Property(x => x.Title).IsRequired().HasMaxLength(300);
+            e.Property(x => x.Subtitle).HasMaxLength(300);
+            e.Property(x => x.FilePath).HasMaxLength(500);
+            e.Property(x => x.OriginalFileName).HasMaxLength(255);
+            e.HasIndex(x => x.DocKey).IsUnique();
         });
 
         modelBuilder.Entity<GalleryVideo>(e =>
