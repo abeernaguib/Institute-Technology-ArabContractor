@@ -17,7 +17,7 @@ namespace Institute.API.Controllers
         private readonly IClerkService _clerk;
         private readonly ICurrentUserService _currentUser;
 
-        // Egyptian mobile: 01 + (0/1/2/5) + 8 digits, optionally with +20 / 0020 prefix
+        // Egyptian mobile: 01 + (0/1/2/5) + 8 digits, optionally with +20 / 0020 prefixx
         private static readonly Regex EgyptPhone =
             new(@"^(\+20|0020|0)?(1[0125][0-9]{8})$", RegexOptions.Compiled);
 
