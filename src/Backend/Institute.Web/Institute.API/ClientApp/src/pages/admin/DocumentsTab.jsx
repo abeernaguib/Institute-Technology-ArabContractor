@@ -1,4 +1,4 @@
-// src/pages/admin/DocumentsTab.jsx   (same folder as CustomersTab.jsx)
+﻿// src/pages/admin/DocumentsTab.jsx   (same folder as CustomersTab.jsx)
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { T, API_BASE as API_ROOT } from '../../components/admin/constants';
@@ -6,18 +6,18 @@ import { T, API_BASE as API_ROOT } from '../../components/admin/constants';
 const API_BASE = `${API_ROOT}/admin/AdminSiteDocument`;
 const MAX_BYTES = 20 * 1024 * 1024;
 
-const ICONS = { AnnualTrainingPlan: '??', StrategicPlan: '???' };
+const ICONS = { AnnualTrainingPlan: '🏆', StrategicPlan: '🏛️' };
 
 const httpError = (res) =>
     res.status === 401 || res.status === 403
-        ? '??? ???? ?? ???? ??????? (???? ?????? ??? ????)'
+        ? 'غير مصرح لك بهذا الإجراء (سجّل الدخول مرة أخرى)'
         : `HTTP ${res.status}`;
 
 const fmtDate = (d) => d
     ? new Date(d).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })
-    : '�';
+    : '—';
 
-// ?? One card per document ????????????????????????????????????????????????????
+// ── One card per document ────────────────────────────────────────────────────
 const DocCard = ({ doc, onUpload, busy }) => {
     const fileRef = useRef();
     const [picked, setPicked] = useState(null);
@@ -27,9 +27,9 @@ const DocCard = ({ doc, onUpload, busy }) => {
     const applyFile = (file) => {
         if (!file) return;
         if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-            setErr('????? ?????? PDF ???'); return;
+            setErr('مسموح بملفات PDF فقط'); return;
         }
-        if (file.size > MAX_BYTES) { setErr('???? ?????? ???? ????? 20 ????'); return; }
+        if (file.size > MAX_BYTES) { setErr('الحد الأقصى لحجم الملف 20 ميجا'); return; }
         setErr('');
         setPicked(file);
     };
@@ -50,7 +50,7 @@ const DocCard = ({ doc, onUpload, busy }) => {
                     <div className="adm-hero-tag" style={{ marginBottom: 6, position: 'relative', zIndex: 1 }}>
                         {doc.docKey}
                     </div>
-                    <h2 className="lec-form-title">{ICONS[doc.docKey] || '??'} {doc.title}</h2>
+                    <h2 className="lec-form-title">{ICONS[doc.docKey] || '📄'} {doc.title}</h2>
                     <p className="lec-form-sub">{doc.subtitle}</p>
                 </div>
             </div>
@@ -58,23 +58,23 @@ const DocCard = ({ doc, onUpload, busy }) => {
             <div className="lec-form-body">
                 {/* Current file */}
                 <div className="lec-field">
-                    <label className="lec-label">????? ??????</label>
+                    <label className="lec-label">الملف الحالي</label>
                     {doc.fileUrl ? (
                         <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
                             style={{ color: T.blue || '#2c5fa8', fontWeight: 700, fontSize: '.85rem', wordBreak: 'break-all' }}>
-                            ?? {doc.originalFileName || '??? ????? ??????'}
+                            📎 {doc.originalFileName || 'فتح الملف الحالي'}
                         </a>
                     ) : (
-                        <span style={{ color: T.gray500, fontSize: '.85rem' }}>?? ???? ???</span>
+                        <span style={{ color: T.gray500, fontSize: '.85rem' }}>لا يوجد ملف</span>
                     )}
                     <div style={{ color: T.gray500, fontSize: '.72rem', marginTop: 4 }}>
-                        ??? ?????: {fmtDate(doc.updatedAt)}
+                        آخر تحديث: {fmtDate(doc.updatedAt)}
                     </div>
                 </div>
 
                 {/* Drop zone */}
                 <div className="lec-field" style={{ marginTop: 14 }}>
-                    <label className="lec-label">??? ??? ???? (?????? ??????)</label>
+                    <label className="lec-label">رفع ملف جديد (يستبدل الحالي)</label>
                     <div
                         className={`lec-photo-zone${dragOver ? ' over' : ''}`}
                         style={{ width: '100%', minHeight: 130 }}
@@ -84,13 +84,13 @@ const DocCard = ({ doc, onUpload, busy }) => {
                         onClick={() => fileRef.current.click()}
                     >
                         <div className="lec-photo-placeholder">
-                            <div className="lec-photo-icon">??</div>
+                            <div className="lec-photo-icon">📄</div>
                             {picked ? (
                                 <span className="lec-photo-hint">{picked.name}<br />{(picked.size / 1024 / 1024).toFixed(2)} MB</span>
                             ) : (
-                                <span className="lec-photo-hint">???? ??? PDF ???<br />?? ???? ????????</span>
+                                <span className="lec-photo-hint">اسحب ملف PDF هنا<br />أو اضغط للاختيار</span>
                             )}
-                            <span className="lec-photo-types">PDF � ??? 20 ????</span>
+                            <span className="lec-photo-types">PDF · حتى 20 ميجا</span>
                         </div>
                     </div>
                     <input
@@ -103,11 +103,11 @@ const DocCard = ({ doc, onUpload, busy }) => {
 
                 <div className="lec-actions">
                     <button className="lec-act-btn save" onClick={handleUpload} disabled={!picked || busy}>
-                        {busy ? '? ???? ?????...' : '?? ??? ????????'}
+                        {busy ? '⏳ جاري الرفع...' : '⬆️ رفع واستبدال'}
                     </button>
                     {picked && (
                         <button className="lec-act-btn reset" onClick={() => { setPicked(null); setErr(''); if (fileRef.current) fileRef.current.value = ''; }} disabled={busy}>
-                            ? ?????
+                            ↩ إلغاء
                         </button>
                     )}
                 </div>
@@ -116,7 +116,7 @@ const DocCard = ({ doc, onUpload, busy }) => {
     );
 };
 
-// ?? Tab ??????????????????????????????????????????????????????????????????????
+// ── Tab ──────────────────────────────────────────────────────────────────────
 const DocumentsTab = () => {
     const { getToken } = useAuth();
 
@@ -144,7 +144,7 @@ const DocumentsTab = () => {
             if (!res.ok) throw new Error(httpError(res));
             setDocs(await res.json());
         } catch (err) {
-            toast(`??? ????? ????????: ${err.message}`, 'error');
+            toast(`فشل تحميل البيانات: ${err.message}`, 'error');
         } finally {
             setListLoading(false);
         }
@@ -164,10 +164,10 @@ const DocumentsTab = () => {
                 throw new Error(msg);
             }
             await fetchAll();
-            toast('?? ??? ????? ?????');
+            toast('تم رفع الملف بنجاح');
             return true;
         } catch (err) {
-            toast(`??? ?????: ${err.message}`, 'error');
+            toast(`فشل الرفع: ${err.message}`, 'error');
             return false;
         } finally {
             setBusyKey(null);
@@ -178,18 +178,18 @@ const DocumentsTab = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {notification && (
                 <div className={`lec-notif lec-notif-${notification.type}`} style={{ marginBottom: 12 }}>
-                    <span>{notification.type === 'success' ? '?' : notification.type === 'error' ? '?' : '??'}</span>
+                    <span>{notification.type === 'success' ? '✅' : notification.type === 'error' ? '❌' : 'ℹ️'}</span>
                     {notification.msg}
                 </div>
             )}
 
             {listLoading ? (
                 <div className="adm-empty" style={{ padding: '32px 12px' }}>
-                    <div className="adm-emi">?</div><p>???? ???????...</p>
+                    <div className="adm-emi">⏳</div><p>جاري التحميل...</p>
                 </div>
             ) : docs.length === 0 ? (
                 <div className="adm-empty" style={{ padding: '32px 12px' }}>
-                    <div className="adm-emi">??</div><p>?? ???? ????? (???? ?? ????? ?????? SQL)</p>
+                    <div className="adm-emi">📄</div><p>لا توجد ملفات (تأكد من تشغيل سكريبت SQL)</p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
