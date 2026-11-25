@@ -44,6 +44,63 @@ public class SiteDocumentService : ISiteDocumentService
         return all.OrderBy(d => d.DisplayOrder).Select(ToDto).ToList();
     }
 
+    public async Task<SiteDocumentDto> CreateAsync(CreateSiteDocumentDto dto)
+    {
+        var all = (await _repo.GetAllAsync()).ToList();
+        var nextOrder = all.Count == 0 ? 1 : all.Max(d => d.DisplayOrder) + 1;
+
+        var entity = new SiteDocument
+        {
+            DocKey = "doc-" + Guid.NewGuid().ToString("N")[..8],
+            Title = dto.Title.Trim(),
+            Subtitle = string.IsNullOrWhiteSpace(dto.Subtitle) ? null : dto.Subtitle.Trim(),
+            DisplayOrder = nextOrder,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _repo.AddAsync(entity);
+        await _repo.SaveChangesAsync();
+
+        if (dto.File != null)
+            return (await UploadAsync(entity.DocKey, dto.File))!;
+
+        return ToDto(entity);
+    }
+
+    public async Task<SiteDocumentDto?> UpdateAsync(string docKey, UpdateSiteDocumentDto dto)
+    {
+        var all = await _repo.GetAllAsync();
+        var entity = all.FirstOrDefault(d => d.DocKey == docKey);
+        if (entity == null) return null;
+
+        entity.Title = dto.Title.Trim();
+        entity.Subtitle = string.IsNullOrWhiteSpace(dto.Subtitle) ? null : dto.Subtitle.Trim();
+        entity.UpdatedAt = DateTime.UtcNow;
+
+        _repo.Update(entity);
+        await _repo.SaveChangesAsync();
+        return ToDto(entity);
+    }
+
+    public async Task<bool> DeleteAsync(string docKey)
+    {
+        var all = await _repo.GetAllAsync();
+        var entity = all.FirstOrDefault(d => d.DocKey == docKey);
+        if (entity == null) return false;
+
+        var oldFile = entity.FilePath;
+
+        _repo.Delete(entity);
+        await _repo.SaveChangesAsync();
+
+        if (!string.IsNullOrWhiteSpace(oldFile)
+            && !oldFile.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            && !oldFile.StartsWith("/"))
+            await _blobStorage.DeleteFileAsync(oldFile, Container, Folder);
+
+        return true;
+    }
+
     public async Task<SiteDocumentDto?> UploadAsync(string docKey, IFormFile file)
     {
         var all = await _repo.GetAllAsync();
@@ -74,7 +131,6 @@ public class SiteDocumentService : ISiteDocumentService
         _repo.Update(entity);
         await _repo.SaveChangesAsync();
 
-        // امسح الملف القديم من الـ blob (لو كان blob مش مسار static)
         if (!string.IsNullOrWhiteSpace(oldFile)
             && !oldFile.StartsWith("http", StringComparison.OrdinalIgnoreCase)
             && !oldFile.StartsWith("/"))
