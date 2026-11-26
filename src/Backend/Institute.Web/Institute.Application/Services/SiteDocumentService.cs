@@ -58,11 +58,28 @@ public class SiteDocumentService : ISiteDocumentService
             UpdatedAt = DateTime.UtcNow
         };
 
+        if (dto.File != null)
+        {
+            var ext = Path.GetExtension(dto.File.FileName);
+            var uniqueName = $"{Guid.NewGuid():N}{ext}";
+
+            await using var ms = new MemoryStream();
+            await dto.File.CopyToAsync(ms);
+            ms.Position = 0;
+
+            var renamed = new FormFile(ms, 0, ms.Length, dto.File.Name, uniqueName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = dto.File.ContentType
+            };
+
+            var uploadedName = await _blobStorage.UploadFileAsync(renamed, Container, Folder);
+            entity.FilePath = Path.GetFileName(uploadedName);
+            entity.OriginalFileName = dto.File.FileName;
+        }
+
         await _repo.AddAsync(entity);
         await _repo.SaveChangesAsync();
-
-        if (dto.File != null)
-            return (await UploadAsync(entity.DocKey, dto.File))!;
 
         return ToDto(entity);
     }
