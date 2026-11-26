@@ -457,15 +457,15 @@ export default function Home() {
     const [protoLoading, setProtoLoading] = useState(true);
 
     // ── Downloads (dynamic, from /api/SiteDocument) ──
-    const [docList, setDocList] = useState([]);
-    const dlItems = docList.length
-        ? docList.map(d => ({
+    const [docList, setDocList] = useState(null);
+    const dlItems = docList === null
+        ? downloadItems
+        : docList.map(d => ({
             title: d.title,
             Icon: DOC_ICONS[d.docKey] || DescriptionIcon,
             pdfUrl: d.fileUrl,
             desc: d.subtitle,
-        }))
-        : downloadItems;
+        }));
 
     // NOTE: /api/Admin/stats is an admin-only endpoint (401 for visitors), so it is NOT called here.
     // Stats fall back to the defaults in buildStats().
@@ -763,6 +763,23 @@ export default function Home() {
         }, protoRef);
         return () => ctx.revert();
     }, [protoList]);
+
+    // Download cards: the list can change after the API answers, so animate them again here
+    useEffect(() => {
+        if (!dlRef.current) return;
+        const ctx = gsap.context(() => {
+            const items = dlRef.current.querySelectorAll('.dl-item');
+            if (!items.length) return;
+            gsap.fromTo(items,
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12,
+                    scrollTrigger: { trigger: dlRef.current, start: 'top 90%', once: true }
+                }
+            );
+        }, dlRef);
+        return () => ctx.revert();
+    }, [docList]);
 
     return (
         <div dir="rtl" style={{ fontFamily: F, overflowX: 'hidden', background: C.w, marginTop: -23 }}>
